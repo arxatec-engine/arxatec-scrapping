@@ -1,0 +1,36 @@
+{
+    "data": [
+        {
+            "id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67",
+            "name": "Gobiernos Regionales"
+        },
+        {
+            "id": "e3d296fc-6b80-403c-8619-7d19f25b5f98",
+            "name": "Poder Legislativo"
+        },
+        {
+            "id": "4ff51a9c-7735-46a9-a63a-82b3045604e4",
+            "name": "Organismos Autónomos"
+        },
+        {
+            "id": "bc95b692-1e33-487f-a49f-6687f2780d0b",
+            "name": "Internacional"
+        },
+        {
+            "id": "dd32fece-c3c1-47c5-847f-c94b1e2efb7b",
+            "name": "Privado"
+        },
+        {
+            "id": "a76eab23-00da-4a72-8602-dfeca5099b12",
+            "name": "Poder Judicial"
+        },
+        {
+            "id": "f6710a6a-584e-4cc8-bb38-a6ce87b514b9",
+            "name": "Gobiernos Locales"
+        },
+        {
+            "id": "b812a870-b9da-491a-9bf2-dfdb934b8021",
+            "name": "Poder Ejecutivo"
+        }
+    ]
+}

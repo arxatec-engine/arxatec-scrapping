@@ -1,0 +1,364 @@
+{
+    "data": [
+        {
+            "id": "4fcce6f5-af69-4801-97aa-c698fbf2ba07",
+            "name": "Amazonas",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "9c3efbc7-35b4-4d8e-aac4-76b2dbf667d7",
+            "name": "Ancash",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "ea9c0943-5d05-422f-91a6-6afc4f2d0ab7",
+            "name": "Apurímac",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "9d5a804b-2d11-4632-a13b-b5b1afbec5f2",
+            "name": "Arequipa",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "5c5a6240-c305-400e-ac83-673a06366f59",
+            "name": "Asamblea Constituyente",
+            "group_id": "e3d296fc-6b80-403c-8619-7d19f25b5f98"
+        },
+        {
+            "id": "d7d8ba79-83e0-4cd2-88c5-e1ae6a28a9f1",
+            "name": "Ayacucho",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "5cab0a3a-90cb-4f37-b3fc-606f9125b430",
+            "name": "BCRP",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "ebd4d84a-224a-49a4-bebb-79d725dc3760",
+            "name": "Cajamarca",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "d0452277-c67e-4662-85e2-506a4325abf2",
+            "name": "Callao",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "5d757a85-6b13-4c2c-b9d3-fd49f6589e3d",
+            "name": "CAN",
+            "group_id": "bc95b692-1e33-487f-a49f-6687f2780d0b"
+        },
+        {
+            "id": "54ef2430-ddaa-435c-8cba-822b873cd27d",
+            "name": "CGR",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "f7a3d3f8-d763-4cac-982c-1422fe31423e",
+            "name": "COES",
+            "group_id": "dd32fece-c3c1-47c5-847f-c94b1e2efb7b"
+        },
+        {
+            "id": "1e77dffa-ff4e-46cb-93c9-70022eb5b4f6",
+            "name": "Congreso",
+            "group_id": "e3d296fc-6b80-403c-8619-7d19f25b5f98"
+        },
+        {
+            "id": "20be4955-3660-4966-b28b-f4c7f792a937",
+            "name": "Corte Superior",
+            "group_id": "a76eab23-00da-4a72-8602-dfeca5099b12"
+        },
+        {
+            "id": "1ab1b8b7-365d-43bd-a4fe-97eb470b4565",
+            "name": "Corte Suprema",
+            "group_id": "a76eab23-00da-4a72-8602-dfeca5099b12"
+        },
+        {
+            "id": "d39ef326-ecfe-48a9-acfe-f8419b4c1187",
+            "name": "Cusco",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "4cca765b-00ec-4d99-ad68-ecad31593560",
+            "name": "DEFENSORÍA",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "7927c245-263e-4659-9267-59799223bea3",
+            "name": "Distrital",
+            "group_id": "f6710a6a-584e-4cc8-bb38-a6ce87b514b9"
+        },
+        {
+            "id": "70e11bf1-bdfd-4f30-b284-034ec12e84f3",
+            "name": "Universidades",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "a5cf3599-67b9-4b9f-9209-2826709aab39",
+            "name": "FONAFE",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "272d3a67-fcd6-4317-848d-3912ce5dc194",
+            "name": "Fuero Laboral",
+            "group_id": "a76eab23-00da-4a72-8602-dfeca5099b12"
+        },
+        {
+            "id": "ef15b1a6-5b7f-4fca-ad06-b6fb422743f6",
+            "name": "Fuero Militar",
+            "group_id": "a76eab23-00da-4a72-8602-dfeca5099b12"
+        },
+        {
+            "id": "8f983830-688b-4e40-ad10-52dcb2ab3ed2",
+            "name": "Huancavelica",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "b94d51f0-1ca4-417d-bc04-1c6d0710347d",
+            "name": "Huánuco",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "8fc42fed-c7ce-41d4-876b-13ef7d1d5189",
+            "name": "Ica",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "44309989-e954-4715-a0b9-f32b2bbc1d3a",
+            "name": "JNE",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "63cd08b2-f866-4e75-8c60-476462a57b8d",
+            "name": "JNJ",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "6e8f9137-20bf-4ded-a504-6ff2660f6a54",
+            "name": "Junín",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "f186ab47-dc20-4572-bbfb-082eac98ef06",
+            "name": "La Libertad",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "cdd09008-42ab-45b1-817f-9d85b7658aae",
+            "name": "Lambayeque",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "b7b6143f-3111-46e5-83a7-afad5f20be12",
+            "name": "Lima",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "c3ecc04f-d2ab-42de-bad5-ffa06522829e",
+            "name": "Loreto",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "88cbabed-6d56-4951-ab11-66e7a7817911",
+            "name": "Madre de Dios",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "d67de3e5-2e63-4ba8-9e96-7eb033fe9c56",
+            "name": "MEF",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "c5543d4e-15db-4921-9377-bee91746c838",
+            "name": "MIDAGRI",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "f3dd8518-8b52-49b1-98b3-64550c00d371",
+            "name": "MIDIS",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "f3aa7aac-5ebd-46b2-b0b4-9c5fa413c973",
+            "name": "MIMP",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "01829ecc-a7e8-4ebc-9f30-117c468aeee3",
+            "name": "MINAM",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "9197102b-fac3-48cc-9cf0-076e63e9329c",
+            "name": "MINCETUR",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "fce1afa9-324f-490a-8762-e4622d6ab482",
+            "name": "MINCUL",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "fc991ba2-a891-457a-babf-b34bfcf9436b",
+            "name": "MINDEF",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "15f428c8-b871-49dd-8d5c-0a5b8f0144fe",
+            "name": "MINEDU",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "88c999f8-e46e-4fe8-af09-8f87a8a72e35",
+            "name": "MINEM",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "24dec92e-de57-486c-87fd-8a41e9bea2d1",
+            "name": "MININTER",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "276f1958-8094-4daa-8ad4-4ebfca64bd8e",
+            "name": "Ministerio Público",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "a7343d4a-f45a-4e2f-b7fc-ce6af7790852",
+            "name": "MINJUSDH",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "d08e3112-6052-4e26-8774-68d418651a7a",
+            "name": "MINSA",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "04989429-62b1-48d3-9071-847856c48b37",
+            "name": "MML",
+            "group_id": "f6710a6a-584e-4cc8-bb38-a6ce87b514b9"
+        },
+        {
+            "id": "3102b9ee-b6c2-43c6-a16b-33ab102cedf2",
+            "name": "Moquegua",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "ff72164b-8d9d-43fd-abe0-fe3bc50e01bd",
+            "name": "MTC",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "776b41b0-75a1-4f32-82bf-2a7111250c32",
+            "name": "MTPE",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "d627cca6-b321-4df6-b6d9-aa860698583d",
+            "name": "MVCS",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "871c3e13-8d7c-48b6-a5d4-dba8c2b8f474",
+            "name": "OEA",
+            "group_id": "bc95b692-1e33-487f-a49f-6687f2780d0b"
+        },
+        {
+            "id": "5f71419b-324d-4538-8f49-a5cee7e9faa3",
+            "name": "OIT",
+            "group_id": "bc95b692-1e33-487f-a49f-6687f2780d0b"
+        },
+        {
+            "id": "404972b9-ade1-41f3-8659-69209c77dda5",
+            "name": "ONPE",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "5bbe5d34-3490-4e32-ab66-d93e3ba78492",
+            "name": "Pasco",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "2a8921e7-ccf2-4f17-94fb-2a84e5fd41d3",
+            "name": "PCM",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "2f73d049-492a-4d1b-af26-268f9806b7a4",
+            "name": "Piura",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "5faf0bb1-8cf2-4db7-832e-6d6694db789f",
+            "name": "Poder Judicial",
+            "group_id": "a76eab23-00da-4a72-8602-dfeca5099b12"
+        },
+        {
+            "id": "d8b922db-fbb8-4c5e-87a4-7955ea2536a0",
+            "name": "Presidencia",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "a47f0787-71a9-4be6-98c9-f59b179c4fce",
+            "name": "PRODUCE",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "8e1ef278-4825-4157-8966-72a9dae14e59",
+            "name": "Provincial",
+            "group_id": "f6710a6a-584e-4cc8-bb38-a6ce87b514b9"
+        },
+        {
+            "id": "c2c110c7-713f-4465-b93d-201c99b4328b",
+            "name": "Puno",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "02f445eb-15b8-4c6a-9988-62065385f080",
+            "name": "RENIEC",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "c9eafac8-9e4f-4ff0-b263-b36612ec0b08",
+            "name": "RREE",
+            "group_id": "b812a870-b9da-491a-9bf2-dfdb934b8021"
+        },
+        {
+            "id": "5415a8c8-d528-4743-a6a0-82c1d3f7b18a",
+            "name": "San Martín",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "95cbddf8-708e-46c7-884c-0ae1d379f996",
+            "name": "SBS",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "3d8c4185-bd30-4431-b938-8a125be73a63",
+            "name": "Tacna",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "2a6e0d9d-d23a-4d8b-8a7f-2c366920c368",
+            "name": "TC",
+            "group_id": "4ff51a9c-7735-46a9-a63a-82b3045604e4"
+        },
+        {
+            "id": "79cdf446-4818-4349-af68-35b43d79e996",
+            "name": "Tumbes",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "2cbc3157-e1c1-43df-a320-c87776e4e2f5",
+            "name": "Ucayali",
+            "group_id": "bbd69cf2-f4b0-4ccb-89a5-553ea2d5df67"
+        },
+        {
+            "id": "78f34d82-5740-47bf-8486-8f164b810719",
+            "name": "UE",
+            "group_id": "bc95b692-1e33-487f-a49f-6687f2780d0b"
+        }
+    ]
+}

@@ -1,0 +1,30 @@
+# Salidas del scraper
+output/
+documentos.json
+checkpoint.json
+scraper.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Variables de entorno / secretos
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Editores / IDEs
+.vscode/
+.idea/
+*.swp
