@@ -1,8 +1,8 @@
 import { Command } from "commander";
 
-import { config } from "@/modules/spij/config";
-import { run } from "@/modules/spij/run";
-import { setupLogging } from "@/utils";
+import { config } from "./modules/spij/config";
+import { run } from "./modules/spij/run";
+import { setupLogging } from "./utils";
 
 async function runSpij(opts: { limit?: string }): Promise<void> {
   if (opts.limit) process.env.SPIJ_LIMIT = opts.limit;

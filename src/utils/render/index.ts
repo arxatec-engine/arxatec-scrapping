@@ -22,7 +22,13 @@ export function buildHtml(
 }
 
 export async function launchBrowser(): Promise<Browser> {
-  return puppeteer.launch({ headless: true });
+  // --no-sandbox: obligatorio en Linux/servidores (y al correr como root, p.ej.
+  //   bajo PM2), donde el sandbox de Chromium falla.
+  // --disable-dev-shm-usage: evita crashes por /dev/shm pequeño (VPS/contenedores).
+  return puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+  });
 }
 
 export async function renderPdf(browser: Browser, html: string): Promise<Uint8Array> {

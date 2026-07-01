@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { newThrottle, request, toIsoDate } from "@/utils";
+import { newThrottle, request, toIsoDate } from "../../../../utils";
 
 import type {
   Api,

@@ -7,7 +7,7 @@ import { PAGE_MAX_RETRIES } from "../constants";
 import { authenticate, buscar, fetchSectores, newApi, parse } from "../services/spij";
 import * as store from "../utils/store";
 import { newStats } from "../utils";
-import { launchBrowser, newThrottle, semaphore, sleep } from "@/utils";
+import { launchBrowser, newThrottle, semaphore, sleep } from "../../../utils";
 import type {
   Api,
   Config,

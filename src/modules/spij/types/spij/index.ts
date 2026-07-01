@@ -1,6 +1,6 @@
 import type { Browser } from "puppeteer";
 
-import type { Logger, Throttle } from "@/types";
+import type { Logger, Throttle } from "../../../../types";
 import type { Area } from "../legal_areas";
 
 export interface Config {

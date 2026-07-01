@@ -1,8 +1,8 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 
-import { env } from "@/config";
-import * as ENV from "@/constants/env";
+import { env } from "../../../config";
+import * as ENV from "../../../constants/env";
 import {
   BASE_BACK,
   BASE_SOLR,

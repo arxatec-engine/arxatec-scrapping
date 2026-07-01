@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 
 import type { StoredRecord, Checkpoint } from "../../types";
-import { nowTs } from "@/utils/time";
+import { nowTs } from "../../../../utils/time";
 
 export function latestRecords(path: string): Map<string, StoredRecord> {
   const latest = new Map<string, StoredRecord>();

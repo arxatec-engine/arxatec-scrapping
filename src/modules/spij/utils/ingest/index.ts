@@ -3,11 +3,11 @@ import * as config from "../../config";
 import * as spijApi from "../../services/spij";
 import { analizarNorma } from "../../services/llm";
 import { ingestRequest } from "../../services/assistant";
-import * as render from "@/utils/render";
+import * as render from "../../../../utils/render";
 import * as store from "../store";
 import { bumpConf, maybeLogProgress } from "../stats";
-import { sanitize, stripHtml, textoParaClasificar } from "@/utils/text";
-import { nowTs } from "@/utils/time";
+import { sanitize, stripHtml, textoParaClasificar } from "../../../../utils/text";
+import { nowTs } from "../../../../utils/time";
 import { buildMetadata } from "../metadata";
 import { defaultResolved, optionsText, resolve } from "../legalAreas";
 import type {

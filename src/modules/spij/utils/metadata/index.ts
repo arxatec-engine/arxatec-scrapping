@@ -1,4 +1,4 @@
-import { stripHtml } from "@/utils/text";
+import { stripHtml } from "../../../../utils/text";
 import type { Area, Classif, Config, Doc, Metadata } from "../../types";
 
 export function buildMetadata(

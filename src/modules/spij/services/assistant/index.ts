@@ -1,8 +1,8 @@
 import axios from "axios";
 
 import * as config from "../../config";
-import * as http from "@/utils/http";
-import { sleep } from "@/utils";
+import * as http from "../../../../utils/http";
+import { sleep } from "../../../../utils";
 import type { Ctx, IngestData, IngestResult, Metadata } from "../../types";
 
 const PERMANENT_STATUSES = new Set([400, 404, 409, 422]);
