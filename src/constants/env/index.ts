@@ -1,0 +1,22 @@
+export const SPIJ_INGEST_CONCURRENCY = "SPIJ_INGEST_CONCURRENCY";
+export const SPIJ_INGEST_DELAY = "SPIJ_INGEST_DELAY";
+export const SPIJ_PAGE_SIZE = "SPIJ_PAGE_SIZE";
+export const SPIJ_LIMIT = "SPIJ_LIMIT";
+export const SPIJ_USER = "SPIJ_USER";
+export const SPIJ_CLAVE = "SPIJ_CLAVE";
+export const SPIJ_TIPO_ACCESO = "SPIJ_TIPO_ACCESO";
+export const SPIJ_TIPO = "SPIJ_TIPO";
+export const SPIJ_HISTORICO = "SPIJ_HISTORICO";
+export const SPIJ_DISP = "SPIJ_DISP";
+export const SPIJ_FECHA_INI = "SPIJ_FECHA_INI";
+export const SPIJ_FECHA_FIN = "SPIJ_FECHA_FIN";
+export const SPIJ_UA = "SPIJ_UA";
+
+export const INGEST_BASE_URL = "INGEST_BASE_URL";
+export const INGEST_PATH = "INGEST_PATH";
+export const INGEST_TOKEN = "INGEST_TOKEN";
+export const INGEST_TIMEOUT = "INGEST_TIMEOUT";
+export const INGEST_MAX_RETRIES = "INGEST_MAX_RETRIES";
+export const INGEST_COUNTRY = "INGEST_COUNTRY";
+export const INGEST_SOURCE = "INGEST_SOURCE";
+export const INGEST_STATUS = "INGEST_STATUS";
