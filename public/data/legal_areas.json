@@ -1,0 +1,514 @@
+{
+  "version": 1,
+  "country": "PE",
+  "_note": "Catálogo canónico de legal_area + subarea para el contrato legal_documents/ingest. La IA DEBE elegir exactamente UN 'area' y UNA 'subarea' de esta lista; nunca inventa etiquetas (legal_area/subarea son campos NOT NULL e indexados en Postgres y Qdrant). 'existing' = ya definido en el frontend (arxatec-lawyer-platform/src/types/legal_documents/index.ts); confirmar las subáreas contra ese archivo. 'proposed' = ampliación sugerida para cubrir la legislación regulatoria peruana de SPIJ. OJO: 'legal_area' es la RAMA DEL DERECHO (de qué trata la norma), NO el emisor — el emisor va en issuer_entity_ids.",
+  "default_area": "Derecho administrativo",
+  "classification_rules": [
+    "Clasifica por la MATERIA de la norma (su contenido en la sumilla), no por quién la emite.",
+    "Si una norma es puramente organizativa, de personal o de procedimiento sin materia sectorial clara (designaciones, autorizaciones de viaje, encargaturas, aprobación de directivas internas), usa 'Derecho administrativo'.",
+    "Si encaja en un área sectorial específica (ambiental, salud, educación, minería, etc.), prefiérela sobre 'Derecho administrativo'.",
+    "Elige la subarea más específica posible dentro del área elegida."
+  ],
+  "areas": [
+    {
+      "id": "2d6878f1-8068-5ab2-81ca-d136adb71174",
+      "area": "Derecho civil",
+      "status": "existing",
+      "incluye": "Personas, familia, obligaciones, contratos, bienes y sucesiones.",
+      "subareas": [
+        {
+          "id": "62d11fcf-1100-5301-a478-9c0c24e00f5c",
+          "name": "Obligaciones y contratos"
+        },
+        {
+          "id": "1ad02e08-42eb-579b-a52c-2d206ac6686b",
+          "name": "Derechos reales"
+        },
+        {
+          "id": "aff40230-1779-5d25-a86a-b8a7794772b2",
+          "name": "Derecho familiar"
+        },
+        {
+          "id": "57da5c7d-c7be-5ddd-b576-cecf98b0330e",
+          "name": "Derecho sucesorio"
+        }
+      ]
+    },
+    {
+      "id": "813e547f-6118-5152-8bf0-98a072512dac",
+      "area": "Derecho penal",
+      "status": "existing",
+      "incluye": "Delitos, penas y responsabilidad penal.",
+      "subareas": [
+        {
+          "id": "8924a453-f2ea-56a6-88f1-36b987b0da38",
+          "name": "Parte general"
+        },
+        {
+          "id": "30dfc934-c830-5549-9772-383356126de0",
+          "name": "Delitos contra la administración pública"
+        },
+        {
+          "id": "8dba98d5-b018-589d-b648-6a77c879c22d",
+          "name": "Delitos patrimoniales"
+        }
+      ]
+    },
+    {
+      "id": "9dd49c60-9f99-556b-8d74-82d71f400bb3",
+      "area": "Derecho constitucional",
+      "status": "existing",
+      "incluye": "Derechos fundamentales, organización del Estado y garantías constitucionales.",
+      "subareas": [
+        {
+          "id": "051120cf-d6e1-5eac-9932-0ffa1478c5f5",
+          "name": "Derechos fundamentales"
+        },
+        {
+          "id": "a87725dd-1c98-5518-b38d-28cd1f68147a",
+          "name": "Garantías constitucionales"
+        },
+        {
+          "id": "403f5047-cb04-591f-9c1e-60e1294f5cd5",
+          "name": "Organización del Estado"
+        },
+        {
+          "id": "81d7e5c3-eba2-5d3c-bc0b-102a89326b98",
+          "name": "Régimen económico"
+        },
+        {
+          "id": "8533895d-5a97-502b-97e5-89f7c556ca8a",
+          "name": "Régimen electoral"
+        },
+        {
+          "id": "b7b72b0e-74dd-580d-aa8b-daadfec999b5",
+          "name": "Administración de justicia"
+        },
+        {
+          "id": "cb680e3f-ed7d-5942-acd8-a17d5096984b",
+          "name": "Acceso a la información y protección de datos personales"
+        }
+      ]
+    },
+    {
+      "id": "1b9a0a5d-df1b-5455-b382-0e210b8f0233",
+      "area": "Derecho laboral",
+      "status": "existing",
+      "incluye": "Relaciones de trabajo del sector público y privado.",
+      "subareas": [
+        {
+          "id": "ad1b26fb-fbfd-5c84-aa94-f2482f63d7bd",
+          "name": "Relaciones laborales"
+        },
+        {
+          "id": "b451988b-cb15-5f49-9497-ad8b37f47a43",
+          "name": "Seguridad y salud en el trabajo"
+        },
+        {
+          "id": "dc9e6327-b2d6-5355-bc6f-f4779854d755",
+          "name": "Beneficios sociales"
+        }
+      ]
+    },
+    {
+      "id": "1016cd55-ddea-50b8-ab15-d4890cdde64d",
+      "area": "Derecho tributario",
+      "status": "existing",
+      "incluye": "Tributos, fiscalización y obligaciones tributarias.",
+      "subareas": [
+        {
+          "id": "7296cad9-637b-59d3-8f48-bfd065abbfca",
+          "name": "Procedimiento tributario"
+        },
+        {
+          "id": "7f7f1efb-3612-5160-abb3-0d28f00a780f",
+          "name": "Fiscalización"
+        },
+        {
+          "id": "60ed3539-a9c9-526b-a15c-b4c614aa3412",
+          "name": "Obligaciones tributarias"
+        }
+      ]
+    },
+    {
+      "id": "3184a156-cffa-54fc-8d4f-853c9c84ba8b",
+      "area": "Derecho corporativo",
+      "status": "existing",
+      "incluye": "Sociedades, gobierno corporativo y contratación empresarial.",
+      "subareas": [
+        {
+          "id": "ac74b29c-d927-556c-b11b-ad699d8458c1",
+          "name": "Sociedades mercantiles"
+        },
+        {
+          "id": "a016c328-56a5-5054-baf7-59825bdc596e",
+          "name": "Gobierno corporativo"
+        },
+        {
+          "id": "df249942-d158-5ab7-84c8-666bec3842a8",
+          "name": "Contratos empresariales"
+        }
+      ]
+    },
+    {
+      "id": "0e632724-b97f-5498-ad2a-d3de42b33bc1",
+      "area": "Derecho administrativo",
+      "status": "existing",
+      "incluye": "Procedimiento administrativo, organización del Estado, gestión y contratación pública. Cajón por defecto para normas organizativas/de personal sin materia sectorial.",
+      "subareas": [
+        {
+          "id": "eb8f2360-d811-56b2-ab37-d1aa4c66fef7",
+          "name": "Procedimiento administrativo"
+        },
+        {
+          "id": "1fd83470-4f8a-5339-804b-dafdcc56d0e5",
+          "name": "Contratación pública"
+        },
+        {
+          "id": "0b75422f-ca48-5ee3-b9e5-d6d621402c94",
+          "name": "Gestión pública"
+        },
+        {
+          "id": "0236e082-dcda-526e-9811-8dfbdecdbeb8",
+          "name": "Régimen del servicio civil"
+        },
+        {
+          "id": "b97b5b9e-4399-5f04-9b57-7b8442a3d01c",
+          "name": "Control gubernamental"
+        },
+        {
+          "id": "20b9f7ac-c444-5200-bdd9-aa943a2029ef",
+          "name": "Sanciones administrativas"
+        }
+      ]
+    },
+    {
+      "id": "58b37424-6215-5a78-81da-605d2421ad00",
+      "area": "Derecho municipal y regional",
+      "status": "proposed",
+      "incluye": "Gobierno local y regional: ordenanzas, decretos de alcaldía, tributación municipal y ordenamiento territorial.",
+      "subareas": [
+        {
+          "id": "4827a86f-d23e-57e4-a744-03769c7b57d7",
+          "name": "Organización municipal y regional"
+        },
+        {
+          "id": "6c9d0e9d-7247-586e-a4f7-2ca5909952aa",
+          "name": "Tributación municipal"
+        },
+        {
+          "id": "0a268ae7-0cd4-5eaf-8692-55b563e33ebb",
+          "name": "Ordenamiento territorial y urbanismo"
+        },
+        {
+          "id": "4e421426-82a6-51cd-859c-296ae25bad80",
+          "name": "Licencias y fiscalización municipal"
+        }
+      ]
+    },
+    {
+      "id": "ac144dc2-ab29-5c45-8dcd-c95771794cc7",
+      "area": "Derecho ambiental y de recursos naturales",
+      "status": "proposed",
+      "incluye": "Gestión ambiental, áreas protegidas, agua, bosques y evaluación de impacto.",
+      "subareas": [
+        {
+          "id": "be4b06f2-5ebe-5871-ba7d-86607180a26d",
+          "name": "Gestión ambiental"
+        },
+        {
+          "id": "2df54bb4-30c7-5749-8e64-7bf52a73d853",
+          "name": "Áreas naturales protegidas"
+        },
+        {
+          "id": "e08d2eb2-792c-5bb7-9b06-9dbb88779ed9",
+          "name": "Recursos hídricos"
+        },
+        {
+          "id": "2a218658-6708-556b-a7b2-07baaed0e1c3",
+          "name": "Forestal y fauna silvestre"
+        },
+        {
+          "id": "d9302b91-4b92-547a-b620-7d7d9f0c590b",
+          "name": "Evaluación de impacto ambiental"
+        }
+      ]
+    },
+    {
+      "id": "6999de1b-e29a-5d64-a928-1b6a17d4fce6",
+      "area": "Derecho de minería, energía e hidrocarburos",
+      "status": "proposed",
+      "incluye": "Minería, electricidad, hidrocarburos, concesiones y supervisión sectorial.",
+      "subareas": [
+        {
+          "id": "c64beeaa-84e8-5515-9062-0cb5929a44d9",
+          "name": "Minería"
+        },
+        {
+          "id": "8f71d98d-c779-551d-b084-fead44dbef48",
+          "name": "Electricidad"
+        },
+        {
+          "id": "3b3e91a9-eff7-544d-8e4b-52f0877b8e11",
+          "name": "Hidrocarburos"
+        },
+        {
+          "id": "938380f0-ee8a-506d-874d-8aa0bb37d4f2",
+          "name": "Concesiones y supervisión"
+        }
+      ]
+    },
+    {
+      "id": "29e689aa-8611-5df0-89c0-6cf2be52ff13",
+      "area": "Derecho de salud",
+      "status": "proposed",
+      "incluye": "Salud pública, medicamentos, aseguramiento y establecimientos de salud.",
+      "subareas": [
+        {
+          "id": "8f01c5e5-1114-5b06-aec1-31676ce528b9",
+          "name": "Salud pública"
+        },
+        {
+          "id": "d6553c8f-33cd-5975-af80-09d3f5930c6c",
+          "name": "Productos farmacéuticos y dispositivos"
+        },
+        {
+          "id": "af4fa449-9319-504a-acd0-08ef7a1603ff",
+          "name": "Aseguramiento en salud"
+        },
+        {
+          "id": "a314d338-010e-5bed-9b9b-65d75a517d69",
+          "name": "Establecimientos de salud"
+        }
+      ]
+    },
+    {
+      "id": "dde8155a-77ab-5029-814d-954010cb5b12",
+      "area": "Derecho de educación",
+      "status": "proposed",
+      "incluye": "Educación básica, superior y universitaria, gestión educativa y carrera docente.",
+      "subareas": [
+        {
+          "id": "58990f36-c441-5a64-a0a1-5c2ffb63d349",
+          "name": "Educación básica"
+        },
+        {
+          "id": "f6c70a2c-744c-522e-92cf-b64ba3321200",
+          "name": "Educación superior y universitaria"
+        },
+        {
+          "id": "66fc6d07-29f4-55f9-80f3-6ff7a9b34121",
+          "name": "Gestión educativa"
+        },
+        {
+          "id": "6380ba17-7562-5d9d-9e0e-78000033e0cd",
+          "name": "Carrera docente"
+        }
+      ]
+    },
+    {
+      "id": "18eec3dd-ced9-5089-9ee0-9d772a4e3913",
+      "area": "Derecho electoral",
+      "status": "proposed",
+      "incluye": "Procesos electorales, organizaciones políticas, justicia electoral y registro e identificación (JNE, ONPE, RENIEC).",
+      "subareas": [
+        {
+          "id": "561f5c04-2592-57da-a142-2ad1f4657067",
+          "name": "Procesos electorales"
+        },
+        {
+          "id": "541dccb3-4bd4-51c1-a50e-74b8843d1a07",
+          "name": "Organizaciones políticas"
+        },
+        {
+          "id": "c913f52e-9705-5bc3-9cee-00db35c085f2",
+          "name": "Justicia electoral"
+        },
+        {
+          "id": "82b8639d-0fcb-56f8-9d4a-99d5e4bf79b2",
+          "name": "Registro e identificación"
+        }
+      ]
+    },
+    {
+      "id": "9bd6627c-8ef0-5ad4-8b13-eaf7273c03ac",
+      "area": "Derecho de transporte y telecomunicaciones",
+      "status": "proposed",
+      "incluye": "Transporte, tránsito, telecomunicaciones e infraestructura.",
+      "subareas": [
+        {
+          "id": "8305c0eb-15f8-5497-978b-b0e03fb6bafb",
+          "name": "Transporte terrestre y tránsito"
+        },
+        {
+          "id": "3b696758-effa-57ac-979e-97574d706213",
+          "name": "Transporte aéreo y acuático"
+        },
+        {
+          "id": "d20dd5df-d92d-5246-a8fd-53e60de5575f",
+          "name": "Telecomunicaciones"
+        },
+        {
+          "id": "8afb000f-de62-599c-8157-744642a17d62",
+          "name": "Infraestructura"
+        }
+      ]
+    },
+    {
+      "id": "65467174-3d62-5e20-ae37-0d7448095e68",
+      "area": "Derecho agrario y de desarrollo rural",
+      "status": "proposed",
+      "incluye": "Agricultura, ganadería, sanidad agraria, riego, tierras y desarrollo rural.",
+      "subareas": [
+        {
+          "id": "cfef0e7b-01e3-5662-b2d7-29b5c2c2fb0e",
+          "name": "Agricultura y ganadería"
+        },
+        {
+          "id": "a192bd13-49ba-55eb-8cd5-bb0b69f95644",
+          "name": "Sanidad agraria"
+        },
+        {
+          "id": "f9f57cf1-b817-5e5d-ae24-787b7a8663c2",
+          "name": "Riego y tierras"
+        },
+        {
+          "id": "5d2b4ee7-24b8-5502-b983-106cb6f58e83",
+          "name": "Desarrollo rural"
+        }
+      ]
+    },
+    {
+      "id": "ba323460-cbdf-531c-bf86-65115ac6d5c8",
+      "area": "Derecho de comercio exterior y aduanero",
+      "status": "proposed",
+      "incluye": "Régimen aduanero, comercio exterior y defensa comercial.",
+      "subareas": [
+        {
+          "id": "ad454c1c-693f-5d32-b7c9-0149e0160e33",
+          "name": "Régimen aduanero"
+        },
+        {
+          "id": "04792626-66c0-58d1-b11b-55aa515a881b",
+          "name": "Comercio exterior"
+        },
+        {
+          "id": "bb935088-a9a7-52cf-a13a-e1ebc4c614d3",
+          "name": "Defensa comercial"
+        }
+      ]
+    },
+    {
+      "id": "a0b7f996-fcde-561d-8e50-7ba6b9c32d55",
+      "area": "Derecho de la competencia y propiedad intelectual",
+      "status": "proposed",
+      "incluye": "Libre competencia, protección al consumidor, propiedad intelectual y barreras burocráticas (INDECOPI).",
+      "subareas": [
+        {
+          "id": "91c6effb-d853-5105-b327-9afc298afb9d",
+          "name": "Libre competencia"
+        },
+        {
+          "id": "28fc9905-4927-5b8f-9e1e-a3b3286a86b7",
+          "name": "Protección al consumidor"
+        },
+        {
+          "id": "fd0d4c32-3cc7-5c95-a10c-b91d13789c37",
+          "name": "Propiedad intelectual"
+        },
+        {
+          "id": "38268451-d4df-5736-a6a5-d22b0af0265a",
+          "name": "Eliminación de barreras burocráticas"
+        }
+      ]
+    },
+    {
+      "id": "421af103-9cbd-590f-9071-1db2f8988e27",
+      "area": "Derecho financiero y de mercado de valores",
+      "status": "proposed",
+      "incluye": "Sistema financiero y bancario, mercado de valores, seguros y sistema de pagos (SBS, SMV, BCRP).",
+      "subareas": [
+        {
+          "id": "a3211406-1d03-50f6-9a61-4616b77dea9a",
+          "name": "Sistema financiero y bancario"
+        },
+        {
+          "id": "1fe473d6-cf3f-59db-8640-b88fbcced53f",
+          "name": "Mercado de valores"
+        },
+        {
+          "id": "b0ff4395-c53b-5209-8e17-2f703865a019",
+          "name": "Seguros"
+        },
+        {
+          "id": "efc9ca70-3216-5ec8-80dd-770813e8cb17",
+          "name": "Sistema de pagos"
+        }
+      ]
+    },
+    {
+      "id": "70efe52e-e5f7-5c28-8ea3-709d10f865ee",
+      "area": "Derecho previsional y de seguridad social",
+      "status": "proposed",
+      "incluye": "Pensiones y sistemas previsionales (ONP, AFP) y seguridad social.",
+      "subareas": [
+        {
+          "id": "e7d65032-af1d-5897-ab82-85abe450761d",
+          "name": "Pensiones"
+        },
+        {
+          "id": "d76378e8-cd15-563b-bf9a-18c7d2764a4c",
+          "name": "Sistemas previsionales"
+        },
+        {
+          "id": "ed64365c-81c5-5321-9476-8af5a2736d1c",
+          "name": "Seguridad social"
+        }
+      ]
+    },
+    {
+      "id": "c2a1214d-5308-5b4e-aa15-54422297b69a",
+      "area": "Derecho de seguridad y defensa",
+      "status": "proposed",
+      "incluye": "Defensa nacional, orden interno, policía y gestión de riesgo de desastres.",
+      "subareas": [
+        {
+          "id": "878e0e75-9e20-5015-83a3-7c05387ba856",
+          "name": "Defensa nacional"
+        },
+        {
+          "id": "cab62894-38ca-5449-8afa-6d8791d58ed0",
+          "name": "Orden interno y policía"
+        },
+        {
+          "id": "703a979a-de3d-5efb-94ef-71fa9e5821ba",
+          "name": "Gestión de riesgo de desastres"
+        }
+      ]
+    },
+    {
+      "id": "fa4dff60-7dc6-5671-b5b8-de86d2cd51fd",
+      "area": "Derecho internacional",
+      "status": "proposed",
+      "incluye": "Tratados y convenios internacionales, derechos humanos, cooperación e integración regional (legislación supranacional).",
+      "subareas": [
+        {
+          "id": "cf986b6b-dfb8-5d2d-8042-d1dc1cc912c9",
+          "name": "Tratados y convenios internacionales"
+        },
+        {
+          "id": "22a2c7e3-5104-5fdd-a399-6cac7defe3a9",
+          "name": "Derecho internacional de los derechos humanos"
+        },
+        {
+          "id": "90ebaf35-9622-5496-a781-7a60b35a37e7",
+          "name": "Cooperación internacional"
+        },
+        {
+          "id": "928fe5c4-c838-518e-a825-11ff6e81a19b",
+          "name": "Integración regional"
+        }
+      ]
+    }
+  ]
+}

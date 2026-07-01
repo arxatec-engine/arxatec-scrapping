@@ -1,2 +1,0 @@
-aiohttp>=3.9
-xhtml2pdf>=0.2.16   # solo si SPIJ_FORMATO incluye 'pdf' (renderiza HTML -> PDF)

@@ -1,8 +1,10 @@
-# Salidas del scraper
+# Salidas y estado del scraper
 output/
 documentos.json
 checkpoint.json
 scraper.log
+state/          # estado por fuente (otras_entidades, etc.)
+*.tmp
 
 # Python
 __pycache__/
@@ -15,6 +17,11 @@ env/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+
+# Node / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
 
 # Variables de entorno / secretos
 .env
