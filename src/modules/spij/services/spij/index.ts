@@ -5,6 +5,7 @@ import { newThrottle, request, toIsoDate } from "../../../../utils";
 import type {
   Api,
   AuthBody,
+  BuscarResponse,
   Config,
   Doc,
   Logger,
@@ -113,7 +114,7 @@ export async function buscar(
   api: Api,
   desde: number,
   hasta: number
-): Promise<any> {
+): Promise<BuscarResponse> {
   const cfg = api.cfg;
   return (await request({
     method: "POST",
@@ -129,7 +130,7 @@ export async function buscar(
     on401: () => authenticate(api),
     expect: "json",
     json: buscarBody(cfg, desde, hasta),
-  })) as any;
+  })) as BuscarResponse;
 }
 
 export async function descargarWord(api: Api, docId: string): Promise<string> {

@@ -58,6 +58,13 @@ export interface Doc {
 
 export type RawResult = Record<string, any>;
 
+/** Respuesta del buscador SPIJ (solo los campos que consumimos). */
+export interface BuscarResponse {
+  totalEncontrados?: number | string | null;
+  resultados?: RawResult[] | null;
+  [k: string]: unknown;
+}
+
 export interface Page {
   docs: RawResult[];
   nextCursor: number | null;
@@ -94,6 +101,15 @@ export interface Subgroup {
   name: string;
   group_id: string;
 }
+/** Fila cruda de public/data/entity.json (misma forma que en el assistant). */
+export interface CatalogEntityRow {
+  id: string;
+  name: string;
+  acronym?: string | null;
+  specialist?: string | null;
+  subgroup_id?: string | null;
+}
+
 export interface IndexEntity {
   id: string;
   name: string;
@@ -120,7 +136,12 @@ export interface SectorRaw {
   esPadre?: string;
 }
 
-export type MatchConfidence = "exact" | "fuzzy" | "unmatched";
+/**
+ * "exact"/"fuzzy" = classifier determinista; "ia" = Groq eligió la entidad
+ * entre candidatos del catálogo (fallback aprobado, solo cuando el determinista
+ * queda unmatched); "unmatched" = nadie pudo (documento sin emisor, greppable).
+ */
+export type MatchConfidence = "exact" | "fuzzy" | "ia" | "unmatched";
 export interface Classif {
   group_id: string | null;
   group_name: string | null;
@@ -131,46 +152,9 @@ export interface Classif {
   match_confidence: MatchConfidence;
 }
 
-export interface Metadata {
-  country: string;
-  type: string;
-  title: string;
-  document_number: string | null;
-  jurisdiction: string;
-  legal_area: string;
-  subarea: string;
-  legal_area_id: string | null;
-  legal_subarea_id: string | null;
-  source: string;
-  source_url: string;
-  status: string;
-  version: number;
-  language: string;
-  published_at: string | null;
-  effective_date: string | null;
-  keywords: string[];
-  concepts: string[];
-  references: string[];
-  issuer_entity_ids?: string[];
-}
-
-export interface IngestData {
-  document_id?: string | null;
-  indexed_chunks?: number | null;
-  pages_with_text?: number | null;
-  linked_entities?: number | null;
-  linked_relations?: number | null;
-  [k: string]: unknown;
-}
-
-export interface IngestResult {
-  ok: boolean;
-  permanent: boolean;
-  status: number | null;
-  error: string | null;
-  data: IngestData;
-  auth?: boolean;
-}
+// Metadata, IngestData e IngestResult son el contrato compartido de ingesta y
+// viven en src/types/common (reexportados vía "../../types"): son idénticos para
+// todas las fuentes. Aquí solo quedan los tipos propios de SPIJ.
 
 export interface Ctx {
   cfg: Config;
@@ -194,6 +178,13 @@ export interface IngestRecord {
   linked_entities: number | null;
   linked_relations: number | null;
   error: string | null;
+  /**
+   * Ingesta aceptada (200) pero con un problema de calidad detectado — hoy:
+   * se enviaron issuer_entity_ids y el backend enlazó 0 (descarta en silencio
+   * los UUID que no existen en su BD). No se reintenta porque el backend no
+   * deduplica; queda marcado para revisión.
+   */
+  warning?: string | null;
   ts: string;
 }
 
@@ -208,8 +199,4 @@ export interface StoredRecord {
   clasificacion: Classif;
   legal_area?: Area | null;
   ingest?: IngestRecord;
-}
-
-export interface Checkpoint {
-  [key: string]: number | string | null;
 }
