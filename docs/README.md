@@ -20,6 +20,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 2 | [`plan-poder-judicial.md`](./plan-poder-judicial.md) | **El próximo módulo (P0).** Análisis técnico del portal del Poder Judicial (árbol, hojas, URLs, paginación, PDFs) + contrato de ingesta detallado (§3.1) + dónde vive el nuevo `src/modules/pj/`. |
 | 3 | [`deuda-tecnica.md`](./deuda-tecnica.md) | **Qué arreglar antes de escalar.** Auditoría del código real (scraper + backend) con `archivo:línea`, registro de arreglos aplicados y **las decisiones de Harry** sobre los 4 puntos de contrato. Resuelve el checklist §7 de la estrategia. |
 | 4 | [`estado-integracion-legal.md`](./estado-integracion-legal.md) | **El dato de punta a punta** (scraper→assistant→Node→front→IA) a través de los 4 repos: qué funciona, los 2 huecos (vista del front, endpoint de retrieval del chat) con su spec, y el backlog priorizado. |
+| 5 | [`anti-bloqueo-scraping.md`](./anti-bloqueo-scraping.md) | **Cómo SPIJ evita el bloqueo y qué ayuda a PJ.** Por qué el sitio de SPIJ coopera y el del PJ no (bot manager Radware: fingerprint + throttle por IP); qué ya tiene PJ (fetch, cookie jar) y qué se añadió (headers de navegación). |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)
