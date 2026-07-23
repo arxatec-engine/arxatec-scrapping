@@ -3,6 +3,7 @@ import { fetchHtml } from "../../services/pj";
 import {
   extractLinks,
   nextPageUrl,
+  parseBreadcrumb,
   parseLeafDocs,
   parsePageInfo,
 } from "../parse";
@@ -148,16 +149,22 @@ export async function crawlLeaves(
     const docs = parseLeafDocs(html);
     if (docs.length > 0) {
       const allDocs = await collectLeafPages(ctx, html, docs);
+      // La materia (área legal) la da el breadcrumb de la PROPIA página, que es
+      // fiable aunque se arranque directo en la hoja; la ruta del crawl queda de
+      // respaldo. Sin esto, un PJ_ROOT directo a la hoja deja el área en el
+      // default del catálogo ("Derecho administrativo").
+      const pageCrumbs = parseBreadcrumb(html);
+      const breadcrumb = pageCrumbs.length > 0 ? pageCrumbs : node.breadcrumb;
       stats.hojas += 1;
       log.info(
         "Hoja [%s] -> %d documentos",
-        node.breadcrumb.join(" / ") || "(raíz)",
+        breadcrumb.join(" / ") || "(raíz)",
         allDocs.length,
       );
       await onLeaf({
         url: node.url,
-        breadcrumb: node.breadcrumb,
-        tema: node.breadcrumb[node.breadcrumb.length - 1] ?? null,
+        breadcrumb,
+        tema: breadcrumb[breadcrumb.length - 1] ?? null,
         baseLegal: null,
         docs: allDocs,
       });

@@ -134,6 +134,28 @@ export function nextPageUrl(html: string, current: number): string | null {
   return next;
 }
 
+/**
+ * Breadcrumb que la PROPIA página hoja muestra en su cabecera, p.ej.
+ * "Jurisprudencia Sistematizada/Jurisprudencia Uniforme/Materia Civil/Posesión
+ * Precaria". Es la fuente FIABLE de la materia (área legal): a diferencia de la
+ * ruta del crawl, existe aunque se arranque directo en la hoja (PJ_ROOT) y no
+ * depende de la estructura plana de URLs del portal. Devuelve los segmentos
+ * (el último es el tema). Vacío si la página no trae breadcrumb.
+ */
+export function parseBreadcrumb(html: string): string[] {
+  const text = load(html).root().text().replace(/\s+/g, " ");
+  const m =
+    /Jurisprudencia Sistematizada\s*\/\s*(.+?)(?:\s*\.tabla|\s*T[íi]tulo\b|\s*Base Legal\b|\s*N[úu]mero de Recurso\b|\s{3,})/i.exec(
+      text,
+    );
+  if (!m) return [];
+  return `Jurisprudencia Sistematizada/${m[1]}`
+    .split("/")
+    .map((s) => s.replace(/^(.+?)\s+\1$/i, "$1").trim()) // colapsa "X X" -> "X"
+    .filter(Boolean)
+    .slice(0, 6);
+}
+
 /** Todos los enlaces (href + texto visible) de una página, para el crawler. */
 export function extractLinks(html: string): Array<{ href: string; text: string }> {
   const $ = load(html);
