@@ -85,6 +85,30 @@ con decisiones de diseño/UX que probablemente quieras definir tú.
 - **Comando:** `pnpm run cli -- pj` (ya arreglado el pre-chequeo de pnpm vía
   `pnpm-workspace.yaml`). Con `PJ_ROOT` en el `.env` trae los 11 de "Concurrencia".
 
+## Contrato de fuentes canónicas (¡el `source` debe cruzar con el filtro!)
+
+El filtro "Fuentes" de la plataforma (`arxatec-lawyer-platform`,
+`src/types/legal_documents/index.ts` → `LEGAL_SOURCE`) hace **match EXACTO** contra
+`documents.source` (`legal_documents/list/repository.py`:
+`model.source == filters.source`). Si el scraper manda otro string, el documento
+**no aparece al filtrar por esa fuente** (solo en "Todas las fuentes"). Cada módulo
+DEBE mandar el valor canónico exacto:
+
+| Módulo/fuente | `source` que debe mandar (LEGAL_SOURCE) |
+| --- | --- |
+| Poder Judicial (pj) | `"Poder judicial"` ✅ aplicado |
+| El Peruano (futuro) | `"Diario oficial el peruano"` |
+| Tribunal Constitucional (futuro) | `"Tribunal constitucional"` |
+| Congreso | `"Congreso de la república"` |
+| MINJUS | `"Ministerio de justicia y derechos humanos"` |
+| Defensoría | `"Defensoría del pueblo"` |
+| JNE | `"Jurado nacional de elecciones"` |
+
+⚠️ **SPIJ manda hoy `"SPIJ"`**, que NO está en `LEGAL_SOURCE` → tampoco cruza el
+filtro. Decisión pendiente: ¿SPIJ mapea a `"Ministerio de justicia y derechos
+humanos"` (es el sistema del MINJUS) o se añade "SPIJ" a `LEGAL_SOURCE` en la
+plataforma? (misma familia de decisión que el `status`, ver `deuda-tecnica.md` A2).
+
 ## Backlog priorizado (lo que queda)
 
 1. **Correr los 11 de PJ** end-to-end (cuando el portal destrabe) — valida el pipeline vivo.
