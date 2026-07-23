@@ -109,10 +109,67 @@ export async function analizarNorma(
       },
       timeout: 30_000,
     });
-    const data: any = r.data;
-    const content = String(data.choices[0].message.content ?? "");
+    const data = r.data as {
+      choices?: Array<{ message?: { content?: unknown } }>;
+    };
+    const content = String(data.choices?.[0]?.message?.content ?? "");
     return parseAnalisis(content);
   } catch {
     return EMPTY;
+  }
+}
+
+/**
+ * Fallback de entidad emisora: cuando el classifier determinista queda
+ * unmatched, Groq elige entre una lista corta de candidatos del catálogo.
+ * El id devuelto se valida contra los candidatos — la IA nunca puede meter una
+ * entidad que no exista en entity.json. Ante cualquier fallo devuelve null
+ * (el documento queda unmatched, como antes), nunca lanza.
+ */
+export async function elegirEntidad(
+  sector: string,
+  candidatos: Array<{ id: string; name: string }>
+): Promise<string | null> {
+  const key = process.env.GROQ_API_KEY;
+  if (!key || !sector.trim() || candidatos.length === 0) {
+    return null;
+  }
+  const model = process.env.LLM_MODEL || "llama-3.1-8b-instant";
+  const lista = candidatos.map((c) => `${c.id}\t${c.name}`).join("\n");
+  const prompt =
+    "El SECTOR es el texto libre con que el SPIJ identifica al emisor de una " +
+    "norma legal peruana. Elige de la lista de ENTIDADES candidatas la que " +
+    "corresponde a ese emisor.\n\n" +
+    `SECTOR: ${sector.slice(0, 300)}\n\n` +
+    `ENTIDADES (id<TAB>nombre):\n${lista}\n\n` +
+    "Responde SOLO con un objeto JSON válido, sin texto extra: " +
+    '{"id":"<id elegido>"} o {"id":null} si ninguna corresponde.';
+
+  const payload = {
+    model,
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0,
+    max_tokens: 100,
+    response_format: { type: "json_object" },
+  };
+
+  try {
+    const r = await axios.post(_URL, payload, {
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (compatible; arxatec-scraper/1.0)",
+      },
+      timeout: 30_000,
+    });
+    const data = r.data as {
+      choices?: Array<{ message?: { content?: unknown } }>;
+    };
+    const content = String(data.choices?.[0]?.message?.content ?? "");
+    const obj = JSON.parse(content) as { id?: unknown };
+    const id = obj.id != null ? String(obj.id).trim() : "";
+    return id && candidatos.some((c) => c.id === id) ? id : null;
+  } catch {
+    return null;
   }
 }

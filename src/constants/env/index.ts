@@ -12,6 +12,12 @@ export const SPIJ_FECHA_INI = "SPIJ_FECHA_INI";
 export const SPIJ_FECHA_FIN = "SPIJ_FECHA_FIN";
 export const SPIJ_UA = "SPIJ_UA";
 
+export const PJ_CONCURRENCY = "PJ_CONCURRENCY";
+export const PJ_DELAY = "PJ_DELAY";
+export const PJ_LIMIT = "PJ_LIMIT";
+export const PJ_UA = "PJ_UA";
+export const PJ_ROOT = "PJ_ROOT";
+
 export const INGEST_BASE_URL = "INGEST_BASE_URL";
 export const INGEST_PATH = "INGEST_PATH";
 export const INGEST_TOKEN = "INGEST_TOKEN";
