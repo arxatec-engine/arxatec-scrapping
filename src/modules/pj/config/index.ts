@@ -47,8 +47,10 @@ export function config(): Config {
     ingestTimeout: env.get(ENV.INGEST_TIMEOUT).default("300").asIntPositive(),
     ingestMaxRetries: env.get(ENV.INGEST_MAX_RETRIES).default("5").asIntPositive(),
     ingestCountry: env.get(ENV.INGEST_COUNTRY).default("PE").asString(),
-    // El módulo PJ fija sus propios defaults (no hereda los de SPIJ).
-    ingestSource: env.get(ENV.INGEST_SOURCE).default("PJ").asString(),
+    // source DEBE coincidir EXACTO con LEGAL_SOURCE.PODER_JUDICIAL de la
+    // plataforma ("Poder judicial"): el filtro de "Fuentes" hace match exacto
+    // (documents.source == source), así que un "PJ" no aparecería al filtrar.
+    ingestSource: env.get(ENV.INGEST_SOURCE).default("Poder judicial").asString(),
     ingestStatus: env.get(ENV.INGEST_STATUS).default("Vigente").asString(),
   };
 }
