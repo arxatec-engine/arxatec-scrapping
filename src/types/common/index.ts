@@ -14,7 +14,7 @@ export interface Sem {
   run<T>(fn: () => Promise<T>): Promise<T>;
 }
 
-export type Expect = "json" | "text";
+export type Expect = "json" | "text" | "binary";
 
 export interface RequestOptions {
   method: string;

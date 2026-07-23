@@ -11,7 +11,12 @@ export const SPIJ_DISP = "SPIJ_DISP";
 export const SPIJ_FECHA_INI = "SPIJ_FECHA_INI";
 export const SPIJ_FECHA_FIN = "SPIJ_FECHA_FIN";
 export const SPIJ_UA = "SPIJ_UA";
-
+export const TC_CONCURRENCY = "TC_CONCURRENCY";
+export const TC_DELAY = "TC_DELAY";
+export const TC_LIMIT = "TC_LIMIT";
+export const TC_START_MONTH = "TC_START_MONTH";
+export const TC_END_MONTH = "TC_END_MONTH";
+export const TC_UA = "TC_UA";
 export const INGEST_BASE_URL = "INGEST_BASE_URL";
 export const INGEST_PATH = "INGEST_PATH";
 export const INGEST_TOKEN = "INGEST_TOKEN";

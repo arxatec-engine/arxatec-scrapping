@@ -1,6 +1,5 @@
 import type { Browser } from "puppeteer";
-
-import type { Logger, Throttle } from "../../../../types";
+import type { IngestRecord, Logger, Stats, Throttle } from "../../../../types";
 import type { Area } from "../legal_areas";
 
 export interface Config {
@@ -64,13 +63,6 @@ export interface Page {
   total: number;
 }
 
-export interface Stats {
-  procesados: number;
-  descargados: number;
-  errores: number;
-  conf: Record<string, number>;
-}
-
 export interface Api {
   cfg: Config;
   log: Logger;
@@ -131,47 +123,6 @@ export interface Classif {
   match_confidence: MatchConfidence;
 }
 
-export interface Metadata {
-  country: string;
-  type: string;
-  title: string;
-  document_number: string | null;
-  jurisdiction: string;
-  legal_area: string;
-  subarea: string;
-  legal_area_id: string | null;
-  legal_subarea_id: string | null;
-  source: string;
-  source_url: string;
-  status: string;
-  version: number;
-  language: string;
-  published_at: string | null;
-  effective_date: string | null;
-  keywords: string[];
-  concepts: string[];
-  references: string[];
-  issuer_entity_ids?: string[];
-}
-
-export interface IngestData {
-  document_id?: string | null;
-  indexed_chunks?: number | null;
-  pages_with_text?: number | null;
-  linked_entities?: number | null;
-  linked_relations?: number | null;
-  [k: string]: unknown;
-}
-
-export interface IngestResult {
-  ok: boolean;
-  permanent: boolean;
-  status: number | null;
-  error: string | null;
-  data: IngestData;
-  auth?: boolean;
-}
-
 export interface Ctx {
   cfg: Config;
   log: Logger;
@@ -181,20 +132,6 @@ export interface Ctx {
   stats: Stats;
   ingestThrottle: Throttle;
   browser: Browser;
-}
-
-export interface IngestRecord {
-  done: boolean;
-  ok: boolean;
-  permanent: boolean;
-  status: number | null;
-  document_id: string | null;
-  indexed_chunks: number | null;
-  pages_with_text: number | null;
-  linked_entities: number | null;
-  linked_relations: number | null;
-  error: string | null;
-  ts: string;
 }
 
 export interface StoredRecord {
@@ -208,8 +145,4 @@ export interface StoredRecord {
   clasificacion: Classif;
   legal_area?: Area | null;
   ingest?: IngestRecord;
-}
-
-export interface Checkpoint {
-  [key: string]: number | string | null;
 }
