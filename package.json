@@ -11,6 +11,9 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "cli": "tsx src/cli.ts",
+    "spij": "tsx src/cli.ts spij",
+    "pj": "tsx src/cli.ts pj",
+    "tc": "tsx src/cli.ts tc",
     "ingest": "tsx src/cli.ts spij"
   },
   "dependencies": {

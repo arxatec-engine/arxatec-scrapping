@@ -1,6 +1,6 @@
 import type { Browser } from "puppeteer";
 
-import type { Logger, Throttle } from "../../../../types";
+import type { IngestRecord, Logger, Stats, Throttle } from "../../../../types";
 import type { Area } from "../legal_areas";
 
 export interface Config {
@@ -69,13 +69,6 @@ export interface Page {
   docs: RawResult[];
   nextCursor: number | null;
   total: number;
-}
-
-export interface Stats {
-  procesados: number;
-  descargados: number;
-  errores: number;
-  conf: Record<string, number>;
 }
 
 export interface Api {
@@ -165,27 +158,6 @@ export interface Ctx {
   stats: Stats;
   ingestThrottle: Throttle;
   browser: Browser;
-}
-
-export interface IngestRecord {
-  done: boolean;
-  ok: boolean;
-  permanent: boolean;
-  status: number | null;
-  document_id: string | null;
-  indexed_chunks: number | null;
-  pages_with_text: number | null;
-  linked_entities: number | null;
-  linked_relations: number | null;
-  error: string | null;
-  /**
-   * Ingesta aceptada (200) pero con un problema de calidad detectado — hoy:
-   * se enviaron issuer_entity_ids y el backend enlazó 0 (descarta en silencio
-   * los UUID que no existen en su BD). No se reintenta porque el backend no
-   * deduplica; queda marcado para revisión.
-   */
-  warning?: string | null;
-  ts: string;
 }
 
 export interface StoredRecord {
