@@ -118,3 +118,7 @@ plataforma? (misma familia de decisión que el `status`, ver `deuda-tecnica.md` 
 5. **Módulo Tribunal Constitucional** — siguiente silo de jurisprudencia (~10k).
 6. **Commit/push** del módulo PJ + extracción compartida (todo sin commitear en `arxatec-scrapping`).
 7. **SPIJ + Chromium:** para correr SPIJ hay que aprobar el build de puppeteer (`pnpm-workspace.yaml`: `puppeteer: true` + `pnpm install`, baja Chromium).
+   **Verificado 2026-07-24:** si el binario no está, la corrida aborta con
+   `Could not find Chrome (ver. 131.0.6778.204)` y el ledger queda intacto (reanudable).
+   Fix directo, sin tocar el lockfile: `npx puppeteer browsers install chrome`.
+   Solo SPIJ lo necesita — renderiza el PDF desde HTML; PJ y TC descargan el PDF original.
