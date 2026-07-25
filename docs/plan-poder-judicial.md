@@ -176,18 +176,26 @@ Campos del `metadata` (ver `utils/metadata/index.ts` y `types/`):
 ```jsonc
 {
   "country": "PE",
-  "type": "jurisprudence",        // ← SPIJ manda "normative"; PJ mandará esto
+  "type": "jurisprudence",        // ← SPIJ manda "normative"; PJ manda esto
   "title": "...",
   "document_number": "001061-2011",
   "jurisdiction": "PE",
   "legal_area": "...", "subarea": "...",
   "legal_area_id": "...", "legal_subarea_id": "...",   // de legal_areas.json
-  "source": "PJ",                 // SPIJ manda "SPIJ" (env INGEST_SOURCE)
-  "source_url": "https://...",
+  "source": "Poder judicial",     // valor canónico del filtro de la plataforma
+  "source_url": "https://...",    // ⚠ identidad del documento: el backend deriva
+                                  //   document_id = uuid5(country:source_url) y
+                                  //   re-ingestar la misma URL REEMPLAZA (no duplica)
   "status": "Vigente",
   "version": 1,
   "language": "es",
   "published_at": "...", "effective_date": "...",
+  "issued_at": "2012-01-26",      // fecha de resolución (F3, trazabilidad)
+  // Trazabilidad de fuente (F3, ver arxatec-lawyer-assistant/docs/TRAZABILIDAD_FUENTES.md):
+  // citation la emite el chat VERBATIM como respaldo; sala/distrito, estructurados.
+  "citation": "Recurso 001061-2011, Sala Civil Permanente, Lima Norte, 26-ene-2012",
+  "court_chamber": "Sala Civil Permanente",   // null en normativa (SPIJ)
+  "origin_district": "Lima Norte",            // null en normativa (SPIJ)
   "keywords": [], "concepts": [], "references": [],
   "issuer_entity_ids": ["<uuid de entity.json>"]
 }

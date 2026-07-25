@@ -70,6 +70,19 @@ export interface Metadata {
   language: string;
   published_at: string | null;
   effective_date: string | null;
+  /** Fecha de emisión/resolución (ISO). El backend la guarda en documents.issued_at. */
+  issued_at?: string | null;
+  /**
+   * Cita humana preformateada — trazabilidad de fuente (F3, ver
+   * arxatec-lawyer-assistant/docs/TRAZABILIDAD_FUENTES.md). El chat la emite
+   * VERBATIM como respaldo: "Recurso 001061-2011, Sala Civil Permanente,
+   * Lima Norte, 26-ene-2012". Cada módulo formatea la suya.
+   */
+  citation?: string | null;
+  /** Sala / órgano jurisdiccional (jurisprudencia). */
+  court_chamber?: string | null;
+  /** Distrito judicial de procedencia (jurisprudencia). */
+  origin_district?: string | null;
   keywords: string[];
   concepts: string[];
   references: string[];

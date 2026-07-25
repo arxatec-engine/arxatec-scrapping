@@ -1,3 +1,4 @@
+import { fechaCorta } from "../../../../utils/dates";
 import type {
   AreaResolved,
   Config,
@@ -34,6 +35,24 @@ function buildTitle(doc: PjDoc, leaf: Leaf): string {
     leaf.tema,
   ].filter((p): p is string => Boolean(p && p.trim()));
   return parts.join(" — ") || leaf.tema || "Resolución del Poder Judicial";
+}
+
+/**
+ * Cita humana verbatim: "Recurso 001061-2011, Sala Civil Permanente,
+ * Lima Norte, 26-ene-2012" — los mismos 4 datos que muestra la tabla del PJ.
+ * "Recurso" (no "Casación") porque es lo que la fuente rotula y el árbol
+ * también incluye consultas de Control Difuso.
+ */
+function buildCitation(doc: PjDoc): string | null {
+  const recurso = cleanRecurso(doc.recurso);
+  if (!recurso) return null;
+  const parts = [
+    `Recurso ${recurso}`,
+    doc.sala,
+    doc.distrito,
+    fechaCorta(doc.fecha),
+  ].filter((p): p is string => Boolean(p && p.trim()));
+  return parts.join(", ");
 }
 
 function absolutePdf(cfg: Config, pdfUrl: string): string {
@@ -75,6 +94,13 @@ export function buildMetadata(
     language: "es",
     published_at: doc.fecha,
     effective_date: doc.fecha,
+    // Fecha de resolución + cita estructurada (trazabilidad F3). En Control
+    // Difuso la columna "sala" trae la norma inaplicada (ver types): se envía
+    // tal cual — es lo que la fuente publica.
+    issued_at: doc.fecha,
+    citation: buildCitation(doc),
+    court_chamber: doc.sala,
+    origin_district: doc.distrito,
     keywords,
     concepts: [],
     references: [],
