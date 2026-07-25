@@ -102,6 +102,23 @@ export function load(
     }
   }
 
+  // Sigla → entidad, solo siglas ÚNICAS (54 siglas del catálogo colisionan:
+  // esas no se indexan — un match ambiguo es peor que ninguno).
+  const acronymCounts = new Map<string, number>();
+  for (const e of entities) {
+    const key = normalize(e.acronym ?? "");
+    if (key) {
+      acronymCounts.set(key, (acronymCounts.get(key) ?? 0) + 1);
+    }
+  }
+  const byAcronym = new Map<string, IndexEntity>();
+  for (let i = 0; i < entities.length; i++) {
+    const key = normalize(entities[i].acronym ?? "");
+    if (key && acronymCounts.get(key) === 1) {
+      byAcronym.set(key, ents[i]);
+    }
+  }
+
   const group_by_id: Record<string, Group> = {};
   for (const g of groups) {
     group_by_id[g.id] = g;
@@ -121,6 +138,7 @@ export function load(
     subgroup_by_norm,
     entities: ents,
     exact,
+    byAcronym,
     cache: {},
     sector_parent: {},
   };
@@ -175,6 +193,24 @@ export function topCandidates(
   }
   scored.sort((a, b) => b[0] - a[0] || b[1] - a[1]);
   return scored.slice(0, n).map((s) => s[2]);
+}
+
+/**
+ * Match EXACTO por sigla única del catálogo: los sectores de SPIJ suelen ser
+ * la sigla oficial a secas ("PRODUCE", "MINEDU"). Solo siglas sin colisión
+ * (54 siglas están repetidas en el catálogo: esas se ignoran aquí) y solo
+ * igualdad exacta normalizada — nada parcial.
+ */
+export function entityByAcronym(idx: Index, value: string): Classif | null {
+  const key = normalize(value);
+  if (!key || !idx.byAcronym) {
+    return null;
+  }
+  const entity = idx.byAcronym.get(key);
+  if (!entity) {
+    return null;
+  }
+  return classifFromEntityId(idx, entity.id, "fuzzy");
 }
 
 /** Entidades muy cortas ("Ministerio Público") matchean por accidente en texto libre. */
