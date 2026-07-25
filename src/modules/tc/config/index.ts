@@ -16,6 +16,7 @@ import {
 } from "../constants";
 import { REPO_ROOT } from "./paths";
 import type { Config } from "../types";
+import { sourceByKey } from "../../../services/sources";
 
 export * from "./paths";
 
@@ -54,9 +55,10 @@ export function config(): Config {
       .default("5")
       .asIntPositive(),
     ingestCountry: env.get(ENV.INGEST_COUNTRY).default("PE").asString(),
-    // Valor canónico del filtro "Fuentes" de la plataforma (LEGAL_SOURCE.TC):
-    // "TC" a secas no cruza el match exacto y los docs solo salen en "Todas".
-    ingestSource: env.get(ENV.INGEST_SOURCE).default("Tribunal constitucional").asString(),
+    ingestSource: env
+      .get(ENV.INGEST_SOURCE)
+      .default(sourceByKey("tc").canonicalName)
+      .asString(),
     ingestStatus: env.get(ENV.INGEST_STATUS).default("Vigente").asString(),
   };
 }

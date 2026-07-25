@@ -9,6 +9,7 @@ import type {
   Metadata,
   Throttle,
 } from "../../types";
+import { canonicalSource, isKnownSource } from "../sources";
 
 // 400/404/409/422 = error permanente de validación: no reintentar.
 const PERMANENT_STATUSES = new Set([400, 404, 409, 422]);
@@ -65,7 +66,14 @@ export async function ingestRequest(
   metadata: Metadata,
 ): Promise<IngestResult> {
   const { log } = client;
-  const body = JSON.stringify(metadata);
+  // Regla de fuentes canónicas: jamás persistir una sigla ("TC", "SPIJ"...)
+  // aunque venga por env/config. Un valor fuera del catálogo pasa tal cual
+  // pero se advierte (no se inventan expansiones).
+  const source = canonicalSource(metadata.source);
+  if (!isKnownSource(source)) {
+    log.warn('Fuente fuera del catálogo canónico: "%s" (se envía tal cual)', source);
+  }
+  const body = JSON.stringify({ ...metadata, source });
   let lastErr: string | null = null;
 
   for (let attempt = 1; attempt <= client.maxRetries; attempt++) {

@@ -14,6 +14,7 @@ import {
 } from "../constants";
 import { REPO_ROOT } from "./paths";
 import type { Config } from "../types";
+import { sourceByKey } from "../../../services/sources";
 
 export * from "./paths";
 
@@ -50,7 +51,10 @@ export function config(): Config {
     // source DEBE coincidir EXACTO con LEGAL_SOURCE.PODER_JUDICIAL de la
     // plataforma ("Poder judicial"): el filtro de "Fuentes" hace match exacto
     // (documents.source == source), así que un "PJ" no aparecería al filtrar.
-    ingestSource: env.get(ENV.INGEST_SOURCE).default("Poder judicial").asString(),
+    ingestSource: env
+      .get(ENV.INGEST_SOURCE)
+      .default(sourceByKey("pj").canonicalName)
+      .asString(),
     ingestStatus: env.get(ENV.INGEST_STATUS).default("Vigente").asString(),
   };
 }

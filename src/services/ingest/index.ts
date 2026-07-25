@@ -8,6 +8,7 @@ import type {
   Metadata,
   Throttle,
 } from "../../types";
+import { canonicalSource, isKnownSource } from "../sources";
 
 const PERMANENT_STATUSES = new Set([400, 404, 409, 422]);
 
@@ -62,7 +63,12 @@ export async function ingestRequest(
   metadata: Metadata
 ): Promise<IngestResult> {
   const url = ingestUrl(cfg);
-  const body = JSON.stringify(metadata);
+  // Misma regla de fuentes canónicas que src/services/assistant.
+  const source = canonicalSource(metadata.source);
+  if (!isKnownSource(source)) {
+    log.warn('Fuente fuera del catálogo canónico: "%s" (se envía tal cual)', source);
+  }
+  const body = JSON.stringify({ ...metadata, source });
   let lastErr: string | null = null;
   const maxRetries = cfg.ingestMaxRetries;
 
