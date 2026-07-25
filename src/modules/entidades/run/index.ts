@@ -296,6 +296,7 @@ export async function run(options: EntidadesOptions, log: Logger): Promise<void>
   const added: CatalogEntity[] = [];
   const renames: Array<{ catalog: string; gobpe: string }> = [];
   let inferred = 0;
+  let acronymsFilled = 0;
 
   for (const inst of scraped) {
     const key = normalize(inst.name);
@@ -304,6 +305,14 @@ export async function run(options: EntidadesOptions, log: Logger): Promise<void>
       matchedKeys.add(normalize(match.name));
       if (match.name !== inst.name) {
         renames.push({ catalog: match.name, gobpe: inst.name });
+      }
+      // Enriquecimiento ADITIVO: las 2.035 entidades originales casi no traen
+      // sigla y gob.pe sí ("Ministerio de la Producción - PRODUCE"). Completar
+      // la sigla faltante habilita el match por sigla del emisor (los sectores
+      // de SPIJ suelen ser la sigla a secas). El nombre y el id no se tocan.
+      if (!match.acronym && inst.acronym) {
+        match.acronym = inst.acronym;
+        acronymsFilled++;
       }
       continue;
     }
@@ -332,6 +341,7 @@ export async function run(options: EntidadesOptions, log: Logger): Promise<void>
     coinciden: matchedKeys.size,
     nuevas: added.length,
     nuevas_con_subgrupo_inferido: inferred,
+    siglas_completadas_en_existentes: acronymsFilled,
     nuevas_sin_subgrupo: added.length - inferred,
     renombres_sugeridos_no_aplicados: renames.length,
     en_catalogo_pero_no_en_gobpe: missingFromGobpe.length,
