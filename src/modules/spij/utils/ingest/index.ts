@@ -1,7 +1,7 @@
 import * as classifier from "../classifier";
 import * as config from "../../config";
 import * as spijApi from "../../services/spij";
-import { analizarNorma } from "../../services/llm";
+import { analizarNorma, elegirEntidad } from "../../services/llm";
 import { ingestRequest } from "../../services/assistant";
 import * as render from "../../../../utils/render";
 import * as store from "../store";
@@ -17,12 +17,19 @@ import type {
   Doc,
   IngestData,
   IngestResult,
+  Metadata,
   Sem,
   StoredRecord,
 } from "../../types";
 
 export interface NormaClasificada {
   area: Area;
+  /**
+   * true = la IA no clasificó (fallo o subId fuera del catálogo) y el área es
+   * la por defecto ("Derecho administrativo"). Queda como warning en el ledger
+   * para poder medir la tasa real de acierto y reclasificar después.
+   */
+  areaFallback: boolean;
   concepts: string[];
   references: string[];
 }
@@ -33,12 +40,39 @@ export async function classifyLegalArea(
 ): Promise<NormaClasificada> {
   const texto = textoParaClasificar(sumilla, html);
   const analisis = await analizarNorma(texto, optionsText());
-  const area = resolve(analisis.subId) || defaultResolved();
+  const resolved = resolve(analisis.subId);
   return {
-    area,
+    area: resolved ?? defaultResolved(),
+    areaFallback: resolved === null,
     concepts: analisis.concepts,
     references: analisis.references,
   };
+}
+
+/**
+ * Fallback de emisor con IA (decisión de Harry, ver docs/deuda-tecnica.md A4):
+ * solo cuando el classifier determinista queda unmatched. Groq elige entre los
+ * candidatos con mayor solapamiento de tokens; el resultado se cachea por
+ * sector para no repetir la llamada, y se marca match_confidence="ia".
+ */
+async function resolveEntityIA(ctx: Ctx, sector: string): Promise<Classif | null> {
+  const candidatos = classifier.topCandidates(ctx.idx, sector);
+  if (candidatos.length === 0) {
+    return null;
+  }
+  const id = await elegirEntidad(
+    sector,
+    candidatos.map((c) => ({ id: c.id, name: c.name }))
+  );
+  if (!id) {
+    return null;
+  }
+  const clasif = classifier.classifFromEntityId(ctx.idx, id, "ia");
+  if (clasif) {
+    classifier.cacheSet(ctx.idx, sector, clasif);
+    ctx.log.info('Sector "%s" resuelto por IA -> %s', sector, clasif.entity_name);
+  }
+  return clasif;
 }
 
 export function prepare(ctx: Ctx): void {
@@ -67,7 +101,7 @@ export async function processOne(ctx: Ctx, doc: Doc, sem: Sem): Promise<void> {
 
 export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
   const { cfg, log, stats } = ctx;
-  const clasif = classifier.classify(ctx.idx, doc.sector || "");
+  let clasif = classifier.classify(ctx.idx, doc.sector || "");
 
   if (!doc.publishedAt) {
 
@@ -84,13 +118,20 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
   const filename = `${sanitize(doc.code || doc.id, 60)}.pdf`;
 
   let area: Area | null = null;
+  let areaFallback = false;
+  let meta: Metadata | null = null;
   let result: IngestResult;
   try {
     const html = await spijApi.descargarWord(ctx.api, doc.id!);
     if (!html || !html.trim()) throw new Error("contenido vacío");
     const analisis = await classifyLegalArea(doc.title, html);
     area = analisis.area;
-    const meta = buildMetadata(
+    areaFallback = analisis.areaFallback;
+    if (!clasif.entity_id && doc.sector) {
+      const porIA = await resolveEntityIA(ctx, doc.sector);
+      if (porIA) clasif = porIA;
+    }
+    meta = buildMetadata(
       doc,
       clasif,
       area,
@@ -130,9 +171,32 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
     );
   }
 
+  let warning: string | null = null;
+
   if (result.ok) {
     stats.descargados += 1;
     const d = result.data;
+    // QA post-ingesta: ingestas aceptadas (200) pero imperfectas quedan
+    // marcadas en el ledger. No se reintenta — el backend no deduplica y
+    // reingestar duplicaría el documento.
+    const problemas: string[] = [];
+    const sentIssuers = meta?.issuer_entity_ids?.length ?? 0;
+    if (sentIssuers > 0 && !d.linked_entities) {
+      // el backend descarta en silencio los UUID que no existen en su BD
+      problemas.push(
+        `emisor no enlazado: se enviaron ${sentIssuers} issuer_entity_ids y el backend enlazó 0`
+      );
+    }
+    if (sentIssuers === 0) {
+      problemas.push("sin entidad emisora (unmatched incluso tras fallback IA)");
+    }
+    if (areaFallback) {
+      problemas.push("area por defecto: la IA no clasificó la subárea");
+    }
+    if (problemas.length > 0) {
+      warning = problemas.join("; ");
+      log.warn("Documento %s: %s", doc.id, warning);
+    }
     log.info(
       "Ingestado %s -> doc=%s chunks=%s paginas=%s entidades=%s",
       doc.id,
@@ -158,6 +222,7 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
     data: result.data,
     status: result.status,
     area,
+    warning,
   });
 }
 
@@ -172,11 +237,13 @@ export function record(
     data: IngestData;
     status?: number | null;
     area?: Area | null;
+    warning?: string | null;
   }
 ): void {
   const { ok, permanent, error, data } = opts;
   const status = opts.status ?? null;
   const area = opts.area ?? null;
+  const warning = opts.warning ?? null;
 
   const rec: StoredRecord = {
     id: doc.id!,
@@ -199,6 +266,7 @@ export function record(
       linked_entities: data.linked_entities ?? null,
       linked_relations: data.linked_relations ?? null,
       error,
+      warning,
       ts: nowTs(),
     },
   };

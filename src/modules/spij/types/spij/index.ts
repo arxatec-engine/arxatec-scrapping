@@ -1,4 +1,5 @@
 import type { Browser } from "puppeteer";
+
 import type { IngestRecord, Logger, Stats, Throttle } from "../../../../types";
 import type { Area } from "../legal_areas";
 
@@ -57,6 +58,13 @@ export interface Doc {
 
 export type RawResult = Record<string, any>;
 
+/** Respuesta del buscador SPIJ (solo los campos que consumimos). */
+export interface BuscarResponse {
+  totalEncontrados?: number | string | null;
+  resultados?: RawResult[] | null;
+  [k: string]: unknown;
+}
+
 export interface Page {
   docs: RawResult[];
   nextCursor: number | null;
@@ -86,6 +94,15 @@ export interface Subgroup {
   name: string;
   group_id: string;
 }
+/** Fila cruda de public/data/entity.json (misma forma que en el assistant). */
+export interface CatalogEntityRow {
+  id: string;
+  name: string;
+  acronym?: string | null;
+  specialist?: string | null;
+  subgroup_id?: string | null;
+}
+
 export interface IndexEntity {
   id: string;
   name: string;
@@ -112,7 +129,12 @@ export interface SectorRaw {
   esPadre?: string;
 }
 
-export type MatchConfidence = "exact" | "fuzzy" | "unmatched";
+/**
+ * "exact"/"fuzzy" = classifier determinista; "ia" = Groq eligió la entidad
+ * entre candidatos del catálogo (fallback aprobado, solo cuando el determinista
+ * queda unmatched); "unmatched" = nadie pudo (documento sin emisor, greppable).
+ */
+export type MatchConfidence = "exact" | "fuzzy" | "ia" | "unmatched";
 export interface Classif {
   group_id: string | null;
   group_name: string | null;
@@ -122,6 +144,10 @@ export interface Classif {
   entity_name: string | null;
   match_confidence: MatchConfidence;
 }
+
+// Metadata, IngestData e IngestResult son el contrato compartido de ingesta y
+// viven en src/types/common (reexportados vía "../../types"): son idénticos para
+// todas las fuentes. Aquí solo quedan los tipos propios de SPIJ.
 
 export interface Ctx {
   cfg: Config;

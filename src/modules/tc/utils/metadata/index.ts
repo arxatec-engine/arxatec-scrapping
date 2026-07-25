@@ -1,3 +1,4 @@
+import { fechaCorta } from "../../../../utils/dates";
 import type { Area, Config, Doc, Metadata } from "../../types";
 
 /** Título legible: "<tipo> <expediente> (<n.º sentencia>)". */
@@ -7,6 +8,20 @@ function buildTitle(doc: Doc): string {
   const sent = doc.sentencia ? ` (${doc.sentencia})` : "";
   const base = [tipo, exp].filter(Boolean).join(" ") + sent;
   return base.trim() || doc.slug || doc.id || "Sentencia del Tribunal Constitucional";
+}
+
+/**
+ * Cita verbatim: título legible + sala + fecha de sentencia (o publicación),
+ * ej. "Sentencia Expediente 00123-2020-PA/TC (123/2021), Sala Primera,
+ * 26-ene-2021".
+ */
+function buildCitation(doc: Doc): string | null {
+  const parts = [
+    buildTitle(doc),
+    doc.sala,
+    fechaCorta(doc.sentenceDate || doc.publishedAt),
+  ].filter((p): p is string => Boolean(p && p.trim()));
+  return parts.length > 0 ? parts.join(", ") : null;
 }
 
 export function buildMetadata(
@@ -35,6 +50,10 @@ export function buildMetadata(
     language: "es",
     published_at: published,
     effective_date: doc.sentenceDate || published,
+    issued_at: doc.sentenceDate || null,
+    citation: buildCitation(doc),
+    court_chamber: doc.sala || null,
+    origin_district: doc.distrito || null,
     keywords: [doc.sala, doc.distrito, doc.tipo, doc.sentido].filter(
       (k): k is string => Boolean(k)
     ),

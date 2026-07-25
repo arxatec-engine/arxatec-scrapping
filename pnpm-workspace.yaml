@@ -1,0 +1,7 @@
+# pnpm 11 pide decidir explícitamente qué deps pueden correr build scripts.
+# esbuild: su binario ya está presente (tsx funciona) — no hace falta construir.
+# puppeteer: descargaría Chromium (~150MB); solo lo necesita el módulo SPIJ, no PJ.
+#   Cuando toque correr SPIJ, poner puppeteer: true y `pnpm install` (baja Chromium).
+allowBuilds:
+  esbuild: false
+  puppeteer: false

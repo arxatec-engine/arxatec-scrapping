@@ -118,9 +118,9 @@ export async function fetchPage(
   let delay = cfg.backoffBase;
   for (let intento = 1; intento <= PAGE_MAX_RETRIES; intento++) {
     try {
-      const data: any = await buscar(api, cursor, cursor + cfg.pageSize);
-      const total = parseInt(String(data?.totalEncontrados ?? "0"), 10) || 0;
-      const docs: RawResult[] = data?.resultados || [];
+      const data = await buscar(api, cursor, cursor + cfg.pageSize);
+      const total = parseInt(String(data.totalEncontrados ?? "0"), 10) || 0;
+      const docs: RawResult[] = data.resultados ?? [];
       const nxt = cursor + cfg.pageSize;
       const nextCursor = docs.length && nxt < total ? nxt : null;
       return { docs, nextCursor, total };

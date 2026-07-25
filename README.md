@@ -1,98 +1,115 @@
-# Arxatec Scraping (TypeScript)
+# arxatec-scrapping
 
-**TLDR** — Scrapers de fuentes jurídicas públicas del Perú. Cada fuente es un
-**módulo** en `src/modules/<fuente>` con su propio subcomando. Todos siguen el
-mismo flujo: recorren los documentos, descargan el PDF, clasifican (emisor
-determinista + área legal con IA) y hacen `POST` a la API `legal_documents/ingest`.
-TypeScript, solo **funciones e interfaces**, sin clases.
+Scrapers de **fuentes legales públicas del Perú** para poblar la base documental
+de Arxatec (objetivo: de ~10k a **+1M de documentos**). Arquitectura: **un módulo
+por fuente** en `src/modules/`, con un subcomando CLI por módulo; todos arman el
+**mismo JSON de contrato** y hacen POST al mismo endpoint de ingesta del backend
+`arxatec-lawyer-assistant` (`POST /legal-documents/ingest`).
 
-Módulos disponibles:
+Módulos: **`spij`** (SPIJ/MINJUS, normativa) y **`pj`** (Poder Judicial,
+jurisprudencia sistematizada). Siguiente fuente prevista: Tribunal Constitucional.
 
-- **`spij`** — SPIJ (Sistema Peruano de Información Jurídica, MINJUS). Normas y
-  jurisprudencia. Descarga el HTML de cada norma y lo convierte a PDF con
-  Puppeteer.
-- **`tc`** — Tribunal Constitucional (jurisprudencia sistematizada). Sentencias,
-  autos y resoluciones. Descarga el PDF directo desde `tc.gob.pe` (sin navegador).
+> 📚 **Contexto completo en [`docs/README.md`](./docs/README.md)**: estrategia de
+> fuentes, plan del módulo PJ y deuda técnica. Si llegas de cero, empieza ahí.
 
 ## Instalar y correr
+
 ```bash
-npm install                      # deps (Puppeteer baja Chromium la 1ª vez, solo lo usa spij)
-
-npm run spij                     # scraper SPIJ  (= tsx src/cli.ts spij)
-npm run tc                       # scraper Tribunal Constitucional (= tsx src/cli.ts tc)
-
-npm run tc -- --limit 20         # prueba: solo 20 documentos nuevos
-SPIJ_LIMIT=20 npm run spij       # equivalente por variable de entorno
-```
-La config sale del **`.env`** (se carga solo): `INGEST_BASE_URL`, `INGEST_TOKEN`
-(se manda como `x-assistant-token`), `GROQ_API_KEY`, `LLM_MODEL`. Ver `.env.example`.
-
-## Flujo (común a todos los módulos)
-```
-1. buscar/paginar documentos       4. armar JSON (IA + scraping + constantes)
-2. descargar contenido/PDF         5. POST /ingest (S3 + relacional + Qdrant)
-3. clasificar:                     6. registrar en ledger → siguiente
-   - emisor      → determinista (entidad → issuer_entity_ids)
-   - legal_area  → IA Groq (texto del documento → subárea del catálogo)
+pnpm install                     # deps (Puppeteer baja Chromium la 1ª vez)
+pnpm run ingest                  # corre el módulo SPIJ (= tsx src/cli.ts spij)
+SPIJ_LIMIT=20 pnpm run ingest    # prueba con solo 20 documentos (SPIJ)
+pnpm run cli -- pj --limit 10    # Poder Judicial: jurisprudencia (prueba con 10)
 ```
 
-### Detalle por fuente
-- **SPIJ**: autentica (back + solr), pagina `POST /api/buscar`, baja el HTML con
-  `/api/procesarword/{id}`, lo renderiza a PDF (Puppeteer) y clasifica el emisor
-  contra `entity.json` (match exacto/fuzzy + cadena de sectores).
-- **TC**: usa el backend REST público `jurisbackend.sedetc.gob.pe/api/visitor`.
-  Recorre el corpus completo (~73k) con la búsqueda cronológica mes a mes
-  (`/sentencia/busqueda/cronologico?fecha_publicacion=YYYY-MM`), ya que la
-  búsqueda general topa en 10 000 por el límite de Elasticsearch. El PDF sale de
-  `url_archivo`. El emisor es fijo (Tribunal Constitucional, resuelto una vez
-  contra `entity.json`).
+> El package manager del repo es **pnpm** (`pnpm-lock.yaml`). Los scripts `npm run`
+> también funcionan, pero usa pnpm para instalar y así respetar el lockfile.
+
+La config sale del **`.env`** de la raíz (se carga solo; ver `.env.example`):
+`INGEST_BASE_URL`, `INGEST_TOKEN` (va como header `x-assistant-token`),
+`GROQ_API_KEY`, `LLM_MODEL`.
+
+## Flujo del módulo SPIJ
+
+```
+1. autentica contra SPIJ y carga catálogos (public/data/*.json)
+2. pagina resultados por cursor; semáforo de concurrencia
+3. por cada documento:
+   - emisor      → determinista (utils/classifier) → issuer_entity_ids
+   - legal_area  → IA Groq elige subárea del catálogo cerrado legal_areas.json
+   - HTML → PDF con Puppeteer (SPIJ no da PDF)
+   - POST multipart al endpoint de ingesta (metadata como string + PDF)
+4. ledger + checkpoint por página; al final, hasta 4 pasadas de reintento
+```
 
 ## Estructura
+
 ```
 src/
-├── cli.ts                entry: registra un subcomando por módulo (spij, tc)
-├── config/               carga .env (dotenv + env-var)
-├── constants/env/        nombres de variables de entorno
-├── types/                interfaces compartidas (Metadata, IngestResult, Stats…)
-├── services/             servicios compartidos
-│   ├── ingest/           cliente del endpoint legal_documents/ingest (multipart)
-│   └── llm/              Groq: texto → subárea + concepts + references
-├── utils/                genérico: http, render (Puppeteer), text, time, log
+├── cli.ts                    entry: un subcomando por módulo (commander)
+├── config/ constants/        carga de .env y nombres de variables (SPIJ_/PJ_/INGEST_)
+├── types/                    tipos compartidos: Logger, LegalDocumentType,
+│                             Metadata (contrato de ingesta), IngestResult…
+├── services/assistant/       cliente de ingesta compartido (POST /ingest)
+├── utils/                    genérico: http (throttle+retry), log, render
+│                             (Puppeteer HTML→PDF), store (ledger/checkpoint),
+│                             text, time
 └── modules/
-    ├── spij/             flujo SPIJ (config, constants, services, utils, run)
-    └── tc/               flujo Tribunal Constitucional
-        ├── config/       .env → Config
-        ├── constants/    endpoints, headers, mes inicial, emisor
-        ├── services/tc/  buscar cronológico + parse + descargar PDF
-        ├── utils/        ingest, metadata, issuer, store, stats
-        └── run/          orquesta: reanudación, paginación por mes, concurrencia
-public/data/  groups.json subgroups.json entity.json legal_areas.json
+    ├── spij/                 SPIJ (normativa): API JSON + classifier + Groq
+    └── pj/                   Poder Judicial (jurisprudencia): crawler HTML
+        ├── config/ constants/  env PJ_* / INGEST_* → Config; árbol, headers
+        ├── types/              Config, PjDoc, Leaf, TreeNode, ledger…
+        ├── services/pj/        fetchHtml (cookie jar) + downloadPdf
+        ├── utils/              crawler (BFS árbol + paginación), parse (cheerio),
+        │                       catalog (emisor + área por materia), metadata, ingest, stats
+        └── run/                orquestador: reanudación por ledger, resumen
+public/data/                  catálogos (groups, subgroups, entity, legal_areas)
+                              — copia de app/seed/legal_documents/tipos/ del
+                              assistant, que es la fuente de verdad
+docs/                         estrategia, plan PJ, deuda técnica (ver índice)
+state/<módulo>/               ledger.jsonl + checkpoint.json + log (gitignored)
 ```
 
+Cada fuente = un módulo en `src/modules/`; todos arman el mismo `Metadata` y usan
+el mismo `src/services/assistant`. SPIJ genera PDF con Puppeteer (la fuente da
+HTML); PJ descarga el PDF ya listo. SPIJ clasifica emisor/área con classifier+IA;
+PJ los deriva del árbol (emisor constante, materia del breadcrumb).
+
 ## Scripts npm
+
 | script | qué hace |
 | --- | --- |
-| `npm run spij` | corre el scraper SPIJ |
-| `npm run tc` | corre el scraper del Tribunal Constitucional |
-| `npm run ingest` | alias de `spij` (compatibilidad) |
-| `npm run cli` | CLI cruda (`tsx src/cli.ts <subcomando>`) |
+| `npm run ingest` | corre el módulo `spij` |
+| `npm run cli -- <módulo> [flags]` | CLI genérico (hoy solo `spij`) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run build` | `tsc` |
 
 ## Variables de entorno
-| variable | descripción |
+
+| | |
 | --- | --- |
-| `INGEST_BASE_URL` / `INGEST_TOKEN` | API de ingesta (obligatoria la URL) |
-| `INGEST_PATH` | ruta del endpoint (por defecto `/legal-documents/ingest`) |
+| `INGEST_BASE_URL` / `INGEST_PATH` / `INGEST_TOKEN` | endpoint de ingesta del assistant |
+| `INGEST_COUNTRY` / `INGEST_SOURCE` / `INGEST_STATUS` | metadata fija del módulo (defaults SPIJ: `PE` / `SPIJ` / `Vigente`) |
+| `INGEST_TIMEOUT` / `INGEST_MAX_RETRIES` | red de la ingesta |
 | `GROQ_API_KEY` / `LLM_MODEL` | clasificación de `legal_area` con IA |
-| `SPIJ_LIMIT` / `TC_LIMIT` | tope de documentos nuevos (pruebas) |
-| `SPIJ_TIPO` | `NR` (normativa, por defecto) o `JR` (jurisprudencia) |
-| `TC_START_MONTH` / `TC_END_MONTH` | rango de meses a recorrer (`YYYY-MM`; por defecto desde `1996-01` hasta el mes actual) |
-| `TC_CONCURRENCY` / `TC_DELAY` | concurrencia y delay entre requests del módulo TC |
+| `SPIJ_LIMIT` / `PJ_LIMIT` | tope de documentos por módulo (pruebas; sin él corre todo) |
+| `SPIJ_TIPO` | `NR` (normativa, default) o `JR` |
+| `SPIJ_INGEST_CONCURRENCY` / `SPIJ_INGEST_DELAY` / `SPIJ_PAGE_SIZE` | ritmo SPIJ |
+| `PJ_CONCURRENCY` / `PJ_DELAY` / `PJ_UA` | ritmo y User-Agent del módulo PJ |
+| `SPIJ_USER` / `SPIJ_CLAVE` / `SPIJ_TIPO_ACCESO` / `SPIJ_HISTORICO` / `SPIJ_DISP` / `SPIJ_FECHA_INI` / `SPIJ_FECHA_FIN` / `SPIJ_UA` | acceso y filtros SPIJ |
 
 ## Estado / reanudación
-Para continuar una corrida interrumpida, vuelve a ejecutar el **mismo comando**:
-salta los documentos ya completados (dedupe por `id`) y reanuda desde el checkpoint.
-El estado de cada módulo vive en `state/<fuente>_ingest/`
-(`ledger.jsonl`, `checkpoint.json`, `scraper.log`). En TC el checkpoint guarda el
-mes y la página del recorrido cronológico.
+
+Para continuar una corrida interrumpida, ejecuta el **mismo comando**: salta los
+documentos ya completados (dedupe por `id` en el ledger) y reanuda desde el
+checkpoint. Estado en `state/spij_ingest/` (`ledger.jsonl`, `checkpoint.json`).
+
+⚠️ El ledger es **la única** defensa contra duplicados: el backend no deduplica
+(ver `docs/deuda-tecnica.md` §A1). No borres `state/` de una corrida ya ingestada.
+
+## Convenciones (no romper)
+
+- Un módulo por fuente en `src/modules/<fuente>/`, subcomando propio en `src/cli.ts`.
+- Solo **funciones e interfaces**, sin clases. TypeScript ESM ejecutado con `tsx`.
+- Cada módulo es reanudable (ledger + checkpoint) y aislado: uno roto no tumba el resto.
+- El campo `type` del contrato usa el union `LegalDocumentType` (`src/types/common/`);
+  no mandes strings sueltos.

@@ -1,5 +1,17 @@
+import { fechaCorta } from "../../../../utils/dates";
 import { stripHtml } from "../../../../utils/text";
 import type { Area, Classif, Config, Doc, Metadata } from "../../types";
+
+/**
+ * Cita de normativa: el título legal ES la cita ("Ley N.° 30225 - ...");
+ * se añade la fecha de publicación legible cuando existe. Sala/distrito no
+ * aplican a normativa (quedan null).
+ */
+function buildCitation(title: string, published: string | null): string | null {
+  if (!title) return null;
+  const fecha = fechaCorta(published);
+  return fecha ? `${title}, ${fecha}` : title;
+}
 
 export function buildMetadata(
   doc: Doc,
@@ -31,6 +43,9 @@ export function buildMetadata(
     language: "es",
     published_at: published,
     effective_date: published,
+    citation: buildCitation(title, published),
+    court_chamber: null,
+    origin_district: null,
     keywords: [dispositivo, doc.sector].filter((k): k is string => Boolean(k)),
     concepts,
     references,

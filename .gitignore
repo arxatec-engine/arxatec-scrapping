@@ -3,7 +3,8 @@ output/
 documentos.json
 checkpoint.json
 scraper.log
-state/          # estado por fuente (otras_entidades, etc.)
+# estado por fuente (ledger/checkpoint/log de cada módulo)
+state/
 *.tmp
 
 # Python

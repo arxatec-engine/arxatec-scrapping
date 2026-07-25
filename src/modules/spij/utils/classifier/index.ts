@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 
 import type {
+  CatalogEntityRow,
   Classif,
   Group,
   Index,
@@ -60,18 +61,18 @@ export function tokens(s: string | null | undefined): Set<string> {
   return out;
 }
 
-function _read(path: string): any[] {
-  const data = JSON.parse(readFileSync(path, "utf-8"));
+function _read(path: string): unknown[] {
+  const data: unknown = JSON.parse(readFileSync(path, "utf-8"));
 
   if (
     data &&
     typeof data === "object" &&
     !Array.isArray(data) &&
-    "data" in data
+    Array.isArray((data as { data?: unknown }).data)
   ) {
-    return (data as any).data;
+    return (data as { data: unknown[] }).data;
   }
-  return data;
+  return Array.isArray(data) ? data : [];
 }
 
 export function load(
@@ -81,7 +82,7 @@ export function load(
 ): Index {
   const groups = _read(groupsPath) as Group[];
   const subgroups = _read(subgroupsPath) as Subgroup[];
-  const entities = _read(entityPath) as any[];
+  const entities = _read(entityPath) as CatalogEntityRow[];
 
   const exact: Record<string, IndexEntity> = {};
   const ents: IndexEntity[] = [];
@@ -145,6 +146,50 @@ export function classify(idx: Index, sector: string): Classif {
   const result = _classify(idx, key);
   idx.cache[key] = result;
   return result;
+}
+
+/**
+ * Candidatos por solapamiento de tokens SIN los umbrales de _bestEntity: la
+ * lista corta que se le pasa a la IA cuando el matching determinista queda
+ * unmatched (el catálogo completo, 2.035 entidades, no cabe en un prompt).
+ */
+export function topCandidates(
+  idx: Index,
+  sector: string,
+  n = 15
+): IndexEntity[] {
+  const stoks = tokens(sector);
+  if (stoks.size === 0) {
+    return [];
+  }
+  const scored: Array<[number, number, IndexEntity]> = [];
+  for (const e of idx.entities) {
+    if (e.tokens.size === 0) {
+      continue;
+    }
+    const inter = _interSize(stoks, e.tokens);
+    if (inter === 0) {
+      continue;
+    }
+    scored.push([inter / stoks.size, inter / e.tokens.size, e]);
+  }
+  scored.sort((a, b) => b[0] - a[0] || b[1] - a[1]);
+  return scored.slice(0, n).map((s) => s[2]);
+}
+
+/** Construye la clasificación a partir de un id del catálogo (para el fallback IA). */
+export function classifFromEntityId(
+  idx: Index,
+  entityId: string,
+  conf: MatchConfidence
+): Classif | null {
+  const rec = idx.entities.find((e) => e.id === entityId);
+  return rec ? _fromEntity(idx, rec, conf) : null;
+}
+
+/** Sobrescribe el cache por sector (los siguientes docs del mismo sector no repiten la llamada IA). */
+export function cacheSet(idx: Index, sector: string, clasif: Classif): void {
+  idx.cache[normalize(sector)] = clasif;
 }
 
 function _classify(idx: Index, key: string): Classif {
