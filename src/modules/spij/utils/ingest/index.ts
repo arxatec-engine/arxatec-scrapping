@@ -131,6 +131,15 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
       const porIA = await resolveEntityIA(ctx, doc.sector);
       if (porIA) clasif = porIA;
     }
+    // Sectores genéricos ("INSTITUCIONES EDUCATIVAS"): el emisor real está en
+    // el título, no en el sector. Match determinista, sin IA y sin cache.
+    if (!clasif.entity_id && doc.title) {
+      const porTitulo = classifier.bestEntityInText(ctx.idx, doc.title);
+      if (porTitulo) {
+        clasif = porTitulo;
+        log.info('Emisor resuelto desde el título -> %s', porTitulo.entity_name);
+      }
+    }
     meta = buildMetadata(
       doc,
       clasif,

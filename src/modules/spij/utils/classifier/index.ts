@@ -177,6 +177,51 @@ export function topCandidates(
   return scored.slice(0, n).map((s) => s[2]);
 }
 
+/** Entidades muy cortas ("Ministerio Público") matchean por accidente en texto libre. */
+const TEXT_ENTITY_MIN_TOKENS = 3;
+
+/**
+ * Match determinista del emisor DENTRO de un texto libre (título/sumilla).
+ *
+ * Para los sectores genéricos de SPIJ ("INSTITUCIONES EDUCATIVAS", ...) el
+ * nombre real del emisor no está en el sector sino en el título de la norma
+ * ("Autorizan viaje de docente de la Universidad Nacional Intercultural de
+ * Quillabamba..."). Se exige que el texto cubra ≥ COV_ENTITY_MIN de los tokens
+ * de la entidad y que esta tenga ≥ TEXT_ENTITY_MIN_TOKENS (los nombres cortos
+ * aparecerían por accidente). Ante empate gana la entidad MÁS específica (más
+ * tokens). SIN cache: el título es único por documento — cachear por sector
+ * aquí untaría un emisor concreto a todo el cajón genérico.
+ */
+export function bestEntityInText(idx: Index, text: string): Classif | null {
+  const ttoks = tokens(text);
+  if (ttoks.size === 0) {
+    return null;
+  }
+  let best: IndexEntity | null = null;
+  let bestCov = 0;
+  for (const e of idx.entities) {
+    if (!e.subgroup_id || e.tokens.size < TEXT_ENTITY_MIN_TOKENS) {
+      continue;
+    }
+    const inter = _interSize(e.tokens, ttoks);
+    if (inter === 0) {
+      continue;
+    }
+    const cov = inter / e.tokens.size;
+    const better =
+      cov > bestCov ||
+      (cov === bestCov && best !== null && e.tokens.size > best.tokens.size);
+    if (better) {
+      best = e;
+      bestCov = cov;
+    }
+  }
+  if (!best || bestCov < COV_ENTITY_MIN) {
+    return null;
+  }
+  return classifFromEntityId(idx, best.id, "fuzzy");
+}
+
 /** Construye la clasificación a partir de un id del catálogo (para el fallback IA). */
 export function classifFromEntityId(
   idx: Index,
