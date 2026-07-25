@@ -1,3 +1,5 @@
+import { mkdirSync } from "node:fs";
+
 import { Command } from "commander";
 
 import { config as spijConfig } from "./modules/spij/config";
@@ -6,6 +8,7 @@ import { config as pjConfig } from "./modules/pj/config";
 import { run as pjRun } from "./modules/pj/run";
 import { config as tcConfig } from "./modules/tc/config";
 import { run as tcRun } from "./modules/tc/run";
+import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 
 async function runSpij(opts: { limit?: string }): Promise<void> {
@@ -53,6 +56,35 @@ async function runTc(opts: { limit?: string }): Promise<void> {
   }
 }
 
+async function runEntidades(opts: {
+  dry?: boolean;
+  sync?: boolean;
+  limit?: string;
+  delay?: string;
+}): Promise<void> {
+  mkdirSync("state/entidades", { recursive: true });
+  const log = setupLogging("state/entidades/scraper.log");
+  const syncDir = opts.sync
+    ? process.env.ENTIDADES_ASSISTANT_TIPOS ??
+      "../arxatec-lawyer-assistant/app/seed/legal_documents/tipos"
+    : null;
+  try {
+    await entidadesRun(
+      {
+        dry: Boolean(opts.dry),
+        maxPages: opts.limit ? Number(opts.limit) : null,
+        delayMs: opts.delay ? Number(opts.delay) * 1000 : 400,
+        syncDir,
+      },
+      log
+    );
+  } catch (e) {
+    log.error("La corrida terminó por un error. Re-ejecutable con el mismo comando.");
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
 const program = new Command();
 
 program
@@ -79,5 +111,20 @@ program
   )
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .action(runTc);
+
+program
+  .command("entidades")
+  .description(
+    "Directorio oficial de entidades (gob.pe): refresca public/data/entity.json " +
+      "preservando ids (merge aditivo con reporte)."
+  )
+  .option("--dry", "solo reporte, no escribe entity.json")
+  .option(
+    "--sync",
+    "escribe también el seed del assistant (ENTIDADES_ASSISTANT_TIPOS o ../arxatec-lawyer-assistant)"
+  )
+  .option("--limit <n>", "tope de páginas del buscador (pruebas)")
+  .option("--delay <s>", "pausa entre requests en segundos (default 0.4)")
+  .action(runEntidades);
 
 program.parseAsync(process.argv);

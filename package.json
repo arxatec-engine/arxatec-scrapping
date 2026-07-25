@@ -1,7 +1,7 @@
 {
   "name": "arxatec-scrapping",
   "version": "1.0.0",
-  "description": "Scraper SPIJ (MINJUS Perú) — puerto TypeScript del scraper Python.",
+  "description": "Scraper SPIJ (MINJUS Per\u00fa) \u2014 puerto TypeScript del scraper Python.",
   "type": "module",
   "private": true,
   "engines": {
@@ -14,7 +14,8 @@
     "spij": "tsx src/cli.ts spij",
     "pj": "tsx src/cli.ts pj",
     "tc": "tsx src/cli.ts tc",
-    "ingest": "tsx src/cli.ts spij"
+    "ingest": "tsx src/cli.ts spij",
+    "entidades": "tsx src/cli.ts entidades"
   },
   "dependencies": {
     "axios": "^1.18.1",
