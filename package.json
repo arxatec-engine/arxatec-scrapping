@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/services/sources/index.test.ts src/modules/spij/utils/classifier/index.test.ts",
     "cli": "tsx src/cli.ts",
     "spij": "tsx src/cli.ts spij",
     "pj": "tsx src/cli.ts pj",

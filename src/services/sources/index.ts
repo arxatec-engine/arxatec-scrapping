@@ -78,7 +78,13 @@ function fold(value: string): string {
     .trim();
 }
 
-const CANONICAL_BY_ALIAS = new Map<string, string>();
+/**
+ * Mapa completo de resolución (alias y canónicos plegados → canónico).
+ * Exportado únicamente para el test de sincronía entre repos (huella
+ * compartida con assistant/platform); el código de producto debe pasar por
+ * `canonicalSource`.
+ */
+export const CANONICAL_BY_ALIAS = new Map<string, string>();
 for (const source of LEGAL_SOURCES) {
   CANONICAL_BY_ALIAS.set(fold(source.canonicalName), source.canonicalName);
   for (const alias of source.aliases) {
