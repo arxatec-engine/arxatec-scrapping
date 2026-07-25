@@ -69,7 +69,9 @@ async function resolveEntityIA(ctx: Ctx, sector: string): Promise<Classif | null
   }
   const clasif = classifier.classifFromEntityId(ctx.idx, id, "ia");
   if (clasif) {
-    classifier.cacheSet(ctx.idx, sector, clasif);
+    // SIN cacheSet: la IA solo llega aquí con sectores raros o GENÉRICOS
+    // (los legítimos resuelven determinista antes), y cachear por sector
+    // untaría un emisor concreto a todos los documentos del cajón.
     ctx.log.info('Sector "%s" resuelto por IA -> %s', sector, clasif.entity_name);
   }
   return clasif;
@@ -127,6 +129,27 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
     const analisis = await classifyLegalArea(doc.title, html);
     area = analisis.area;
     areaFallback = analisis.areaFallback;
+    // Sector = sigla oficial a secas ("PRODUCE", "MINEDU"): match exacto por
+    // sigla única del catálogo, antes que el título y que la IA.
+    if (!clasif.entity_id && doc.sector) {
+      const porSigla = classifier.entityByAcronym(ctx.idx, doc.sector);
+      if (porSigla) {
+        clasif = porSigla;
+        log.info('Emisor resuelto por sigla del sector -> %s', porSigla.entity_name);
+      }
+    }
+    // ORDEN DELIBERADO: el match determinista por TÍTULO va ANTES que la IA
+    // por sector. En sectores genéricos ("INSTITUCIONES EDUCATIVAS") el emisor
+    // real está en el título; la IA sobre el sector genérico elige candidatos
+    // por solapamiento débil de tokens (verificado: vinculó "Dirección General
+    // de Tecnologías Educativas" a resoluciones de tres universidades).
+    if (!clasif.entity_id && doc.title) {
+      const porTitulo = classifier.bestEntityInText(ctx.idx, doc.title);
+      if (porTitulo) {
+        clasif = porTitulo;
+        log.info('Emisor resuelto desde el título -> %s', porTitulo.entity_name);
+      }
+    }
     if (!clasif.entity_id && doc.sector) {
       const porIA = await resolveEntityIA(ctx, doc.sector);
       if (porIA) clasif = porIA;

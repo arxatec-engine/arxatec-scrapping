@@ -85,29 +85,31 @@ con decisiones de diseño/UX que probablemente quieras definir tú.
 - **Comando:** `pnpm run cli -- pj` (ya arreglado el pre-chequeo de pnpm vía
   `pnpm-workspace.yaml`). Con `PJ_ROOT` en el `.env` trae los 11 de "Concurrencia".
 
-## Contrato de fuentes canónicas (¡el `source` debe cruzar con el filtro!)
+## Contrato de fuentes canónicas (catálogo central con alias)
 
-El filtro "Fuentes" de la plataforma (`arxatec-lawyer-platform`,
-`src/types/legal_documents/index.ts` → `LEGAL_SOURCE`) hace **match EXACTO** contra
-`documents.source` (`legal_documents/list/repository.py`:
-`model.source == filters.source`). Si el scraper manda otro string, el documento
-**no aparece al filtrar por esa fuente** (solo en "Todas las fuentes"). Cada módulo
-DEBE mandar el valor canónico exacto:
+La regla vive en `src/services/sources/index.ts` (espejos: assistant
+`app/storage/legal_documents/shared/sources.py` y platform
+`src/types/legal_documents`). Tres piezas por fuente: `key` (id técnico del
+módulo), `canonicalName` (nombre oficial COMPLETO: lo único que se persiste y
+se muestra) y `aliases` (siglas y variantes históricas: solo para
+detección/búsqueda). Los clientes de ingesta normalizan `metadata.source`
+antes de enviar — una sigla nunca llega a la base — y el backend re-normaliza
+al persistir. Detalle completo en `docs/fuentes-canonicas.md`.
 
-| Módulo/fuente | `source` que debe mandar (LEGAL_SOURCE) |
-| --- | --- |
-| Poder Judicial (pj) | `"Poder judicial"` ✅ aplicado |
-| El Peruano (futuro) | `"Diario oficial el peruano"` |
-| Tribunal Constitucional (futuro) | `"Tribunal constitucional"` |
-| Congreso | `"Congreso de la república"` |
-| MINJUS | `"Ministerio de justicia y derechos humanos"` |
-| Defensoría | `"Defensoría del pueblo"` |
-| JNE | `"Jurado nacional de elecciones"` |
+| key | Nombre canónico (se persiste y muestra) | Alias registrados |
+| --- | --- | --- |
+| `pj` | `Poder Judicial` | `PJ`, `Poder judicial` |
+| `tc` | `Tribunal Constitucional` | `TC`, `Tribunal constitucional` |
+| `spij` | `Sistema Peruano de Información Jurídica` | `SPIJ` |
+| `el_peruano` | `Diario Oficial El Peruano` | `El Peruano`, `Diario oficial el peruano` |
+| `congreso` | `Congreso de la República` | `Congreso`, `Congreso de la república` |
+| `minjus` | `Ministerio de Justicia y Derechos Humanos` | `MINJUS` |
+| `defensoria` | `Defensoría del Pueblo` | — |
+| `jne` | `Jurado Nacional de Elecciones` | `JNE` |
 
-⚠️ **SPIJ manda hoy `"SPIJ"`**, que NO está en `LEGAL_SOURCE` → tampoco cruza el
-filtro. Decisión pendiente: ¿SPIJ mapea a `"Ministerio de justicia y derechos
-humanos"` (es el sistema del MINJUS) o se añade "SPIJ" a `LEGAL_SOURCE` en la
-plataforma? (misma familia de decisión que el `status`, ver `deuda-tecnica.md` A2).
+La antigua decisión pendiente ("¿SPIJ mapea a MINJUS o entra al filtro?") quedó
+resuelta: SPIJ es fuente propia con su nombre oficial completo — agrega
+normativa de muchos emisores y mapearla a un ministerio sería engañoso.
 
 ## Backlog priorizado (lo que queda)
 

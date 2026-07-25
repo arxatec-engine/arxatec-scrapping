@@ -116,6 +116,8 @@ export interface Index {
   subgroup_by_norm: Record<string, Subgroup>;
   entities: IndexEntity[];
   exact: Record<string, IndexEntity>;
+  /** Sigla normalizada → entidad, SOLO siglas sin colisión en el catálogo. */
+  byAcronym?: Map<string, IndexEntity>;
   cache: Record<string, Classif>;
 
   sector_parent: Record<string, string>;

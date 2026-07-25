@@ -16,6 +16,7 @@ import {
 } from "../constants";
 import { REPO_ROOT } from "./paths";
 import type { Config } from "../types";
+import { sourceByKey } from "../../../services/sources";
 
 export * from "./paths";
 
@@ -54,7 +55,10 @@ export function config(): Config {
       .default("5")
       .asIntPositive(),
     ingestCountry: env.get(ENV.INGEST_COUNTRY).default("PE").asString(),
-    ingestSource: env.get(ENV.INGEST_SOURCE).default("TC").asString(),
+    ingestSource: env
+      .get(ENV.INGEST_SOURCE)
+      .default(sourceByKey("tc").canonicalName)
+      .asString(),
     ingestStatus: env.get(ENV.INGEST_STATUS).default("Vigente").asString(),
   };
 }
