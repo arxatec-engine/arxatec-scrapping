@@ -54,7 +54,9 @@ export function config(): Config {
       .default("5")
       .asIntPositive(),
     ingestCountry: env.get(ENV.INGEST_COUNTRY).default("PE").asString(),
-    ingestSource: env.get(ENV.INGEST_SOURCE).default("TC").asString(),
+    // Valor canónico del filtro "Fuentes" de la plataforma (LEGAL_SOURCE.TC):
+    // "TC" a secas no cruza el match exacto y los docs solo salen en "Todas".
+    ingestSource: env.get(ENV.INGEST_SOURCE).default("Tribunal constitucional").asString(),
     ingestStatus: env.get(ENV.INGEST_STATUS).default("Vigente").asString(),
   };
 }
