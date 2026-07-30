@@ -8,6 +8,8 @@ import { config as pjConfig } from "./modules/pj/config";
 import { run as pjRun } from "./modules/pj/run";
 import { config as tcConfig } from "./modules/tc/config";
 import { run as tcRun } from "./modules/tc/run";
+import { config as epConfig } from "./modules/elperuano/config";
+import { run as epRun } from "./modules/elperuano/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 
@@ -47,6 +49,22 @@ async function runTc(opts: { limit?: string }): Promise<void> {
   const log = setupLogging(cfg.logFile);
   try {
     await tcRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runElperuano(opts: { limit?: string; periodo?: string }): Promise<void> {
+  if (opts.limit) process.env.EP_LIMIT = opts.limit;
+  if (opts.periodo) process.env.EP_PERIODO = opts.periodo;
+  const cfg = epConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await epRun(cfg, log);
   } catch (e) {
     log.error(
       "La corrida terminó por un error. Reanudable con el mismo comando."
@@ -126,6 +144,14 @@ const DOC_SCRAPERS: Array<{
     exec: () => {
       const cfg = tcConfig();
       return tcRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "elperuano",
+    limitEnv: "EP_LIMIT",
+    exec: () => {
+      const cfg = epConfig();
+      return epRun(cfg, setupLogging(cfg.logFile));
     },
   },
 ];
@@ -226,6 +252,16 @@ program
   .action(runTc);
 
 program
+  .command("elperuano")
+  .description(
+    "Diario Oficial El Peruano: índice desde el CSV de datosabiertos.gob.pe " +
+      "(Dispositivos Legales) + texto del visor_html, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .option("--periodo <YYYY-MM>", "CSV mensual a procesar (default: el más reciente)")
+  .action(runElperuano);
+
+program
   .command("entidades")
   .description(
     "Directorio oficial de entidades (gob.pe): refresca public/data/entity.json " +
@@ -244,8 +280,8 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos (spij → pj → tc). Módulos aislados: uno roto no " +
-      "tumba el resto; resumen al final."
+      "scraper de documentos (spij → pj → tc → elperuano). Módulos aislados: " +
+      "uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")
   .option("--sync", "entidades escribe también el seed del assistant")
