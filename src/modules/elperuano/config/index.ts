@@ -29,6 +29,7 @@ export function config(): Config {
     progressEvery: PROGRESS_EVERY,
     userAgent: env.get(ENV.EP_UA).default(DEFAULT_USER_AGENT).asString(),
     periodo: env.get(ENV.EP_PERIODO).asString() || null,
+    todos: env.get(ENV.EP_TODOS).default("false").asBool(),
     csvUrl: env.get(ENV.EP_CSV_URL).asString() || null,
     docsPath: join(state, "ledger.jsonl"),
     logFile: join(state, "scraper.log"),

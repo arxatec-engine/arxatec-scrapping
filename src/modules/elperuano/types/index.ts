@@ -25,6 +25,8 @@ export interface Config {
   userAgent: string;
   /** `YYYY-MM` para elegir el CSV mensual del dataset; null = el más reciente. */
   periodo: string | null;
+  /** Campaña: iterar TODOS los recursos del dataset (mensuales+anuales+bulk). */
+  todos: boolean;
   /** URL directa de un CSV del dataset (salta el descubrimiento). */
   csvUrl: string | null;
   docsPath: string;

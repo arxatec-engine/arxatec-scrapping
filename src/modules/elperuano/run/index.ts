@@ -3,7 +3,7 @@ import { basename, join } from "node:path";
 import * as classifier from "../../spij/utils/classifier";
 import * as ingest from "../utils/ingest";
 import { DATA_DIR } from "../config";
-import { downloadCsv, pickCsv } from "../services/datosabiertos";
+import { downloadCsv, pickCsvs, resolveCsvUrl } from "../services/datosabiertos";
 import { decodeCp850, parseRows } from "../utils/csv";
 import { newStats } from "../utils/stats";
 import * as store from "../../../utils/store";
@@ -19,16 +19,9 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
     log.info("Reanudando: %d documentos ya completados.", processed.size);
   }
 
-  // 1. El índice: CSV del dataset de datosabiertos (sin tocar el sitio hostil).
-  const csv = await pickCsv(cfg, log);
-  const bytes = await downloadCsv(cfg, csv.url, log);
-  const docs = parseRows(decodeCp850(bytes), log);
-  log.info(
-    'Índice "%s": %d dispositivos (%d ya completados).',
-    csv.label,
-    docs.length,
-    docs.filter((d) => processed.has(d.op)).length
-  );
+  // 1. El índice: CSVs del dataset de datosabiertos (sin tocar el sitio hostil).
+  //    Un periodo (default/--periodo) o toda la cola histórica (--todos, campaña).
+  const plan = await pickCsvs(cfg, log);
 
   // 2. Catálogos locales (mismos que usa el matcher de todos los módulos).
   const idx = classifier.load(
@@ -50,27 +43,64 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
   };
   ingest.prepare(ctx);
 
+  const opsVistos = new Set<string>();
   try {
     const sem = semaphore(cfg.concurrency);
-    const tasks: Promise<void>[] = [];
     let nuevos = 0;
-    for (const doc of docs) {
-      if (processed.has(doc.op)) continue;
-      processed.add(doc.op);
-      tasks.push(ingest.processOne(ctx, doc, sem));
-      nuevos += 1;
-      if (cfg.limit && nuevos >= cfg.limit) {
+    let topeAlcanzado = false;
+
+    for (const src of plan.sources) {
+      // En campaña un recurso caído no debe tumbar la cola completa: se salta
+      // y la SIGUIENTE pasada del supervisor lo reintenta (todo es idempotente).
+      try {
+        const url =
+          src.url ?? (await resolveCsvUrl(cfg, { pageUrl: src.pageUrl! }, log));
+        if (!url) {
+          log.warn('Recurso "%s" sin .csv aún; se salta.', src.label);
+          continue;
+        }
+        const bytes = await downloadCsv(cfg, url, log);
+        const docs = parseRows(decodeCp850(bytes), log);
+        for (const d of docs) opsVistos.add(d.op);
+        const pendientes = docs.filter((d) => !processed.has(d.op));
+        log.info(
+          'Índice "%s": %d dispositivos, %d por procesar.',
+          src.label,
+          docs.length,
+          pendientes.length
+        );
+
+        const tasks: Promise<void>[] = [];
+        for (const doc of pendientes) {
+          processed.add(doc.op);
+          tasks.push(ingest.processOne(ctx, doc, sem));
+          nuevos += 1;
+          if (cfg.limit && nuevos >= cfg.limit) {
+            topeAlcanzado = true;
+            break;
+          }
+        }
+        await Promise.all(tasks);
+      } catch (e) {
+        log.error(
+          'Recurso "%s" falló (%s); continúo con el siguiente.',
+          src.label,
+          e instanceof Error ? e.message : e
+        );
+      }
+      if (topeAlcanzado) {
         log.info("Tope de prueba alcanzado: %d documentos.", nuevos);
         break;
       }
+      if (plan.soloPrimero) break;
     }
-    await Promise.all(tasks);
+
     await ingest.finalize(ctx, sem);
   } finally {
     await browser.close();
   }
 
-  summary(cfg, log, ctx.stats, docs.length);
+  summary(cfg, log, ctx.stats, opsVistos.size);
 }
 
 function summary(cfg: Config, log: Logger, stats: Stats, total: number): void {
@@ -90,12 +120,12 @@ function summary(cfg: Config, log: Logger, stats: Stats, total: number): void {
 
   const completo = latest.size >= total && pendientes === 0;
   if (completo && stats.procesados === 0) {
-    log.info("✓ NADA NUEVO: el periodo ya estaba completo.");
+    log.info("✓ NADA NUEVO: lo enumerado ya estaba completo.");
   } else if (completo) {
-    log.info("✓ COMPLETO: los %d dispositivos del periodo están listos.", total);
+    log.info("✓ COMPLETO: los %d dispositivos enumerados están listos.", total);
   } else {
     log.info(
-      "⏸ PAUSADO/INCOMPLETO: faltan ~%d del periodo. Re-ejecuta el MISMO comando para continuar.",
+      "⏸ PAUSADO/INCOMPLETO: faltan ~%d de lo enumerado. Re-ejecuta el MISMO comando para continuar.",
       Math.max(0, total - latest.size)
     );
   }

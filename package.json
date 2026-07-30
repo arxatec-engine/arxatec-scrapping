@@ -18,7 +18,8 @@
     "elperuano": "tsx src/cli.ts elperuano",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
-    "all": "tsx src/cli.ts all"
+    "all": "tsx src/cli.ts all",
+    "status": "tsx src/cli.ts status"
   },
   "dependencies": {
     "axios": "^1.18.1",

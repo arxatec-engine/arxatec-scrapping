@@ -29,6 +29,7 @@ export const EP_CONCURRENCY = "EP_CONCURRENCY";
 export const EP_DELAY = "EP_DELAY";
 export const EP_LIMIT = "EP_LIMIT";
 export const EP_PERIODO = "EP_PERIODO";
+export const EP_TODOS = "EP_TODOS";
 export const EP_CSV_URL = "EP_CSV_URL";
 export const EP_UA = "EP_UA";
 

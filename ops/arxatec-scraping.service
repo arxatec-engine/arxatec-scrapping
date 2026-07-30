@@ -1,0 +1,19 @@
+# Unidad systemd de la campaña de scraping (ver docs/campania-vm.md).
+# Instalación en la VM:
+#   sudo cp ops/arxatec-scraping.{service,timer} /etc/systemd/system/
+#   (ajustar WorkingDirectory y User si el repo no vive en /opt/arxatec-scrapping)
+#   sudo systemctl daemon-reload && sudo systemctl enable --now arxatec-scraping.timer
+[Unit]
+Description=Campaña de scraping Arxatec (pasada completa, idempotente por ledger)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=arxatec
+WorkingDirectory=/opt/arxatec-scrapping
+ExecStart=/usr/bin/bash ops/campaign.sh
+# Una pasada completa puede tomar horas/días con el corpus grande: sin timeout.
+TimeoutStartSec=0
+Nice=10
+# El .env del repo (gitignored) lleva INGEST_* y GROQ_API_KEY; dotenv lo carga.

@@ -12,6 +12,8 @@ import { config as epConfig } from "./modules/elperuano/config";
 import { run as epRun } from "./modules/elperuano/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
+import { latestRecords } from "./utils/store";
+import type { IngestRecord } from "./types/ingest";
 
 async function runSpij(opts: { limit?: string }): Promise<void> {
   if (opts.limit) process.env.SPIJ_LIMIT = opts.limit;
@@ -58,9 +60,14 @@ async function runTc(opts: { limit?: string }): Promise<void> {
   }
 }
 
-async function runElperuano(opts: { limit?: string; periodo?: string }): Promise<void> {
+async function runElperuano(opts: {
+  limit?: string;
+  periodo?: string;
+  todos?: boolean;
+}): Promise<void> {
   if (opts.limit) process.env.EP_LIMIT = opts.limit;
   if (opts.periodo) process.env.EP_PERIODO = opts.periodo;
+  if (opts.todos) process.env.EP_TODOS = "true";
   const cfg = epConfig();
   const log = setupLogging(cfg.logFile);
   try {
@@ -114,30 +121,17 @@ function describeError(e: unknown): string {
 
 /**
  * Registro del orquestador `all`: los scrapers de DOCUMENTOS, en el orden en
- * que corren. Al crear un módulo nuevo: añadirlo aquí, registrar su subcomando
- * individual y marcarlo en docs/registro-scraping.md.
+ * que corren — pequeño-primero, para que lo chico quede completo pronto y el
+ * grande (spij) no acapare la corrida; pj al final porque es el frágil (su bot
+ * manager exige IP residencial; en la VM se excluye con --skip pj). Al crear
+ * un módulo nuevo: añadirlo aquí, registrar su subcomando individual y
+ * marcarlo en docs/registro-scraping.md.
  */
 const DOC_SCRAPERS: Array<{
   name: string;
   limitEnv: string;
   exec: () => Promise<void>;
 }> = [
-  {
-    name: "spij",
-    limitEnv: "SPIJ_LIMIT",
-    exec: () => {
-      const cfg = spijConfig();
-      return spijRun(cfg, setupLogging(cfg.logFile));
-    },
-  },
-  {
-    name: "pj",
-    limitEnv: "PJ_LIMIT",
-    exec: () => {
-      const cfg = pjConfig();
-      return pjRun(cfg, setupLogging(cfg.logFile));
-    },
-  },
   {
     name: "tc",
     limitEnv: "TC_LIMIT",
@@ -154,17 +148,57 @@ const DOC_SCRAPERS: Array<{
       return epRun(cfg, setupLogging(cfg.logFile));
     },
   },
+  {
+    name: "spij",
+    limitEnv: "SPIJ_LIMIT",
+    exec: () => {
+      const cfg = spijConfig();
+      return spijRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "pj",
+    limitEnv: "PJ_LIMIT",
+    exec: () => {
+      const cfg = pjConfig();
+      return pjRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
 ];
 
-async function runAll(opts: { limit?: string; sync?: boolean }): Promise<void> {
+async function runAll(opts: {
+  limit?: string;
+  sync?: boolean;
+  todos?: boolean;
+  skip?: string;
+}): Promise<void> {
   mkdirSync("state/all", { recursive: true });
   const log = setupLogging("state/all/scraper.log");
-  const total = DOC_SCRAPERS.length + 1;
+  if (opts.todos) process.env.EP_TODOS = "true";
+  const skip = new Set(
+    (opts.skip ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+  );
+  for (const name of skip) {
+    if (!DOC_SCRAPERS.some((s) => s.name === name)) {
+      log.warn('--skip incluye "%s", que no es un módulo conocido.', name);
+    }
+  }
+  const scrapers = DOC_SCRAPERS.filter((s) => !skip.has(s.name));
+  if (skip.size > 0) {
+    log.info("[all] Módulos excluidos por --skip: %s", [...skip].join(", "));
+  }
+  const total = scrapers.length + 1;
   const resultados: Array<{ name: string; ok: boolean }> = [];
 
   // El catálogo de entidades SIEMPRE va primero: el backend solo vincula
   // emisores cuyos ids ya existan en su Postgres (docs/catalogo-entidades.md §3).
-  log.info("[all] 1/%d entidades — refresco del catálogo (siempre primero).", total);
+  log.info(
+    "[all] 1/%d entidades — refresco del catálogo (siempre primero).",
+    total
+  );
   mkdirSync("state/entidades", { recursive: true });
   try {
     await entidadesRun(
@@ -192,7 +226,7 @@ async function runAll(opts: { limit?: string; sync?: boolean }): Promise<void> {
   }
 
   // Los scrapers de documentos, en orden y aislados: uno roto no tumba el resto.
-  for (const [i, scraper] of DOC_SCRAPERS.entries()) {
+  for (const [i, scraper] of scrapers.entries()) {
     if (opts.limit) process.env[scraper.limitEnv] = opts.limit;
     log.info("[all] %d/%d %s …", i + 2, total, scraper.name);
     try {
@@ -222,6 +256,60 @@ async function runAll(opts: { limit?: string; sync?: boolean }): Promise<void> {
     );
     process.exitCode = 1;
   }
+}
+
+/**
+ * `status`: el vistazo de 10 segundos al avance de la campaña. Lee los ledgers
+ * (todos comparten el sub-registro `ingest`) y el reporte de entidades; no
+ * toca la red ni escribe nada.
+ */
+function runStatus(): void {
+  interface LedgerRow {
+    id: string;
+    ingest?: IngestRecord;
+  }
+  const fuentes: Array<{ name: string; docsPath: string }> = [
+    { name: "tc", docsPath: tcConfig().docsPath },
+    { name: "elperuano", docsPath: epConfig().docsPath },
+    { name: "spij", docsPath: spijConfig().docsPath },
+    { name: "pj", docsPath: pjConfig().docsPath },
+  ];
+  const pad = (v: string | number, w: number) => String(v).padStart(w);
+  console.log(
+    "FUENTE      REGISTRADOS       OK  PENDIENTES  PERMANENTES   WARNINGS"
+  );
+  for (const f of fuentes) {
+    let ok = 0;
+    let pendientes = 0;
+    let permanentes = 0;
+    let warnings = 0;
+    const rows = latestRecords<LedgerRow>(f.docsPath);
+    for (const r of rows.values()) {
+      const ing = r.ingest;
+      if (!ing || !ing.done) pendientes += 1;
+      else if (ing.ok) ok += 1;
+      else permanentes += 1;
+      if (ing?.warning) warnings += 1;
+    }
+    console.log(
+      `${f.name.padEnd(10)}${pad(rows.size, 12)}${pad(ok, 9)}` +
+        `${pad(pendientes, 12)}${pad(permanentes, 13)}${pad(warnings, 11)}`
+    );
+  }
+  try {
+    const report = JSON.parse(
+      readFileSync("state/entidades/report.json", "utf-8")
+    ) as { fecha?: string; gobpe_total?: number; nuevas?: number };
+    console.log(
+      `\nentidades: último refresco ${report.fecha ?? "?"} — ` +
+        `gob.pe listó ${report.gobpe_total ?? "?"}, nuevas ${report.nuevas ?? "?"}.`
+    );
+  } catch {
+    console.log("\nentidades: sin reporte aún (corre `pnpm entidades`).");
+  }
+  console.log(
+    "Detalle por fuente: state/<fuente>/scraper.log · ledger: state/<fuente>/ledger.jsonl"
+  );
 }
 
 const program = new Command();
@@ -259,6 +347,7 @@ program
   )
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .option("--periodo <YYYY-MM>", "CSV mensual a procesar (default: el más reciente)")
+  .option("--todos", "campaña: iterar TODOS los periodos del dataset, reciente-primero")
   .action(runElperuano);
 
 program
@@ -277,14 +366,26 @@ program
   .action(runEntidades);
 
 program
+  .command("status")
+  .description(
+    "Avance por fuente desde los ledgers (registrados/ok/pendientes/permanentes/warnings). No toca la red."
+  )
+  .action(runStatus);
+
+program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos (spij → pj → tc → elperuano). Módulos aislados: " +
-      "uno roto no tumba el resto; resumen al final."
+      "scraper de documentos, pequeño-primero (tc → elperuano → spij → pj). " +
+      "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")
   .option("--sync", "entidades escribe también el seed del assistant")
+  .option("--todos", "elperuano itera TODOS los periodos del dataset (campaña)")
+  .option(
+    "--skip <módulos>",
+    "excluir módulos, separados por coma (p.ej. --skip pj en una VM: su bot manager exige IP residencial)"
+  )
   .action(runAll);
 
 program.parseAsync(process.argv);
