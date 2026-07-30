@@ -25,6 +25,19 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const SUNARP_CONCURRENCY = "SUNARP_CONCURRENCY";
+export const SUNARP_DELAY = "SUNARP_DELAY";
+export const SUNARP_LIMIT = "SUNARP_LIMIT";
+export const SUNARP_TERM = "SUNARP_TERM";
+export const SUNARP_MAX_SHEETS = "SUNARP_MAX_SHEETS";
+export const SUNARP_UA = "SUNARP_UA";
+
+export const TCE_CONCURRENCY = "TCE_CONCURRENCY";
+export const TCE_DELAY = "TCE_DELAY";
+export const TCE_LIMIT = "TCE_LIMIT";
+export const TCE_MAX_SHEETS = "TCE_MAX_SHEETS";
+export const TCE_UA = "TCE_UA";
+
 export const IND_CONCURRENCY = "IND_CONCURRENCY";
 export const IND_DELAY = "IND_DELAY";
 export const IND_LIMIT = "IND_LIMIT";

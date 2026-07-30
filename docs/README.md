@@ -28,6 +28,8 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 10 | [`campania-vm.md`](./campania-vm.md) | **La campaña de 2 meses en la VM.** El millón con los módulos validados (TC+EP+SPIJ ≈ 1.15M), supervisor systemd (`ops/`), `--todos`, `pnpm status`, qué se auto-recupera y qué avisar al owner. |
 | 11 | [`plan-tribunal-fiscal.md`](./plan-tribunal-fiscal.md) | **El primer P3 (hecho).** El MEF está tras Incapsula pero las RTF viven en gob.pe (buscador JSON + PDF CDN); estreno del OCR local compartido (`src/services/ocr`) para escaneados y la tanda P3 de fuentes canónicas. |
 | 12 | [`plan-indecopi.md`](./plan-indecopi.md) | **El segundo P3 (hecho, v1).** INDECOPI vía gob.pe con el cliente compartido `src/services/gobpe`; el buscador Seam de las salas queda como fase 2. |
+| 13 | [`plan-tce.md`](./plan-tce.md) | **El tercer P3 (hecho).** Tribunal de Contrataciones (OECE) vía gob.pe: filtro TCP/TCE+sala sobre 85.7k normas; sala en `court_chamber`. |
+| 14 | [`plan-sunarp.md`](./plan-sunarp.md) | **El cuarto P3 (hecho, cubre 2 filas).** Tribunal Registral y acuerdos de Pleno (SIP caído) vía gob.pe; sede/Pleno en `court_chamber`. |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)
