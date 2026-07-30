@@ -14,6 +14,8 @@ import { config as tfConfig } from "./modules/tfiscal/config";
 import { run as tfRun } from "./modules/tfiscal/run";
 import { config as indConfig } from "./modules/indecopi/config";
 import { run as indRun } from "./modules/indecopi/run";
+import { config as tceConfig } from "./modules/tce/config";
+import { run as tceRun } from "./modules/tce/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -85,6 +87,21 @@ async function runIndecopi(opts: { limit?: string }): Promise<void> {
   const log = setupLogging(cfg.logFile);
   try {
     await indRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runTce(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.TCE_LIMIT = opts.limit;
+  const cfg = tceConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await tceRun(cfg, log);
   } catch (e) {
     log.error(
       "La corrida terminó por un error. Reanudable con el mismo comando."
@@ -188,6 +205,14 @@ const DOC_SCRAPERS: Array<{
     exec: () => {
       const cfg = indConfig();
       return indRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "tce",
+    limitEnv: "TCE_LIMIT",
+    exec: () => {
+      const cfg = tceConfig();
+      return tceRun(cfg, setupLogging(cfg.logFile));
     },
   },
   {
@@ -322,6 +347,7 @@ function runStatus(): void {
     { name: "tc", docsPath: tcConfig().docsPath },
     { name: "tfiscal", docsPath: tfConfig().docsPath },
     { name: "indecopi", docsPath: indConfig().docsPath },
+    { name: "tce", docsPath: tceConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
     { name: "spij", docsPath: spijConfig().docsPath },
     { name: "pj", docsPath: pjConfig().docsPath },
@@ -408,6 +434,14 @@ program
   .action(runIndecopi);
 
 program
+  .command("tce")
+  .description(
+    "Tribunal de Contrataciones (OECE): resoluciones TCP por sala publicadas en gob.pe, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runTce);
+
+program
   .command("elperuano")
   .description(
     "Diario Oficial El Peruano: índice desde el CSV de datosabiertos.gob.pe " +
@@ -444,7 +478,7 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → elperuano → spij → pj). " +
+      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → elperuano → spij → pj). " +
       "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")
