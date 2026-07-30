@@ -20,15 +20,10 @@ export interface Config {
   limit: number | null;
   maxRetries: number;
   backoffBase: number;
-  requestTimeout: number;
   progressEvery: number;
   userAgent: string;
-  /** `YYYY-MM` para elegir el CSV mensual del dataset; null = el más reciente. */
-  periodo: string | null;
-  /** Campaña: iterar TODOS los recursos del dataset (mensuales+anuales+bulk). */
-  todos: boolean;
-  /** URL directa de un CSV del dataset (salta el descubrimiento). */
-  csvUrl: string | null;
+  /** Tope de páginas del buscador (0 = hasta que se acaben). */
+  maxSheets: number;
   docsPath: string;
   logFile: string;
   ingestBaseUrl: string;
@@ -41,28 +36,25 @@ export interface Config {
   ingestStatus: string;
 }
 
-/** Una fila del CSV de Dispositivos Legales, ya decodificada y validada. */
+/** Una resolución/norma de INDECOPI publicada en gob.pe. */
 export interface Doc {
-  /** Columna OP (ej. "2375814-1"): id del visor y del ledger. */
-  op: string;
-  /** Fecha Publicación en ISO (YYYY-MM-DD). */
-  publishedAt: string | null;
-  /** Columna Entidad: nombre de sector del emisor ("AMBIENTE", "PCM"...). */
-  entidad: string;
-  /** Columna Dispositivo ("LEY", "RESOLUCION MINISTERIAL"...). */
-  dispositivo: string;
-  /** Columna Número ("N° 042-2025-PCM"). */
-  numero: string | null;
+  /** Id numérico de gob.pe (del href) — id del ledger. */
+  gid: string;
+  /** Número limpio ("000085-2026-GEG/INDECOPI", "Ley 29571"). */
+  numero: string;
   sumilla: string;
+  publishedAt: string | null;
+  pdfUrl: string;
+  path: string;
 }
 
 export interface StoredRecord {
   id: string;
-  fechaPublicacion: string | null;
-  entidad: string;
-  dispositivo: string;
-  numero: string | null;
+  numero: string;
   sumilla: string;
+  fechaPublicacion: string | null;
+  pdfUrl: string;
+  path: string;
   clasificacion: Classif;
   legal_area: Area | null;
   ingest?: IngestRecord;
@@ -72,8 +64,11 @@ export interface Ctx {
   cfg: Config;
   log: Logger;
   idx: Index;
+  /** Emisor FIJO del módulo: la entidad INDECOPI del catálogo. */
+  issuer: Classif;
   stats: Stats;
   ingestThrottle: Throttle;
-  visorThrottle: Throttle;
+  gobpeThrottle: Throttle;
+  /** Para renderizar el PDF de texto cuando el original exige OCR. */
   browser: Browser;
 }

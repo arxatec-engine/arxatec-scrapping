@@ -25,6 +25,9 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 7 | [`catalogo-entidades.md`](./catalogo-entidades.md) | **El catálogo de entidades** (gob.pe → `entity.json`): por qué no tiene ledger, y el orden del pipeline — entidades SIEMPRE antes que los documentos. |
 | 8 | [`fuentes-canonicas.md`](./fuentes-canonicas.md) | **Nombres canónicos de `source`** compartidos entre los 3 repos (huella SHA fijada en tests). |
 | 9 | [`plan-el-peruano.md`](./plan-el-peruano.md) | **El módulo P1 (hecho).** El Peruano en dos mitades: índice = CSV de datosabiertos (CP850, sin scraping) + texto = `visor_html`; el sitio es intermitente (timeout corto + reintentos) y cómo se llena el contrato. |
+| 10 | [`campania-vm.md`](./campania-vm.md) | **La campaña de 2 meses en la VM.** El millón con los módulos validados (TC+EP+SPIJ ≈ 1.15M), supervisor systemd (`ops/`), `--todos`, `pnpm status`, qué se auto-recupera y qué avisar al owner. |
+| 11 | [`plan-tribunal-fiscal.md`](./plan-tribunal-fiscal.md) | **El primer P3 (hecho).** El MEF está tras Incapsula pero las RTF viven en gob.pe (buscador JSON + PDF CDN); estreno del OCR local compartido (`src/services/ocr`) para escaneados y la tanda P3 de fuentes canónicas. |
+| 12 | [`plan-indecopi.md`](./plan-indecopi.md) | **El segundo P3 (hecho, v1).** INDECOPI vía gob.pe con el cliente compartido `src/services/gobpe`; el buscador Seam de las salas queda como fase 2. |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)

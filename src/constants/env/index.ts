@@ -25,10 +25,24 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const IND_CONCURRENCY = "IND_CONCURRENCY";
+export const IND_DELAY = "IND_DELAY";
+export const IND_LIMIT = "IND_LIMIT";
+export const IND_MAX_SHEETS = "IND_MAX_SHEETS";
+export const IND_UA = "IND_UA";
+
+export const TF_CONCURRENCY = "TF_CONCURRENCY";
+export const TF_DELAY = "TF_DELAY";
+export const TF_LIMIT = "TF_LIMIT";
+export const TF_TERM = "TF_TERM";
+export const TF_MAX_SHEETS = "TF_MAX_SHEETS";
+export const TF_UA = "TF_UA";
+
 export const EP_CONCURRENCY = "EP_CONCURRENCY";
 export const EP_DELAY = "EP_DELAY";
 export const EP_LIMIT = "EP_LIMIT";
 export const EP_PERIODO = "EP_PERIODO";
+export const EP_TODOS = "EP_TODOS";
 export const EP_CSV_URL = "EP_CSV_URL";
 export const EP_UA = "EP_UA";
 

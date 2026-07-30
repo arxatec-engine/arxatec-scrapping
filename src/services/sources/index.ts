@@ -66,6 +66,45 @@ export const LEGAL_SOURCES: readonly LegalSourceDef[] = [
     canonicalName: "Jurado Nacional de Elecciones",
     aliases: ["JNE", "Jurado nacional de elecciones"],
   },
+  // Tanda P3 (tribunales administrativos, registrada 2026-07-30): se añaden
+  // TODAS de una vez para que la huella compartida cambie una sola vez;
+  // los módulos van llegando uno a uno (ver docs/registro-scraping.md).
+  {
+    key: "tfiscal",
+    canonicalName: "Tribunal Fiscal",
+    aliases: ["TF", "Tribunal fiscal"],
+  },
+  {
+    key: "indecopi",
+    canonicalName:
+      "Instituto Nacional de Defensa de la Competencia y de la Protección de la Propiedad Intelectual",
+    aliases: ["INDECOPI"],
+  },
+  {
+    key: "tce",
+    canonicalName: "Tribunal de Contrataciones del Estado",
+    aliases: ["OSCE", "OECE", "TCE", "TCP", "Tribunal de Contrataciones Publicas"],
+  },
+  {
+    key: "tregistral",
+    canonicalName: "Tribunal Registral",
+    aliases: ["SUNARP", "Tribunal registral"],
+  },
+  {
+    key: "tservir",
+    canonicalName: "Tribunal del Servicio Civil",
+    aliases: ["SERVIR", "TSC"],
+  },
+  {
+    key: "toefa",
+    canonicalName: "Tribunal de Fiscalización Ambiental",
+    aliases: ["OEFA", "TFA"],
+  },
+  {
+    key: "sunat",
+    canonicalName: "Superintendencia Nacional de Aduanas y de Administración Tributaria",
+    aliases: ["SUNAT"],
+  },
 ] as const;
 
 /** minúsculas + sin tildes: la llave de comparación de alias. */

@@ -20,15 +20,12 @@ export interface Config {
   limit: number | null;
   maxRetries: number;
   backoffBase: number;
-  requestTimeout: number;
   progressEvery: number;
   userAgent: string;
-  /** `YYYY-MM` para elegir el CSV mensual del dataset; null = el más reciente. */
-  periodo: string | null;
-  /** Campaña: iterar TODOS los recursos del dataset (mensuales+anuales+bulk). */
-  todos: boolean;
-  /** URL directa de un CSV del dataset (salta el descubrimiento). */
-  csvUrl: string | null;
+  /** Término del buscador de gob.pe (default "tribunal fiscal"). */
+  term: string;
+  /** Tope de páginas del buscador (0 = hasta que se acaben). */
+  maxSheets: number;
   docsPath: string;
   logFile: string;
   ingestBaseUrl: string;
@@ -41,28 +38,28 @@ export interface Config {
   ingestStatus: string;
 }
 
-/** Una fila del CSV de Dispositivos Legales, ya decodificada y validada. */
+/** Una RTF publicada en gob.pe, ya filtrada y validada. */
 export interface Doc {
-  /** Columna OP (ej. "2375814-1"): id del visor y del ledger. */
-  op: string;
-  /** Fecha Publicación en ISO (YYYY-MM-DD). */
-  publishedAt: string | null;
-  /** Columna Entidad: nombre de sector del emisor ("AMBIENTE", "PCM"...). */
-  entidad: string;
-  /** Columna Dispositivo ("LEY", "RESOLUCION MINISTERIAL"...). */
-  dispositivo: string;
-  /** Columna Número ("N° 042-2025-PCM"). */
-  numero: string | null;
+  /** Id numérico de gob.pe (del href) — id del ledger, único por publicación. */
+  gid: string;
+  /** Nº de RTF limpio ("01380-1-2006"). */
+  rtf: string;
   sumilla: string;
+  /** Fecha de publicación en ISO. */
+  publishedAt: string | null;
+  /** PDF original en cdn.www.gob.pe. */
+  pdfUrl: string;
+  /** Ruta gob.pe (`/institucion/mef/normas-legales/...`) → source_url. */
+  path: string;
 }
 
 export interface StoredRecord {
   id: string;
-  fechaPublicacion: string | null;
-  entidad: string;
-  dispositivo: string;
-  numero: string | null;
+  rtf: string;
   sumilla: string;
+  fechaPublicacion: string | null;
+  pdfUrl: string;
+  path: string;
   clasificacion: Classif;
   legal_area: Area | null;
   ingest?: IngestRecord;
@@ -72,8 +69,11 @@ export interface Ctx {
   cfg: Config;
   log: Logger;
   idx: Index;
+  /** Emisor FIJO del módulo: la entidad "Tribunal Fiscal" del catálogo. */
+  issuer: Classif;
   stats: Stats;
   ingestThrottle: Throttle;
-  visorThrottle: Throttle;
+  gobpeThrottle: Throttle;
+  /** Para renderizar el PDF de texto cuando el original exige OCR. */
   browser: Browser;
 }

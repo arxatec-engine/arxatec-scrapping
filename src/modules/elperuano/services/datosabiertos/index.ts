@@ -7,12 +7,24 @@ import {
 } from "../../constants";
 import type { Config, Logger } from "../../types";
 
-/** Un recurso del dataset con periodo reconocible ("Periodo Febrero 2025"). */
+/**
+ * Un recurso del dataset. `key` ordena reciente-primero: los mensuales valen
+ * año*100+mes, los anuales agregados ("Periodo 2023") año*100 (quedan justo
+ * detrás de sus meses) y el bulk histórico ("Periodo 2013 / Marzo 2022") 0
+ * (va al final). Los solapes entre mensual/anual/bulk no duplican nada: el
+ * ledger dedupea por OP.
+ */
 export interface DatasetResource {
   label: string;
   pageUrl: string;
-  year: number;
-  month: number;
+  key: number;
+}
+
+/** CSV listo para procesar (la URL puede resolverse tarde, ver pickCsvs). */
+export interface CsvSource {
+  label: string;
+  url?: string;
+  pageUrl?: string;
 }
 
 const MESES: Record<string, number> = {
@@ -53,11 +65,24 @@ async function fetchText(cfg: Config, url: string, log: Logger): Promise<string>
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
 }
 
+function parseLabelKey(label: string): number | null {
+  if (/a publicar/i.test(label)) return null;
+  const mensual = /periodo\s+([a-záéíóú]+)\s+(\d{4})/i.exec(label);
+  if (mensual) {
+    const month = MESES[mensual[1].toLowerCase()];
+    if (month) return Number(mensual[2]) * 100 + month;
+  }
+  // Bulk histórico: "Periodo 2013 / Marzo 2022" — al final de la cola.
+  if (/periodo\s+\d{4}\s*\/\s*[a-záéíóú]+\s+\d{4}/i.test(label)) return 0;
+  // Anual agregado: "Periodo 2023" (a veces con doble espacio).
+  const anual = /periodo\s+(\d{4})\s*$/i.exec(label.trim());
+  if (anual) return Number(anual[1]) * 100;
+  return null;
+}
+
 /**
- * Lista los recursos mensuales del dataset leyendo su página Drupal (DKAN no
- * expone la API CKAN clásica). Solo entran los que traen "Periodo <Mes> <Año>"
- * en la etiqueta; los agregados ("Periodo 2023", "2013 / Marzo 2022") y los
- * placeholders ("A Publicar…") quedan fuera del orden mensual.
+ * Lista los recursos del dataset leyendo su página Drupal (DKAN no expone la
+ * API CKAN clásica), ordenados reciente-primero.
  */
 export async function listResources(cfg: Config, log: Logger): Promise<DatasetResource[]> {
   const html = await fetchText(cfg, DATASET_URL, log);
@@ -66,22 +91,15 @@ export async function listResources(cfg: Config, log: Logger): Promise<DatasetRe
     /href="(\/dataset\/dispositivos-legales\/resource\/[0-9a-f-]+)"[^>]*>\s*([^<]{3,100})/g;
   for (const m of html.matchAll(re)) {
     const label = m[2].trim();
-    if (/a publicar/i.test(label)) continue;
-    const pm = /periodo\s+([a-záé]+)\s+(\d{4})/i.exec(label);
-    if (!pm) continue;
-    const month = MESES[pm[1].toLowerCase()];
-    if (!month) continue;
+    const key = parseLabelKey(label);
+    if (key === null) continue;
     const pageUrl = DATOSABIERTOS_BASE + m[1];
-    if (!seen.has(pageUrl)) {
-      seen.set(pageUrl, { label, pageUrl, year: Number(pm[2]), month });
-    }
+    if (!seen.has(pageUrl)) seen.set(pageUrl, { label, pageUrl, key });
   }
-  const out = [...seen.values()].sort(
-    (a, b) => b.year - a.year || b.month - a.month
-  );
+  const out = [...seen.values()].sort((a, b) => b.key - a.key);
   if (out.length === 0) {
     throw new Error(
-      `El dataset no listó recursos mensuales reconocibles (${DATASET_URL}); ¿cambió el HTML?`
+      `El dataset no listó recursos reconocibles (${DATASET_URL}); ¿cambió el HTML?`
     );
   }
   return out;
@@ -90,7 +108,7 @@ export async function listResources(cfg: Config, log: Logger): Promise<DatasetRe
 /** URL del archivo .csv dentro de la página de un recurso. */
 export async function resolveCsvUrl(
   cfg: Config,
-  resource: DatasetResource,
+  resource: Pick<DatasetResource, "pageUrl">,
   log: Logger
 ): Promise<string | null> {
   const html = await fetchText(cfg, resource.pageUrl, log);
@@ -98,37 +116,47 @@ export async function resolveCsvUrl(
   return m ? m[1] : null;
 }
 
-/**
- * Elige el CSV a procesar: EP_CSV_URL directo > EP_PERIODO (`YYYY-MM`) > el
- * recurso mensual más reciente que tenga archivo (los recién anunciados a
- * veces aún no lo tienen: se pasa al siguiente).
- */
-export async function pickCsv(
-  cfg: Config,
-  log: Logger
-): Promise<{ url: string; label: string }> {
-  if (cfg.csvUrl) return { url: cfg.csvUrl, label: "EP_CSV_URL" };
+export interface CsvPlan {
+  sources: CsvSource[];
+  /** true = procesar solo el PRIMER recurso resoluble (modo un-periodo). */
+  soloPrimero: boolean;
+}
 
-  let candidates = await listResources(cfg, log);
+/**
+ * La cola de CSVs a procesar según los mandos:
+ *  - EP_CSV_URL: ese único archivo, directo.
+ *  - EP_PERIODO (`YYYY-MM`): el recurso mensual de ese periodo.
+ *  - EP_TODOS (campaña): TODOS los recursos del dataset, reciente-primero.
+ *  - default: el recurso mensual más reciente que tenga archivo.
+ * Las URLs de recursos se resuelven tarde (1 request por recurso) en el loop
+ * del run; un recurso sin .csv aún se salta con warning.
+ */
+export async function pickCsvs(cfg: Config, log: Logger): Promise<CsvPlan> {
+  if (cfg.csvUrl) {
+    return { sources: [{ url: cfg.csvUrl, label: "EP_CSV_URL" }], soloPrimero: true };
+  }
+
+  const candidates = await listResources(cfg, log);
   if (cfg.periodo) {
     const pm = /^(\d{4})-(\d{2})$/.exec(cfg.periodo);
     if (!pm) throw new Error(`EP_PERIODO inválido: "${cfg.periodo}" (formato YYYY-MM)`);
-    candidates = candidates.filter(
-      (r) => r.year === Number(pm[1]) && r.month === Number(pm[2])
-    );
-    if (candidates.length === 0) {
+    const key = Number(pm[1]) * 100 + Number(pm[2]);
+    const filtered = candidates.filter((r) => r.key === key);
+    if (filtered.length === 0) {
       throw new Error(`El dataset no tiene recurso para el periodo ${cfg.periodo}`);
     }
+    return { sources: filtered, soloPrimero: true };
   }
-  for (const r of candidates) {
-    const url = await resolveCsvUrl(cfg, r, log);
-    if (url) {
-      log.info('CSV elegido: "%s" -> %s', r.label, url);
-      return { url, label: r.label };
-    }
-    log.warn('Recurso "%s" sin .csv aún; pruebo el anterior.', r.label);
+  if (cfg.todos) {
+    log.info(
+      "Modo campaña (--todos): %d recursos en cola, reciente-primero.",
+      candidates.length
+    );
+    return { sources: candidates, soloPrimero: false };
   }
-  throw new Error("Ningún recurso del dataset tiene archivo CSV descargable.");
+  // Default: el mensual más reciente (mes 1..12) que tenga archivo.
+  const mensuales = candidates.filter((r) => r.key % 100 >= 1 && r.key % 100 <= 12);
+  return { sources: mensuales, soloPrimero: true };
 }
 
 export async function downloadCsv(cfg: Config, url: string, log: Logger): Promise<Uint8Array> {
