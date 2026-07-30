@@ -12,8 +12,8 @@
 
 ## Avance
 
-**3 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30**.
+**5 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-30** (módulo `elperuano`: smoke 15/15 OK).
 
 ## Comandos de lo que ya existe
 
@@ -23,7 +23,8 @@
 | `pnpm spij [--limit n]` | `spij` | SPIJ (MINJUS) — normativa | `SPIJ_FECHA_INI`/`SPIJ_FECHA_FIN` (ventana), `SPIJ_TIPO`. ⚠ Exige binario de Chrome (`npx puppeteer browsers install chrome`) para renderizar el PDF |
 | `pnpm pj [--limit n]` | `pj` | Poder Judicial — Jurisprudencia Sistematizada | `PJ_ROOT` (apuntar a una hoja concreta), `PJ_DELAY` alto (Radware throttlea por IP; correr desde IP residencial y sin ráfagas) |
 | `pnpm tc [--limit n]` | `tc` | Tribunal Constitucional — jurisprudencia | `TC_START_MONTH`/`TC_END_MONTH` (checkpoint mensual reanudable) |
-| `pnpm all [--limit n] [--sync]` | orquestador | **Todo en orden**: `entidades` → `spij` → `pj` → `tc` | `--limit` aplica POR módulo (smoke test); `--sync` se pasa a entidades. Módulos aislados: uno roto no tumba el resto; resumen final y exit 1 si algo falló |
+| `pnpm elperuano [--limit n] [--periodo YYYY-MM]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
+| `pnpm all [--limit n] [--sync]` | orquestador | **Todo en orden**: `entidades` → `spij` → `pj` → `tc` → `elperuano` | `--limit` aplica POR módulo (smoke test); `--sync` se pasa a entidades. Módulos aislados: uno roto no tumba el resto; resumen final y exit 1 si algo falló |
 
 Todos los módulos de documentos son **reanudables** (ledger + checkpoint en
 `state/<fuente>/`): re-ejecutar el mismo comando continúa donde quedó.
@@ -48,11 +49,11 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
-| ⬜ | El Peruano – buscador de normas | **P1 — la fuente del millón** | `elperuano` (por crear) | — | `visor_html/{id}`: texto limpio sin OCR; el metadato "Entidad" viene en el índice. **Siguiente módulo grande** |
-| ⬜ | El Peruano – cuadernillo diario | P1 | parte de `elperuano` | — | `/cuadernillo/NL/{YYYYMMDD}`; es la actualización diaria del mismo módulo |
+| ✅ | El Peruano – buscador de normas | **P1 — la fuente del millón** | `elperuano` | `pnpm elperuano` | Hecho 2026-07-30 vía CSV índice + `visor_html/{OP}` (texto limpio, sin OCR); el buscador JSON del sitio no hizo falta. Smoke 15/15 OK. Escala: ~200k+ (2013→hoy) iterando `--periodo` |
+| ⬜ | El Peruano – cuadernillo diario | P1 | job sobre `elperuano` | — | `/cuadernillo/NL/{YYYYMMDD}`; el dataset publica con rezago (~meses) — el cuadernillo cubre el día a día cuando toque |
 | ✅ | SPIJ – acceso libre | hecho | `spij` | `pnpm spij` | El módulo entra por la API autenticada del SPIJ (cuenta gratuita) y cubre el acceso libre. Escala medida: ~875k docs disponibles |
-| ⬜ | Datos Abiertos – CSV Dispositivos Legales | P1b | `datosabiertos` (por crear) | — | Índice 2013–2024 con id/sumilla/entidad/enlace SIN scraping → bootstrap barato de El Peruano |
-| ⬜ | Datos Abiertos – API datastore | P1b | parte de `datosabiertos` | — | API DKAN; complementa el CSV |
+| ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
+| ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
 | ⬜ | gob.pe – normas por entidad | P4 | — | — | HTML estructurado, riesgo bajo |
 | ⬜ | SUNAT – legislación | P3/P4 | — | — | Legislación tributaria sistematizada |
 

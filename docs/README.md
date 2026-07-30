@@ -24,6 +24,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 6 | [`anti-bloqueo-scraping.md`](./anti-bloqueo-scraping.md) | **Cómo SPIJ evita el bloqueo y qué ayuda a PJ.** Por qué el sitio de SPIJ coopera y el del PJ no (bot manager Radware: fingerprint + throttle por IP); qué ya tiene PJ (fetch, cookie jar) y qué se añadió (headers de navegación). |
 | 7 | [`catalogo-entidades.md`](./catalogo-entidades.md) | **El catálogo de entidades** (gob.pe → `entity.json`): por qué no tiene ledger, y el orden del pipeline — entidades SIEMPRE antes que los documentos. |
 | 8 | [`fuentes-canonicas.md`](./fuentes-canonicas.md) | **Nombres canónicos de `source`** compartidos entre los 3 repos (huella SHA fijada en tests). |
+| 9 | [`plan-el-peruano.md`](./plan-el-peruano.md) | **El módulo P1 (hecho).** El Peruano en dos mitades: índice = CSV de datosabiertos (CP850, sin scraping) + texto = `visor_html`; el sitio es intermitente (timeout corto + reintentos) y cómo se llena el contrato. |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)
