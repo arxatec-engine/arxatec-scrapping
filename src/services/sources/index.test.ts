@@ -20,7 +20,7 @@ import {
  * LOS TRES repos en el mismo cambio (así la divergencia nunca pasa CI).
  */
 const SHARED_CATALOG_SHA256 =
-  "858209ce0aaaafb0c1e3ae68fd4a8a250083d9482e87fa58f71a410062622e9c";
+  "553994aee3ae6b79d92884c00f664ddfc6a47bd1d7534ad35ac756c605950aa3";
 
 describe("catálogo canónico de fuentes", () => {
   it("mantiene la huella compartida con assistant y platform", () => {
@@ -74,8 +74,25 @@ describe("canonicalSource", () => {
     assert.equal(canonicalSource("  poder   JUDICIAL "), "Poder Judicial");
   });
 
+  it("normaliza las siglas de la tanda P3 (2026-07-30)", () => {
+    assert.equal(canonicalSource("RTF alias no, TF sí: TF"), "RTF alias no, TF sí: TF");
+    assert.equal(canonicalSource("TF"), "Tribunal Fiscal");
+    assert.equal(canonicalSource("OSCE"), "Tribunal de Contrataciones del Estado");
+    assert.equal(canonicalSource("OECE"), "Tribunal de Contrataciones del Estado");
+    assert.equal(canonicalSource("SUNARP"), "Tribunal Registral");
+    assert.equal(canonicalSource("SERVIR"), "Tribunal del Servicio Civil");
+    assert.equal(canonicalSource("OEFA"), "Tribunal de Fiscalización Ambiental");
+    assert.equal(
+      canonicalSource("SUNAT"),
+      "Superintendencia Nacional de Aduanas y de Administración Tributaria"
+    );
+    assert.equal(
+      canonicalSource("INDECOPI"),
+      "Instituto Nacional de Defensa de la Competencia y de la Protección de la Propiedad Intelectual"
+    );
+  });
+
   it("deja pasar fuentes desconocidas sin inventar expansiones", () => {
-    assert.equal(canonicalSource("OSCE"), "OSCE");
     assert.equal(canonicalSource("Fuente Rara XYZ"), "Fuente Rara XYZ");
     assert.equal(canonicalSource("   "), "");
   });
@@ -83,7 +100,7 @@ describe("canonicalSource", () => {
   it("isKnownSource distingue registradas de desconocidas", () => {
     assert.equal(isKnownSource("spij"), true);
     assert.equal(isKnownSource("Poder judicial"), true);
-    assert.equal(isKnownSource("OSCE"), false);
+    assert.equal(isKnownSource("Fuente Rara XYZ"), false);
   });
 
   it("sourceByKey falla ante una clave desconocida", () => {

@@ -5,3 +5,5 @@
 allowBuilds:
   esbuild: false
   puppeteer: false
+  # tesseract.js: el WASM viene precompilado; el postinstall es opcional.
+  tesseract.js: false

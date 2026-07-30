@@ -10,6 +10,8 @@ import { config as tcConfig } from "./modules/tc/config";
 import { run as tcRun } from "./modules/tc/run";
 import { config as epConfig } from "./modules/elperuano/config";
 import { run as epRun } from "./modules/elperuano/run";
+import { config as tfConfig } from "./modules/tfiscal/config";
+import { run as tfRun } from "./modules/tfiscal/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -51,6 +53,21 @@ async function runTc(opts: { limit?: string }): Promise<void> {
   const log = setupLogging(cfg.logFile);
   try {
     await tcRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runTfiscal(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.TF_LIMIT = opts.limit;
+  const cfg = tfConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await tfRun(cfg, log);
   } catch (e) {
     log.error(
       "La corrida terminó por un error. Reanudable con el mismo comando."
@@ -138,6 +155,14 @@ const DOC_SCRAPERS: Array<{
     exec: () => {
       const cfg = tcConfig();
       return tcRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "tfiscal",
+    limitEnv: "TF_LIMIT",
+    exec: () => {
+      const cfg = tfConfig();
+      return tfRun(cfg, setupLogging(cfg.logFile));
     },
   },
   {
@@ -338,6 +363,14 @@ program
   )
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .action(runTc);
+
+program
+  .command("tfiscal")
+  .description(
+    "Tribunal Fiscal (MEF): RTF publicadas en gob.pe (buscador JSON + PDF del CDN), e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runTfiscal);
 
 program
   .command("elperuano")

@@ -1,7 +1,7 @@
 {
   "name": "arxatec-scrapping",
   "version": "1.0.0",
-  "description": "Scraper SPIJ (MINJUS Per\u00fa) \u2014 puerto TypeScript del scraper Python.",
+  "description": "Scraper SPIJ (MINJUS Perú) — puerto TypeScript del scraper Python.",
   "type": "module",
   "private": true,
   "engines": {
@@ -16,6 +16,7 @@
     "pj": "tsx src/cli.ts pj",
     "tc": "tsx src/cli.ts tc",
     "elperuano": "tsx src/cli.ts elperuano",
+    "tfiscal": "tsx src/cli.ts tfiscal",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all",
@@ -27,11 +28,17 @@
     "commander": "^15.0.0",
     "dotenv": "^16.4.5",
     "env-var": "^7.5.0",
-    "puppeteer": "^23.0.0"
+    "puppeteer": "^23.0.0",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "tesseract.js"
+    ]
   }
 }

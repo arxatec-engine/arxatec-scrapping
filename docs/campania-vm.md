@@ -11,6 +11,7 @@
 | Fuente | Volumen | Por qué entra |
 | --- | --- | --- |
 | TC | ~73.7k | checkpoint mensual reanudable; termina primero |
+| Tribunal Fiscal | ~7.7k | RTF vía gob.pe; escaneadas → OCR local (lento pero desatendido) |
 | El Peruano | ~200k+ (2013→hoy) | universo enumerable por CSVs; `--todos` itera todos los periodos |
 | SPIJ | ~875k | API autenticada estable; el total lo dice la propia API |
 | **Total** | **~1.15M** | **la meta del millón, solo con módulos validados** |
@@ -45,6 +46,8 @@ requisito de "que no quede incompleto" se verifica, no se supone.
 git clone git@github.com:arxatec-engine/arxatec-scrapping.git /opt/arxatec-scrapping
 cd /opt/arxatec-scrapping && pnpm install
 npx puppeteer browsers install chrome     # SPIJ y elperuano renderizan PDF
+# poppler-utils (pdftoppm): lo exige el OCR local de tfiscal
+#   Debian/Ubuntu: apt install poppler-utils · Arch: pacman -S poppler
 
 # 2. Configuración (gitignored)
 #    .env con: INGEST_BASE_URL=<backend>  INGEST_TOKEN=<ASSISTANT_SYNC_TOKEN>
