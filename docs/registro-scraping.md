@@ -54,7 +54,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✅ | SPIJ – acceso libre | hecho | `spij` | `pnpm spij` | El módulo entra por la API autenticada del SPIJ (cuenta gratuita) y cubre el acceso libre. Escala medida: ~875k docs disponibles |
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
-| ⬜ | gob.pe – normas por entidad | P4 | — | — | HTML estructurado, riesgo bajo |
+| ⬜ | gob.pe – normas por entidad | P4 → **candidato a P1** | `gobpe` (propuesto) | — | **Recon 2026-07-30**: la MISMA API JSON del módulo entidades (`busquedas.json?contenido[]=normas`) reporta **5.168.223 normas**; cada item `Rule` trae PDF nativo en CDN, entidad etiquetada, fecha y URL estable; hay normas de 2026 (sin rezago). ⚠ Incluye municipales → necesita la decisión de Harry sobre alcance regional/local. Colecciones aparte: p.ej. 13.420 resoluciones del Tribunal de Contrataciones (OECE) — podría cubrir filas P3 sin scraper propio |
 | ⬜ | SUNAT – legislación | P3/P4 | — | — | Legislación tributaria sistematizada |
 
 ### Congreso
