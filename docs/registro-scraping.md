@@ -13,7 +13,20 @@
 ## Avance
 
 **5 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30** (módulo `elperuano`: smoke 15/15 OK).
+Última actualización: **2026-07-30** (módulo `elperuano` + modo campaña VM).
+
+**Decisiones del owner (2026-07-30):**
+- **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
+  ≈ 1.15M docs = la meta del millón): supervisor systemd + `--todos` +
+  `status`. Guía completa: [`campania-vm.md`](./campania-vm.md).
+- **Groq sin tope de gasto** (tarjeta en consumo libre) — el rate limit deja de
+  ser riesgo de calidad; los warnings del ledger quedan como auditoría.
+- **`gobpe` (normas por entidad) va AL FINAL** de la cola de construcción.
+
+**Cola de construcción de módulos** (mientras la VM corre la campaña):
+P3 tribunales administrativos reutilizando el molde PJ/TC — Tribunal Fiscal →
+INDECOPI → OSCE → SUNARP (TR y SIP) → SERVIR → OEFA — luego SUNAT y P4
+reguladores; `gobpe` al final; Congreso y doctrina (P5) tras decisión de Harry.
 
 ## Comandos de lo que ya existe
 
@@ -23,8 +36,10 @@
 | `pnpm spij [--limit n]` | `spij` | SPIJ (MINJUS) — normativa | `SPIJ_FECHA_INI`/`SPIJ_FECHA_FIN` (ventana), `SPIJ_TIPO`. ⚠ Exige binario de Chrome (`npx puppeteer browsers install chrome`) para renderizar el PDF |
 | `pnpm pj [--limit n]` | `pj` | Poder Judicial — Jurisprudencia Sistematizada | `PJ_ROOT` (apuntar a una hoja concreta), `PJ_DELAY` alto (Radware throttlea por IP; correr desde IP residencial y sin ráfagas) |
 | `pnpm tc [--limit n]` | `tc` | Tribunal Constitucional — jurisprudencia | `TC_START_MONTH`/`TC_END_MONTH` (checkpoint mensual reanudable) |
-| `pnpm elperuano [--limit n] [--periodo YYYY-MM]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
-| `pnpm all [--limit n] [--sync]` | orquestador | **Todo en orden**: `entidades` → `spij` → `pj` → `tc` → `elperuano` | `--limit` aplica POR módulo (smoke test); `--sync` se pasa a entidades. Módulos aislados: uno roto no tumba el resto; resumen final y exit 1 si algo falló |
+| `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
+| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
+| `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
+| `ops/campaign.sh` + systemd | — | La campaña VM completa | pasada idempotente cada 6 h + respaldo rotado de `state/`; ver [`campania-vm.md`](./campania-vm.md) |
 
 Todos los módulos de documentos son **reanudables** (ledger + checkpoint en
 `state/<fuente>/`): re-ejecutar el mismo comando continúa donde quedó.
@@ -54,7 +69,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✅ | SPIJ – acceso libre | hecho | `spij` | `pnpm spij` | El módulo entra por la API autenticada del SPIJ (cuenta gratuita) y cubre el acceso libre. Escala medida: ~875k docs disponibles |
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
-| ⬜ | gob.pe – normas por entidad | P4 → **candidato a P1** | `gobpe` (propuesto) | — | **Recon 2026-07-30**: la MISMA API JSON del módulo entidades (`busquedas.json?contenido[]=normas`) reporta **5.168.223 normas**; cada item `Rule` trae PDF nativo en CDN, entidad etiquetada, fecha y URL estable; hay normas de 2026 (sin rezago). ⚠ Incluye municipales → necesita la decisión de Harry sobre alcance regional/local. Colecciones aparte: p.ej. 13.420 resoluciones del Tribunal de Contrataciones (OECE) — podría cubrir filas P3 sin scraper propio |
+| ⬜ | gob.pe – normas por entidad | P1 por volumen, **AL FINAL de la cola (owner 2026-07-30)** | `gobpe` (propuesto) | — | **Recon 2026-07-30**: la MISMA API JSON del módulo entidades (`busquedas.json?contenido[]=normas`) reporta **5.168.223 normas**; cada item `Rule` trae PDF nativo en CDN, entidad etiquetada, fecha y URL estable; hay normas de 2026 (sin rezago). Incluye municipales (la plataforma ya los soporta: selector de entidades pinta el catálogo completo). Colecciones aparte: p.ej. 13.420 resoluciones del Tribunal de Contrataciones (OECE) — podría cubrir filas P3 sin scraper propio |
 | ⬜ | SUNAT – legislación | P3/P4 | — | — | Legislación tributaria sistematizada |
 
 ### Congreso

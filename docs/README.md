@@ -25,6 +25,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 7 | [`catalogo-entidades.md`](./catalogo-entidades.md) | **El catálogo de entidades** (gob.pe → `entity.json`): por qué no tiene ledger, y el orden del pipeline — entidades SIEMPRE antes que los documentos. |
 | 8 | [`fuentes-canonicas.md`](./fuentes-canonicas.md) | **Nombres canónicos de `source`** compartidos entre los 3 repos (huella SHA fijada en tests). |
 | 9 | [`plan-el-peruano.md`](./plan-el-peruano.md) | **El módulo P1 (hecho).** El Peruano en dos mitades: índice = CSV de datosabiertos (CP850, sin scraping) + texto = `visor_html`; el sitio es intermitente (timeout corto + reintentos) y cómo se llena el contrato. |
+| 10 | [`campania-vm.md`](./campania-vm.md) | **La campaña de 2 meses en la VM.** El millón con los módulos validados (TC+EP+SPIJ ≈ 1.15M), supervisor systemd (`ops/`), `--todos`, `pnpm status`, qué se auto-recupera y qué avisar al owner. |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)
