@@ -12,8 +12,8 @@
 
 ## Avance
 
-**10 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30** (módulo `sunarp`: smoke 10/10; cubre TR y SIP).
+**11 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-30** (módulo `servir`: smoke 10/10).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -40,8 +40,9 @@ reguladores; `gobpe` al final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm indecopi [--limit n]` | `indecopi` | INDECOPI — resoluciones/normas vía gob.pe | `IND_MAX_SHEETS`, `IND_DELAY`. Born-digital + OCR fallback. Fase 2 (salas del Tribunal): buscador Seam, ver [`plan-indecopi.md`](./plan-indecopi.md) |
 | `pnpm tce [--limit n]` | `tce` | Tribunal de Contrataciones (OECE) — resoluciones TCP por sala vía gob.pe | `TCE_MAX_SHEETS`, `TCE_DELAY`. Filtro por sufijo TCP/TCE+sala sobre las 85.7k normas del OECE. Ver [`plan-tce.md`](./plan-tce.md) |
 | `pnpm sunarp [--limit n]` | `sunarp` | SUNARP — Tribunal Registral y Plenos vía gob.pe | `SUNARP_TERM`, `SUNARP_MAX_SHEETS`, `SUNARP_DELAY`. Filtro `-SUNARP-TR[-sede]` y `/PT`. Ver [`plan-sunarp.md`](./plan-sunarp.md) |
+| `pnpm servir [--limit n]` | `servir` | SERVIR — Tribunal del Servicio Civil vía gob.pe | `SERVIR_TERM` (default "TSC"), `SERVIR_MAX_SHEETS`, `SERVIR_DELAY`. Salas Primera/Segunda en court_chamber. Ver [`plan-servir.md`](./plan-servir.md) |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
-| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
+| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
 | `ops/campaign.sh` + systemd | — | La campaña VM completa | pasada idempotente cada 6 h + respaldo rotado de `state/`; ver [`campania-vm.md`](./campania-vm.md) |
 
@@ -107,7 +108,7 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ✅ | OSCE – Tribunal de Contrataciones | P3 — hecho | `tce` | `pnpm tce` | Hecho 2026-07-30 vía gob.pe (OECE publica ~85.7k normas; filtro TCP/TCE+sala; born-digital). Smoke 10/10. Descartada la colección compendio (13.4k, peor cobertura) |
 | ✅ | SUNARP – Tribunal Registral | P3 — hecho | `sunarp` | `pnpm sunarp` | Hecho 2026-07-30 vía gob.pe (término + filtro `-SUNARP-TR[-sede]`; sede en court_chamber). Smoke 10/10 born-digital |
 | ✅ | SUNARP – SIP (precedentes) | P3 — hecho | dentro de `sunarp` | `pnpm sunarp` | El sitio SIP está CAÍDO; los precedentes nacen en los acuerdos de Pleno (`…-SUNARP/PT`) que este módulo ingesta del mismo stream |
-| ⬜ | SERVIR – Tribunal del Servicio Civil | P3 | — | — | |
+| ✅ | SERVIR – Tribunal del Servicio Civil | P3 — hecho | `servir` | `pnpm servir` | Hecho 2026-07-30 vía gob.pe (term TSC + filtro; ~168k normas SERVIR, las TSC con sala en court_chamber). Smoke 10/10 born-digital |
 | ⬜ | OEFA – Tribunal de Fiscalización Ambiental | P3 | — | — | |
 | ⬜ | SUNAT – resoluciones e informes | P3/P4 | — | — | Informes vinculantes |
 

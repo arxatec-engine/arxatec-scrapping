@@ -25,6 +25,13 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const SERVIR_CONCURRENCY = "SERVIR_CONCURRENCY";
+export const SERVIR_DELAY = "SERVIR_DELAY";
+export const SERVIR_LIMIT = "SERVIR_LIMIT";
+export const SERVIR_TERM = "SERVIR_TERM";
+export const SERVIR_MAX_SHEETS = "SERVIR_MAX_SHEETS";
+export const SERVIR_UA = "SERVIR_UA";
+
 export const SUNARP_CONCURRENCY = "SUNARP_CONCURRENCY";
 export const SUNARP_DELAY = "SUNARP_DELAY";
 export const SUNARP_LIMIT = "SUNARP_LIMIT";
