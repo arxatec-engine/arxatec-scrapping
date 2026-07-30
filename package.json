@@ -16,7 +16,8 @@
     "pj": "tsx src/cli.ts pj",
     "tc": "tsx src/cli.ts tc",
     "ingest": "tsx src/cli.ts spij",
-    "entidades": "tsx src/cli.ts entidades"
+    "entidades": "tsx src/cli.ts entidades",
+    "all": "tsx src/cli.ts all"
   },
   "dependencies": {
     "axios": "^1.18.1",
