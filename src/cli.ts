@@ -18,6 +18,8 @@ import { config as tceConfig } from "./modules/tce/config";
 import { run as tceRun } from "./modules/tce/run";
 import { config as sunarpConfig } from "./modules/sunarp/config";
 import { run as sunarpRun } from "./modules/sunarp/run";
+import { config as servirConfig } from "./modules/servir/config";
+import { run as servirRun } from "./modules/servir/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -119,6 +121,21 @@ async function runSunarp(opts: { limit?: string }): Promise<void> {
   const log = setupLogging(cfg.logFile);
   try {
     await sunarpRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runServir(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.SERVIR_LIMIT = opts.limit;
+  const cfg = servirConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await servirRun(cfg, log);
   } catch (e) {
     log.error(
       "La corrida terminó por un error. Reanudable con el mismo comando."
@@ -238,6 +255,14 @@ const DOC_SCRAPERS: Array<{
     exec: () => {
       const cfg = sunarpConfig();
       return sunarpRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "servir",
+    limitEnv: "SERVIR_LIMIT",
+    exec: () => {
+      const cfg = servirConfig();
+      return servirRun(cfg, setupLogging(cfg.logFile));
     },
   },
   {
@@ -374,6 +399,7 @@ function runStatus(): void {
     { name: "indecopi", docsPath: indConfig().docsPath },
     { name: "tce", docsPath: tceConfig().docsPath },
     { name: "sunarp", docsPath: sunarpConfig().docsPath },
+    { name: "servir", docsPath: servirConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
     { name: "spij", docsPath: spijConfig().docsPath },
     { name: "pj", docsPath: pjConfig().docsPath },
@@ -476,6 +502,14 @@ program
   .action(runSunarp);
 
 program
+  .command("servir")
+  .description(
+    "SERVIR: resoluciones del Tribunal del Servicio Civil (dos salas) publicadas en gob.pe, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runServir);
+
+program
   .command("elperuano")
   .description(
     "Diario Oficial El Peruano: índice desde el CSV de datosabiertos.gob.pe " +
@@ -512,7 +546,7 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → elperuano → spij → pj). " +
+      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → elperuano → spij → pj). " +
       "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")

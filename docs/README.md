@@ -30,6 +30,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 12 | [`plan-indecopi.md`](./plan-indecopi.md) | **El segundo P3 (hecho, v1).** INDECOPI vía gob.pe con el cliente compartido `src/services/gobpe`; el buscador Seam de las salas queda como fase 2. |
 | 13 | [`plan-tce.md`](./plan-tce.md) | **El tercer P3 (hecho).** Tribunal de Contrataciones (OECE) vía gob.pe: filtro TCP/TCE+sala sobre 85.7k normas; sala en `court_chamber`. |
 | 14 | [`plan-sunarp.md`](./plan-sunarp.md) | **El cuarto P3 (hecho, cubre 2 filas).** Tribunal Registral y acuerdos de Pleno (SIP caído) vía gob.pe; sede/Pleno en `court_chamber`. |
+| 15 | [`plan-servir.md`](./plan-servir.md) | **El quinto P3 (hecho).** Tribunal del Servicio Civil vía gob.pe (term TSC, formatos de número por época, salas en `court_chamber`). |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)
