@@ -25,6 +25,13 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const EP_CONCURRENCY = "EP_CONCURRENCY";
+export const EP_DELAY = "EP_DELAY";
+export const EP_LIMIT = "EP_LIMIT";
+export const EP_PERIODO = "EP_PERIODO";
+export const EP_CSV_URL = "EP_CSV_URL";
+export const EP_UA = "EP_UA";
+
 export const INGEST_BASE_URL = "INGEST_BASE_URL";
 export const INGEST_PATH = "INGEST_PATH";
 export const INGEST_TOKEN = "INGEST_TOKEN";

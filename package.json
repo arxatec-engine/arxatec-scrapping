@@ -10,11 +10,12 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/services/sources/index.test.ts src/modules/spij/utils/classifier/index.test.ts",
+    "test": "tsx --test src/services/sources/index.test.ts src/modules/spij/utils/classifier/index.test.ts src/modules/elperuano/utils/csv/index.test.ts",
     "cli": "tsx src/cli.ts",
     "spij": "tsx src/cli.ts spij",
     "pj": "tsx src/cli.ts pj",
     "tc": "tsx src/cli.ts tc",
+    "elperuano": "tsx src/cli.ts elperuano",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all"
