@@ -5,3 +5,4 @@ export * as elperuano from "./elperuano";
 export * as tfiscal from "./tfiscal";
 export * as indecopi from "./indecopi";
 export * as tce from "./tce";
+export * as sunarp from "./sunarp";

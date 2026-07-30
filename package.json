@@ -19,6 +19,7 @@
     "tfiscal": "tsx src/cli.ts tfiscal",
     "indecopi": "tsx src/cli.ts indecopi",
     "tce": "tsx src/cli.ts tce",
+    "sunarp": "tsx src/cli.ts sunarp",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all",
