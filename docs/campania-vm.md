@@ -12,6 +12,7 @@
 | --- | --- | --- |
 | TC | ~73.7k | checkpoint mensual reanudable; termina primero |
 | Tribunal Fiscal | ~7.7k | RTF vía gob.pe; escaneadas → OCR local (lento pero desatendido) |
+| INDECOPI | ~3k | resoluciones/normas vía gob.pe, born-digital |
 | El Peruano | ~200k+ (2013→hoy) | universo enumerable por CSVs; `--todos` itera todos los periodos |
 | SPIJ | ~875k | API autenticada estable; el total lo dice la propia API |
 | **Total** | **~1.15M** | **la meta del millón, solo con módulos validados** |

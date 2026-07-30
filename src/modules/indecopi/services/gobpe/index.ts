@@ -1,5 +1,5 @@
 import * as shared from "../../../../services/gobpe";
-import { RTF_RE } from "../../constants";
+import { INSTITUCION } from "../../constants";
 import type { Ctx, Doc } from "../../types";
 
 function client(ctx: Ctx): shared.GobpeClient {
@@ -13,29 +13,26 @@ function client(ctx: Ctx): shared.GobpeClient {
 }
 
 /**
- * Página del buscador filtrada a RTF: el término también trae decretos y
- * páginas que hablan del Tribunal — solo pasan los `Rule` cuyo número calza
- * el patrón RTF. El cliente gob.pe es el compartido (src/services/gobpe).
+ * Página del buscador de gob.pe con TODAS las normas de INDECOPI (sin término:
+ * el filtro por institución basta — resoluciones GEG/PRE, directivas, leyes
+ * republicadas). El cliente es el compartido (src/services/gobpe).
  */
 export async function fetchSearchPage(
   ctx: Ctx,
   sheet: number
 ): Promise<{ docs: Doc[]; rawCount: number }> {
   const page = await shared.fetchRulesPage(client(ctx), {
-    institucion: "mef",
-    term: ctx.cfg.term,
+    institucion: INSTITUCION,
     sheet,
   });
-  const docs: Doc[] = page.rules
-    .filter((r) => RTF_RE.test(r.numero))
-    .map((r) => ({
-      gid: r.gid,
-      rtf: r.numero,
-      sumilla: r.sumilla,
-      publishedAt: r.publishedAt,
-      pdfUrl: r.pdfUrl,
-      path: r.path,
-    }));
+  const docs: Doc[] = page.rules.map((r) => ({
+    gid: r.gid,
+    numero: r.numero,
+    sumilla: r.sumilla,
+    publishedAt: r.publishedAt,
+    pdfUrl: r.pdfUrl,
+    path: r.path,
+  }));
   return { docs, rawCount: page.rawCount };
 }
 

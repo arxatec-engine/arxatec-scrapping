@@ -25,6 +25,12 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const IND_CONCURRENCY = "IND_CONCURRENCY";
+export const IND_DELAY = "IND_DELAY";
+export const IND_LIMIT = "IND_LIMIT";
+export const IND_MAX_SHEETS = "IND_MAX_SHEETS";
+export const IND_UA = "IND_UA";
+
 export const TF_CONCURRENCY = "TF_CONCURRENCY";
 export const TF_DELAY = "TF_DELAY";
 export const TF_LIMIT = "TF_LIMIT";

@@ -12,8 +12,8 @@
 
 ## Avance
 
-**6 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30** (módulo `tfiscal` con OCR local: smoke 12/12).
+**7 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-30** (módulo `indecopi`: smoke 12/12; cliente gob.pe compartido).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -37,8 +37,9 @@ reguladores; `gobpe` al final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm pj [--limit n]` | `pj` | Poder Judicial — Jurisprudencia Sistematizada | `PJ_ROOT` (apuntar a una hoja concreta), `PJ_DELAY` alto (Radware throttlea por IP; correr desde IP residencial y sin ráfagas) |
 | `pnpm tc [--limit n]` | `tc` | Tribunal Constitucional — jurisprudencia | `TC_START_MONTH`/`TC_END_MONTH` (checkpoint mensual reanudable) |
 | `pnpm tfiscal [--limit n]` | `tfiscal` | Tribunal Fiscal — RTF vía gob.pe | `TF_TERM`, `TF_MAX_SHEETS`, `TF_DELAY`. PDF del CDN; escaneados → **OCR local compartido** (`src/services/ocr`, exige `pdftoppm`/poppler). Ver [`plan-tribunal-fiscal.md`](./plan-tribunal-fiscal.md) |
+| `pnpm indecopi [--limit n]` | `indecopi` | INDECOPI — resoluciones/normas vía gob.pe | `IND_MAX_SHEETS`, `IND_DELAY`. Born-digital + OCR fallback. Fase 2 (salas del Tribunal): buscador Seam, ver [`plan-indecopi.md`](./plan-indecopi.md) |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
-| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
+| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
 | `ops/campaign.sh` + systemd | — | La campaña VM completa | pasada idempotente cada 6 h + respaldo rotado de `state/`; ver [`campania-vm.md`](./campania-vm.md) |
 
@@ -100,7 +101,7 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
 | ✅ | Tribunal Fiscal (MEF) | P3 — hecho | `tfiscal` | `pnpm tfiscal` | Hecho 2026-07-30. El MEF está tras Incapsula, pero las RTF viven en gob.pe (~7.7k, buscador JSON + PDF CDN). Escaneadas → OCR local. Smoke 12/12. Las de observancia nuevas llegan también por El Peruano |
-| ⬜ | INDECOPI | P3 | — | — | Resoluciones por sala |
+| ✅ | INDECOPI | P3 — hecho (v1) | `indecopi` | `pnpm indecopi` | Hecho 2026-07-30 vía gob.pe (~3k resoluciones/normas born-digital, smoke 12/12). Fase 2: salas del Tribunal en el buscador Seam (`servicio.indecopi.gob.pe`, vivo, sin bot manager) |
 | ⬜ | OSCE – Tribunal de Contrataciones | P3 | — | — | |
 | ⬜ | SUNARP – Tribunal Registral | P3 | — | — | |
 | ⬜ | SUNARP – SIP (precedentes) | P3 | — | — | |

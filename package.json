@@ -17,6 +17,7 @@
     "tc": "tsx src/cli.ts tc",
     "elperuano": "tsx src/cli.ts elperuano",
     "tfiscal": "tsx src/cli.ts tfiscal",
+    "indecopi": "tsx src/cli.ts indecopi",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all",
@@ -35,10 +36,5 @@
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "tesseract.js"
-    ]
   }
 }
