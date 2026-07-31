@@ -23,10 +23,11 @@
   ser riesgo de calidad; los warnings del ledger quedan como auditoría.
 - **`gobpe` (normas por entidad) va AL FINAL** de la cola de construcción.
 
-**Cola de construcción de módulos** (mientras la VM corre la campaña):
-P3 tribunales administrativos reutilizando el molde PJ/TC — Tribunal Fiscal →
-INDECOPI → OSCE → SUNARP (TR y SIP) → SERVIR → OEFA — luego SUNAT y P4
-reguladores; `gobpe` al final; Congreso y doctrina (P5) tras decisión de Harry.
+**Cola de construcción de módulos:** ✅ P3 CERRADA 2026-07-30 (Tribunal Fiscal,
+INDECOPI, Contrataciones, SUNARP TR+SIP, SERVIR, OEFA — 6 módulos en un día
+con el patrón gob.pe compartido; SUNAT bloqueada por sitio caído, reintentar).
+Siguiente: P4 reguladores → `gobpe` al final; Congreso y doctrina (P5) tras
+decisión de Harry.
 
 ## Comandos de lo que ya existe
 
@@ -76,7 +77,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
 | ⬜ | gob.pe – normas por entidad | P1 por volumen, **AL FINAL de la cola (owner 2026-07-30)** | `gobpe` (propuesto) | — | **Recon 2026-07-30**: la MISMA API JSON del módulo entidades (`busquedas.json?contenido[]=normas`) reporta **5.168.223 normas**; cada item `Rule` trae PDF nativo en CDN, entidad etiquetada, fecha y URL estable; hay normas de 2026 (sin rezago). Incluye municipales (la plataforma ya los soporta: selector de entidades pinta el catálogo completo). Colecciones aparte: p.ej. 13.420 resoluciones del Tribunal de Contrataciones (OECE) — podría cubrir filas P3 sin scraper propio |
-| ⬜ | SUNAT – legislación | P3/P4 | — | — | Legislación tributaria sistematizada |
+| ⬜ | SUNAT – legislación | P3/P4 — BLOQUEADA | — | — | Mismo bloqueo (es el mismo sitio /legislacion/). Solape alto: esa compilación son normas que YA entran por SPIJ y El Peruano |
 
 ### Congreso
 
@@ -111,7 +112,7 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ✅ | SUNARP – SIP (precedentes) | P3 — hecho | dentro de `sunarp` | `pnpm sunarp` | El sitio SIP está CAÍDO; los precedentes nacen en los acuerdos de Pleno (`…-SUNARP/PT`) que este módulo ingesta del mismo stream |
 | ✅ | SERVIR – Tribunal del Servicio Civil | P3 — hecho | `servir` | `pnpm servir` | Hecho 2026-07-30 vía gob.pe (term TSC + filtro; ~168k normas SERVIR, las TSC con sala en court_chamber). Smoke 10/10 born-digital |
 | ✅ | OEFA – Tribunal de Fiscalización Ambiental | P3 — hecho | `oefa` | `pnpm oefa` | Hecho 2026-07-30 vía gob.pe: las TFA van como PUBLICACIONES (Report), ~7.3k con término; antiguas escaneadas → OCR local. Smoke 10/10 |
-| ⬜ | SUNAT – resoluciones e informes | P3/P4 | — | — | Informes vinculantes |
+| ⬜ | SUNAT – resoluciones e informes | P3 — BLOQUEADA | `sunat` (pendiente) | — | **Recon 2026-07-30**: www.sunat.gob.pe (árbol /legislacion/ con informes vinculantes) NO responde desde esta red (timeouts totales; ww1 vive pero sin ese árbol) y gob.pe solo tiene 60 normas de SUNAT. Reintentar cuando el sitio responda. Mientras: sus resoluciones de superintendencia YA fluyen por El Peruano/SPIJ |
 
 ### Reguladores y APIs de datos abiertos (P4)
 
