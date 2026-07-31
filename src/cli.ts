@@ -22,8 +22,14 @@ import { config as servirConfig } from "./modules/servir/config";
 import { run as servirRun } from "./modules/servir/run";
 import { config as oefaConfig } from "./modules/oefa/config";
 import { run as oefaRun } from "./modules/oefa/run";
-import { config as regConfig } from "./modules/reguladores/config";
-import { run as regRun } from "./modules/reguladores/run";
+import { config as osinergminConfig } from "./modules/osinergmin/config";
+import { run as osinergminRun } from "./modules/osinergmin/run";
+import { config as osiptelConfig } from "./modules/osiptel/config";
+import { run as osiptelRun } from "./modules/osiptel/run";
+import { config as sunassConfig } from "./modules/sunass/config";
+import { run as sunassRun } from "./modules/sunass/run";
+import { config as ositranConfig } from "./modules/ositran/config";
+import { run as ositranRun } from "./modules/ositran/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -164,13 +170,57 @@ async function runOefa(opts: { limit?: string }): Promise<void> {
   }
 }
 
-async function runReguladores(opts: { limit?: string; solo?: string }): Promise<void> {
-  if (opts.limit) process.env.REG_LIMIT = opts.limit;
-  if (opts.solo) process.env.REG_SOLO = opts.solo;
-  const cfg = regConfig();
+async function runOsinergmin(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.OSINERGMIN_LIMIT = opts.limit;
+  const cfg = osinergminConfig();
   const log = setupLogging(cfg.logFile);
   try {
-    await regRun(cfg, log);
+    await osinergminRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runOsiptel(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.OSIPTEL_LIMIT = opts.limit;
+  const cfg = osiptelConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await osiptelRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runSunass(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.SUNASS_LIMIT = opts.limit;
+  const cfg = sunassConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await sunassRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runOsitran(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.OSITRAN_LIMIT = opts.limit;
+  const cfg = ositranConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await ositranRun(cfg, log);
   } catch (e) {
     log.error(
       "La corrida terminó por un error. Reanudable con el mismo comando."
@@ -309,11 +359,35 @@ const DOC_SCRAPERS: Array<{
     },
   },
   {
-    name: "reguladores",
-    limitEnv: "REG_LIMIT",
+    name: "osinergmin",
+    limitEnv: "OSINERGMIN_LIMIT",
     exec: () => {
-      const cfg = regConfig();
-      return regRun(cfg, setupLogging(cfg.logFile));
+      const cfg = osinergminConfig();
+      return osinergminRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "osiptel",
+    limitEnv: "OSIPTEL_LIMIT",
+    exec: () => {
+      const cfg = osiptelConfig();
+      return osiptelRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "sunass",
+    limitEnv: "SUNASS_LIMIT",
+    exec: () => {
+      const cfg = sunassConfig();
+      return sunassRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "ositran",
+    limitEnv: "OSITRAN_LIMIT",
+    exec: () => {
+      const cfg = ositranConfig();
+      return ositranRun(cfg, setupLogging(cfg.logFile));
     },
   },
   {
@@ -452,7 +526,10 @@ function runStatus(): void {
     { name: "sunarp", docsPath: sunarpConfig().docsPath },
     { name: "servir", docsPath: servirConfig().docsPath },
     { name: "oefa", docsPath: oefaConfig().docsPath },
-    { name: "reguladores", docsPath: regConfig().docsPath },
+    { name: "osinergmin", docsPath: osinergminConfig().docsPath },
+    { name: "osiptel", docsPath: osiptelConfig().docsPath },
+    { name: "sunass", docsPath: sunassConfig().docsPath },
+    { name: "ositran", docsPath: ositranConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
     { name: "spij", docsPath: spijConfig().docsPath },
     { name: "pj", docsPath: pjConfig().docsPath },
@@ -571,13 +648,36 @@ program
   .action(runOefa);
 
 program
-  .command("reguladores")
+  .command("osinergmin")
   .description(
-    "Reguladores P4 (OSINERGMIN, OSIPTEL, SUNASS, OSITRAN): su normativa publicada en gob.pe, e ingesta."
+    "OSINERGMIN: su normativa publicada en gob.pe (buscador JSON + PDF del CDN), e ingesta."
   )
-  .option("--limit <n>", "tope GLOBAL de documentos nuevos (pruebas)")
-  .option("--solo <slugs>", "solo estos reguladores, separados por coma (p.ej. --solo osiptel,sunass)")
-  .action(runReguladores);
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runOsinergmin);
+
+program
+  .command("osiptel")
+  .description(
+    "OSIPTEL: su normativa publicada en gob.pe (buscador JSON + PDF del CDN), e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runOsiptel);
+
+program
+  .command("sunass")
+  .description(
+    "SUNASS: su normativa publicada en gob.pe (buscador JSON + PDF del CDN), e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runSunass);
+
+program
+  .command("ositran")
+  .description(
+    "OSITRAN: su normativa publicada en gob.pe (buscador JSON + PDF del CDN), e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runOsitran);
 
 program
   .command("elperuano")
@@ -616,7 +716,7 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores → elperuano → spij → pj). " +
+      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → elperuano → spij → pj). " +
       "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")

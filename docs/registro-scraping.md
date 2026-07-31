@@ -13,7 +13,7 @@
 ## Avance
 
 **16 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30** (módulo `reguladores`: 4 fuentes P4 de una, smoke 12/12).
+Última actualización: **2026-07-30** (reguladores P4: una carpeta por regulador, smokes verdes).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -44,9 +44,12 @@ final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm sunarp [--limit n]` | `sunarp` | SUNARP — Tribunal Registral y Plenos vía gob.pe | `SUNARP_TERM`, `SUNARP_MAX_SHEETS`, `SUNARP_DELAY`. Filtro `-SUNARP-TR[-sede]` y `/PT`. Ver [`plan-sunarp.md`](./plan-sunarp.md) |
 | `pnpm servir [--limit n]` | `servir` | SERVIR — Tribunal del Servicio Civil vía gob.pe | `SERVIR_TERM` (default "TSC"), `SERVIR_MAX_SHEETS`, `SERVIR_DELAY`. Salas Primera/Segunda en court_chamber. Ver [`plan-servir.md`](./plan-servir.md) |
 | `pnpm oefa [--limit n]` | `oefa` | OEFA — Tribunal de Fiscalización Ambiental vía gob.pe | `OEFA_TERM` (default "TFA"), `OEFA_MAX_SHEETS`. Publicaciones/Report (no normas); escaneadas → OCR. Ver [`plan-oefa.md`](./plan-oefa.md) |
-| `pnpm reguladores [--limit n] [--solo <slugs>]` | `reguladores` | OSINERGMIN + OSIPTEL + SUNASS + OSITRAN vía gob.pe (~51.6k) | `REG_SOLO` restringe instituciones; `REG_MAX_SHEETS` por institución; límite GLOBAL. Un ledger, source/emisor por documento. Ver [`plan-reguladores.md`](./plan-reguladores.md) |
+| `pnpm osinergmin [--limit n]` | `osinergmin` | OSINERGMIN — normativa vía gob.pe (~28.9k) | `OSINERGMIN_MAX_SHEETS`, `OSINERGMIN_DELAY`. Ver [`plan-reguladores.md`](./plan-reguladores.md) |
+| `pnpm osiptel [--limit n]` | `osiptel` | OSIPTEL — normativa vía gob.pe (~8k) | `OSIPTEL_MAX_SHEETS`, `OSIPTEL_DELAY` |
+| `pnpm sunass [--limit n]` | `sunass` | SUNASS — normativa vía gob.pe (~4.5k) | `SUNASS_MAX_SHEETS`, `SUNASS_DELAY` |
+| `pnpm ositran [--limit n]` | `ositran` | OSITRAN — normativa vía gob.pe (~10.3k) | `OSITRAN_MAX_SHEETS`, `OSITRAN_DELAY` |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
-| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → `reguladores` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
+| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
 | `ops/campaign.sh` + systemd | — | La campaña VM completa | pasada idempotente cada 6 h + respaldo rotado de `state/`; ver [`campania-vm.md`](./campania-vm.md) |
 
@@ -120,13 +123,13 @@ están registradas en los 3 repos (huella `553994ae…`).
 
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
-| ✅ | OSINERGMIN | P4 — hecho | `reguladores` | `pnpm reguladores` | ~28.9k normas vía gob.pe. Smoke 3/3. TASTEM/JARU (reclamos de usuarios) fuera a propósito |
-| ✅ | OSIPTEL | P4 — hecho | `reguladores` | `pnpm reguladores` | ~8k normas vía gob.pe. Smoke 3/3 |
-| ✅ | SUNASS | P4 — hecho | `reguladores` | `pnpm reguladores` | ~4.5k normas vía gob.pe. Smoke 3/3 |
-| ✅ | OSITRAN | P4 — hecho | `reguladores` | `pnpm reguladores` | ~10.3k normas vía gob.pe; entidad verificada (sigla OSITRAN). Smoke 3/3 |
-| ⬜ | OEFA – API datos abiertos | P4 | — | — | |
-| ⬜ | PRONABEC – API datos abiertos | P4 | — | — | |
-| ⬜ | Portal de Transparencia (PTE) | P4 | — | — | |
+| ✅ | OSINERGMIN | P4 — hecho | `osinergmin` | `pnpm osinergmin` | ~28.9k normas vía gob.pe. Smoke 3/3. TASTEM/JARU (reclamos de usuarios) fuera a propósito |
+| ✅ | OSIPTEL | P4 — hecho | `osiptel` | `pnpm osiptel` | ~8k normas vía gob.pe. Smoke 3/3 |
+| ✅ | SUNASS | P4 — hecho | `sunass` | `pnpm sunass` | ~4.5k normas vía gob.pe. Smoke 3/3 |
+| ✅ | OSITRAN | P4 — hecho | `ositran` | `pnpm ositran` | ~10.3k normas vía gob.pe; entidad verificada (sigla OSITRAN). Smoke 3/3 |
+| ⬜ | OEFA – API datos abiertos | P4 — evaluada | — | — | **Veredicto 2026-07-30**: sus datasets son datos tabulares (inventarios ambientales, fiscalización), NO documentos legales. Decisión de producto si algún dataset interesa como dato |
+| ⬜ | PRONABEC – API datos abiertos | P4 — evaluada | — | — | **Veredicto 2026-07-30**: encuestas de becarios y postulaciones (datos tabulares), NO documentos legales. Sus resoluciones llegarían por `gobpe` |
+| ⬜ | Portal de Transparencia (PTE) | P4 — evaluada | — | — | **Veredicto 2026-07-30**: información de gestión institucional (portal vivo), NO fuentes del derecho. Decisión de producto |
 | ⬜ | Gobiernos regionales y locales | pregunta abierta | — | — | ¿Ordenanzas regionales/locales entran o solo alcance nacional? Pendiente de Harry (§8 estrategia) |
 
 ### Doctrina (P5 — pendiente decisión de producto con Harry)

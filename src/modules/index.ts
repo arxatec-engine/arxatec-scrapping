@@ -8,4 +8,7 @@ export * as tce from "./tce";
 export * as sunarp from "./sunarp";
 export * as servir from "./servir";
 export * as oefa from "./oefa";
-export * as reguladores from "./reguladores";
+export * as osinergmin from "./osinergmin";
+export * as osiptel from "./osiptel";
+export * as sunass from "./sunass";
+export * as ositran from "./ositran";
