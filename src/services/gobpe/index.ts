@@ -94,15 +94,26 @@ function hrefFrom(anchorHtml: string | null | undefined): string | null {
 /**
  * Una página del buscador (25 items) aplanada a `GobpeRule[]`. `rawCount`
  * permite detectar el fin de la paginación aunque toda la página se filtre.
+ * Por defecto busca `normas` (items `Rule`); algunos tribunales publican sus
+ * resoluciones como `publicaciones` (items `Report`, p.ej. el TFA del OEFA) —
+ * mismos campos, mismo PDF en CDN.
  */
 export async function fetchRulesPage(
   client: GobpeClient,
-  opts: { institucion: string; term?: string; sheet: number }
+  opts: {
+    institucion: string;
+    term?: string;
+    sheet: number;
+    contenido?: "normas" | "publicaciones";
+    tipo?: "Rule" | "Report";
+  }
 ): Promise<{ rules: GobpeRule[]; rawCount: number }> {
   const { log } = client;
+  const contenido = opts.contenido ?? "normas";
+  const tipo = opts.tipo ?? "Rule";
   const term = opts.term ? `&term=${encodeURIComponent(opts.term)}` : "";
   const url =
-    `${BUSQUEDAS_URL}?contenido[]=normas&institucion[]=${opts.institucion}` +
+    `${BUSQUEDAS_URL}?contenido[]=${contenido}&institucion[]=${opts.institucion}` +
     `${term}&orden=recientes&sheet=${opts.sheet}`;
   let lastErr: unknown = null;
 
@@ -123,12 +134,12 @@ export async function fetchRulesPage(
       const results = body.data?.attributes?.results ?? [];
       const rules: GobpeRule[] = [];
       for (const r of results) {
-        if (r.searchable_type !== "Rule") continue;
+        if (r.searchable_type !== tipo) continue;
         const numero = (r.name_with_parent ?? "").trim();
         const path = hrefFrom(r.url);
         const pdfUrl = (r.action_url ?? "").trim();
         if (!numero || !path || !pdfUrl) continue;
-        const gidMatch = /\/normas-legales\/(\d+)-/.exec(path);
+        const gidMatch = /\/(?:normas-legales|informes-publicaciones)\/(\d+)-/.exec(path);
         if (!gidMatch) continue;
         rules.push({
           gid: gidMatch[1],
