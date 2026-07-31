@@ -2,6 +2,7 @@ import { basename, join } from "node:path";
 
 import * as classifier from "../../spij/utils/classifier";
 import * as ingest from "../utils/ingest";
+import { runCuadernillo } from "./cuadernillo";
 import { DATA_DIR } from "../config";
 import { downloadCsv, pickCsvs, resolveCsvUrl } from "../services/datosabiertos";
 import { decodeCp850, parseRows } from "../utils/csv";
@@ -11,6 +12,12 @@ import { launchBrowser, newThrottle, semaphore } from "../../../utils";
 import type { Config, Ctx, Logger, Stats, StoredRecord } from "../types";
 
 export async function run(cfg: Config, log: Logger): Promise<void> {
+  // Modo actualización diaria: el boletín oficial (1 PDF/día), sin el índice CSV.
+  if (cfg.cuadernillo) {
+    await runCuadernillo(cfg, log);
+    return;
+  }
+
   const processed = new Set<string>();
   for (const [id, rec] of store.latestRecords<StoredRecord>(cfg.docsPath)) {
     if (ingest.isDone(rec)) processed.add(id);

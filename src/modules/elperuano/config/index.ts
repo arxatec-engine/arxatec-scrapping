@@ -31,6 +31,8 @@ export function config(): Config {
     periodo: env.get(ENV.EP_PERIODO).asString() || null,
     todos: env.get(ENV.EP_TODOS).default("false").asBool(),
     csvUrl: env.get(ENV.EP_CSV_URL).asString() || null,
+    cuadernillo: env.get(ENV.EP_CUADERNILLO).default("false").asBool(),
+    cuadernilloDias: env.get(ENV.EP_CUADERNILLO_DIAS).default("7").asIntPositive(),
     docsPath: join(state, "ledger.jsonl"),
     logFile: join(state, "scraper.log"),
     ingestBaseUrl: env.get(ENV.INGEST_BASE_URL).default("").asString(),
