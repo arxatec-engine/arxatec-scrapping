@@ -30,6 +30,8 @@ import { config as sunassConfig } from "./modules/sunass/config";
 import { run as sunassRun } from "./modules/sunass/run";
 import { config as ositranConfig } from "./modules/ositran/config";
 import { run as ositranRun } from "./modules/ositran/run";
+import { config as gobpeConfig } from "./modules/gobpe/config";
+import { run as gobpeRun } from "./modules/gobpe/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -221,6 +223,31 @@ async function runOsitran(opts: { limit?: string }): Promise<void> {
   const log = setupLogging(cfg.logFile);
   try {
     await ositranRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runGobpe(opts: {
+  limit?: string;
+  desde?: string;
+  hasta?: string;
+  dias?: string;
+  ambito?: string;
+}): Promise<void> {
+  if (opts.limit) process.env.GOBPE_LIMIT = opts.limit;
+  if (opts.desde) process.env.GOBPE_DESDE = opts.desde;
+  if (opts.hasta) process.env.GOBPE_HASTA = opts.hasta;
+  if (opts.dias) process.env.GOBPE_DIAS = opts.dias;
+  if (opts.ambito) process.env.GOBPE_AMBITO = opts.ambito;
+  const cfg = gobpeConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await gobpeRun(cfg, log);
   } catch (e) {
     log.error(
       "La corrida terminó por un error. Reanudable con el mismo comando."
@@ -530,6 +557,7 @@ function runStatus(): void {
     { name: "osiptel", docsPath: osiptelConfig().docsPath },
     { name: "sunass", docsPath: sunassConfig().docsPath },
     { name: "ositran", docsPath: ositranConfig().docsPath },
+    { name: "gobpe", docsPath: gobpeConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
     { name: "spij", docsPath: spijConfig().docsPath },
     { name: "pj", docsPath: pjConfig().docsPath },
@@ -678,6 +706,19 @@ program
   )
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .action(runOsitran);
+
+program
+  .command("gobpe")
+  .description(
+    "gob.pe (stream general de normas, 5.1M): ventanas de fecha, emisor etiquetado, " +
+      "ámbito nacional por defecto. NO corre en `all` (decisión del owner)."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .option("--desde <YYYY-MM-DD>", "backfill: inicio de la ventana")
+  .option("--hasta <YYYY-MM-DD>", "backfill: fin de la ventana (default hoy)")
+  .option("--dias <n>", "modo incremental: días hacia atrás (default 7)")
+  .option("--ambito <nacional|todos>", "nacional salta Gobiernos Regionales/Locales")
+  .action(runGobpe);
 
 program
   .command("elperuano")

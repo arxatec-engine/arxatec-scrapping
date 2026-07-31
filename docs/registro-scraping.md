@@ -12,8 +12,8 @@
 
 ## Avance
 
-**16 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30** (reguladores P4: una carpeta por regulador, smokes verdes).
+**18 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-30** (módulo `gobpe`: el stream de 5.1M, smoke 10/10).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -48,6 +48,7 @@ final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm osiptel [--limit n]` | `osiptel` | OSIPTEL — normativa vía gob.pe (~8k) | `OSIPTEL_MAX_SHEETS`, `OSIPTEL_DELAY` |
 | `pnpm sunass [--limit n]` | `sunass` | SUNASS — normativa vía gob.pe (~4.5k) | `SUNASS_MAX_SHEETS`, `SUNASS_DELAY` |
 | `pnpm ositran [--limit n]` | `ositran` | OSITRAN — normativa vía gob.pe (~10.3k) | `OSITRAN_MAX_SHEETS`, `OSITRAN_DELAY` |
+| `pnpm gobpe [--limit n] [--desde/--hasta YYYY-MM-DD] [--dias n] [--ambito nacional\|todos]` | `gobpe` | gob.pe — stream GENERAL de normas (5.1M) | Ventanas de 1 día (tope real ~400 hojas); emisor etiquetado; anti-colisión con módulos dedicados; ámbito nacional default. **NO corre en `all`** (decisión owner). Ver [`plan-gobpe.md`](./plan-gobpe.md) |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
 | `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
@@ -81,7 +82,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✅ | SPIJ – acceso libre | hecho | `spij` | `pnpm spij` | El módulo entra por la API autenticada del SPIJ (cuenta gratuita) y cubre el acceso libre. Escala medida: ~875k docs disponibles |
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
-| ⬜ | gob.pe – normas por entidad | P1 por volumen, **AL FINAL de la cola (owner 2026-07-30)** | `gobpe` (propuesto) | — | **Recon 2026-07-30**: la MISMA API JSON del módulo entidades (`busquedas.json?contenido[]=normas`) reporta **5.168.223 normas**; cada item `Rule` trae PDF nativo en CDN, entidad etiquetada, fecha y URL estable; hay normas de 2026 (sin rezago). Incluye municipales (la plataforma ya los soporta: selector de entidades pinta el catálogo completo). Colecciones aparte: p.ej. 13.420 resoluciones del Tribunal de Contrataciones (OECE) — podría cubrir filas P3 sin scraper propio |
+| ✅ | gob.pe – normas por entidad | hecho (era "al final") | `gobpe` | `pnpm gobpe` | Hecho 2026-07-30: stream global por ventanas de 1 día (paginación topa en ~400 hojas), emisor etiquetado, anti-colisión con los 10 módulos gob.pe dedicados, ámbito nacional default (municipales = `--ambito todos`, pendiente Harry). Smoke 10/10. NO corre en `all` hasta decisión del owner |
 | ⬜ | SUNAT – legislación | P3/P4 — BLOQUEADA | — | — | Mismo bloqueo (es el mismo sitio /legislacion/). Solape alto: esa compilación son normas que YA entran por SPIJ y El Peruano |
 
 ### Congreso
@@ -157,7 +158,7 @@ entra al mismo corpus (`type=doctrine` existe en el enum del backend).
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
 | ⬜ | Job diario El Peruano | post-`elperuano` | cron sobre `elperuano` | — | El cuadernillo diario del día anterior |
-| ⬜ | Polling gob.pe | post-módulo gob.pe | cron | — | |
+| ✅ | Polling gob.pe | hecho (mecánica lista) | modo incremental de `gobpe` | `pnpm gobpe` | El default (últimos 7 días + ledger) ES el poll; se activa agendándolo (cron o sumar `gobpe` a `DOC_SCRAPERS` de la campaña) cuando el owner decida |
 | ⬜ | Polling SPLEY | post-módulo SPLEY | cron | — | |
 | ⬜ | Andina – normas del día | señal, no fuente | — | — | Noticias: sirve como alerta de publicación, no como fuente primaria de texto |
 

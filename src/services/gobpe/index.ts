@@ -42,6 +42,10 @@ export interface GobpeRule {
   pdfUrl: string;
   /** Ruta gob.pe (`/institucion/<x>/normas-legales/...`) → source_url. */
   path: string;
+  /** Slug de la institución dueña (de la ruta). */
+  institucion: string;
+  /** Etiqueta del emisor (`content_sub_title_card`: "SIGLA - Nombre completo"). */
+  entidad: string;
 }
 
 interface SearchResult {
@@ -51,6 +55,7 @@ interface SearchResult {
   publication?: string | null;
   action_url?: string | null;
   url?: string | null;
+  content_sub_title_card?: string | null;
 }
 
 interface SearchResponse {
@@ -101,20 +106,29 @@ function hrefFrom(anchorHtml: string | null | undefined): string | null {
 export async function fetchRulesPage(
   client: GobpeClient,
   opts: {
-    institucion: string;
+    /** Sin institución = stream GLOBAL (exige desde/hasta: sin ventana solo
+     * devuelve colecciones y la paginación topa en ~400 hojas). */
+    institucion?: string;
     term?: string;
     sheet: number;
     contenido?: "normas" | "publicaciones";
     tipo?: "Rule" | "Report";
+    /** Ventana de fechas DD-MM-YYYY (ambos extremos inclusivos). */
+    desde?: string;
+    hasta?: string;
   }
 ): Promise<{ rules: GobpeRule[]; rawCount: number }> {
   const { log } = client;
   const contenido = opts.contenido ?? "normas";
   const tipo = opts.tipo ?? "Rule";
+  const inst = opts.institucion ? `&institucion[]=${opts.institucion}` : "";
   const term = opts.term ? `&term=${encodeURIComponent(opts.term)}` : "";
+  const fechas =
+    (opts.desde ? `&desde=${opts.desde}` : "") +
+    (opts.hasta ? `&hasta=${opts.hasta}` : "");
   const url =
-    `${BUSQUEDAS_URL}?contenido[]=${contenido}&institucion[]=${opts.institucion}` +
-    `${term}&orden=recientes&sheet=${opts.sheet}`;
+    `${BUSQUEDAS_URL}?contenido[]=${contenido}${inst}` +
+    `${term}${fechas}&orden=recientes&sheet=${opts.sheet}`;
   let lastErr: unknown = null;
 
   for (let attempt = 1; attempt <= client.maxRetries; attempt++) {
@@ -141,6 +155,7 @@ export async function fetchRulesPage(
         if (!numero || !path || !pdfUrl) continue;
         const gidMatch = /\/(?:normas-legales|informes-publicaciones)\/(\d+)-/.exec(path);
         if (!gidMatch) continue;
+        const instMatch = /\/institucion\/([^/]+)\//.exec(path);
         rules.push({
           gid: gidMatch[1],
           numero,
@@ -148,6 +163,8 @@ export async function fetchRulesPage(
           publishedAt: fechaLargaIso(r.publication),
           pdfUrl,
           path,
+          institucion: instMatch ? instMatch[1] : "",
+          entidad: (r.content_sub_title_card ?? "").trim(),
         });
       }
       return { rules, rawCount: results.length };
