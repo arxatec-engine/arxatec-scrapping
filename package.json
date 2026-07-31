@@ -26,6 +26,7 @@
     "osiptel": "tsx src/cli.ts osiptel",
     "sunass": "tsx src/cli.ts sunass",
     "ositran": "tsx src/cli.ts ositran",
+    "gobpe": "tsx src/cli.ts gobpe",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all",

@@ -12,3 +12,4 @@ export * as osinergmin from "./osinergmin";
 export * as osiptel from "./osiptel";
 export * as sunass from "./sunass";
 export * as ositran from "./ositran";
+export * as gobpe from "./gobpe";

@@ -25,6 +25,17 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const GOBPE_CONCURRENCY = "GOBPE_CONCURRENCY";
+export const GOBPE_DELAY = "GOBPE_DELAY";
+export const GOBPE_LIMIT = "GOBPE_LIMIT";
+export const GOBPE_DESDE = "GOBPE_DESDE";
+export const GOBPE_HASTA = "GOBPE_HASTA";
+export const GOBPE_DIAS = "GOBPE_DIAS";
+export const GOBPE_AMBITO = "GOBPE_AMBITO";
+export const GOBPE_EXCLUIR = "GOBPE_EXCLUIR";
+export const GOBPE_MAX_SHEETS = "GOBPE_MAX_SHEETS";
+export const GOBPE_UA = "GOBPE_UA";
+
 export const OSINERGMIN_CONCURRENCY = "OSINERGMIN_CONCURRENCY";
 export const OSINERGMIN_DELAY = "OSINERGMIN_DELAY";
 export const OSINERGMIN_LIMIT = "OSINERGMIN_LIMIT";

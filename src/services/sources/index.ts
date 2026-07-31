@@ -128,6 +128,14 @@ export const LEGAL_SOURCES: readonly LegalSourceDef[] = [
       "Organismo Supervisor de la Inversión en Infraestructura de Transporte de Uso Público",
     aliases: ["OSITRAN"],
   },
+  // gob.pe como fuente propia (2026-07-30): el stream general de normas de la
+  // Plataforma del Estado (módulo `gobpe`, 5.1M) para todo emisor SIN módulo
+  // dedicado; los tribunales/reguladores con módulo conservan su fuente.
+  {
+    key: "gobpe",
+    canonicalName: "Plataforma Digital Única del Estado Peruano",
+    aliases: ["gob.pe", "gobpe", "Plataforma del Estado Peruano"],
+  },
 ] as const;
 
 /** minúsculas + sin tildes: la llave de comparación de alias. */
