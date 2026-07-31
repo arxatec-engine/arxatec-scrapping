@@ -25,6 +25,13 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const REG_CONCURRENCY = "REG_CONCURRENCY";
+export const REG_DELAY = "REG_DELAY";
+export const REG_LIMIT = "REG_LIMIT";
+export const REG_SOLO = "REG_SOLO";
+export const REG_MAX_SHEETS = "REG_MAX_SHEETS";
+export const REG_UA = "REG_UA";
+
 export const OEFA_CONCURRENCY = "OEFA_CONCURRENCY";
 export const OEFA_DELAY = "OEFA_DELAY";
 export const OEFA_LIMIT = "OEFA_LIMIT";

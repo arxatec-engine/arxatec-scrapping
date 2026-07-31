@@ -20,7 +20,7 @@ import {
  * LOS TRES repos en el mismo cambio (así la divergencia nunca pasa CI).
  */
 const SHARED_CATALOG_SHA256 =
-  "553994aee3ae6b79d92884c00f664ddfc6a47bd1d7534ad35ac756c605950aa3";
+  "9d59636e5955bacb99662b3dd6c685b4bc6707f83bd5ef6ecceedb4dd207f3be";
 
 describe("catálogo canónico de fuentes", () => {
   it("mantiene la huella compartida con assistant y platform", () => {
