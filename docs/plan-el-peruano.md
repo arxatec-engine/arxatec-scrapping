@@ -85,7 +85,8 @@ pendiente (`finalize` con 4 pasadas, patrón SPIJ).
   2013–mar-2022 viene en un solo CSV grande).
 - El histórico pre-2013 (hasta 1904) exigiría el buscador JSON del sitio —
   mejora futura, no bloquea el volumen de seis cifras.
-- **Actualización continua** (fila "Job diario El Peruano" del registro): el
+- **Actualización continua HECHA (`--cuadernillo`)**: el boletín oficial diario (`/cuadernillo/NL/{YYYYMMDD}` → un PDF con toda la normativa del día) se ingesta como 1 documento/día (id `cuadernillo-YYYYMMDD`, reanudable). Cubre el rezago del dataset. `--dias n` mira los últimos n días; agendarlo (cron/campaña) es el job diario.
+- **Actualización continua (contexto original)** (fila "Job diario El Peruano" del registro): el
   dataset publica con rezago (~meses); para el día a día está el cuadernillo
   (`/cuadernillo/NL/{YYYYMMDD}`) — módulo/cron aparte cuando toque.
 - Riesgo de duplicados cross-fuente (la misma norma en SPIJ y El Peruano, con

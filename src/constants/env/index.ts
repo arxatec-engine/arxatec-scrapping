@@ -112,6 +112,8 @@ export const EP_DELAY = "EP_DELAY";
 export const EP_LIMIT = "EP_LIMIT";
 export const EP_PERIODO = "EP_PERIODO";
 export const EP_TODOS = "EP_TODOS";
+export const EP_CUADERNILLO = "EP_CUADERNILLO";
+export const EP_CUADERNILLO_DIAS = "EP_CUADERNILLO_DIAS";
 export const EP_CSV_URL = "EP_CSV_URL";
 export const EP_UA = "EP_UA";
 
