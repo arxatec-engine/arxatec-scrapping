@@ -32,6 +32,8 @@ import { config as ositranConfig } from "./modules/ositran/config";
 import { run as ositranRun } from "./modules/ositran/run";
 import { config as gobpeConfig } from "./modules/gobpe/config";
 import { run as gobpeRun } from "./modules/gobpe/run";
+import { config as sunatConfig } from "./modules/sunat/config";
+import { run as sunatRun } from "./modules/sunat/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -257,6 +259,21 @@ async function runGobpe(opts: {
   }
 }
 
+async function runSunat(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.SUNAT_LIMIT = opts.limit;
+  const cfg = sunatConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await sunatRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
 async function runElperuano(opts: {
   limit?: string;
   periodo?: string;
@@ -418,6 +435,14 @@ const DOC_SCRAPERS: Array<{
     },
   },
   {
+    name: "sunat",
+    limitEnv: "SUNAT_LIMIT",
+    exec: () => {
+      const cfg = sunatConfig();
+      return sunatRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
     name: "elperuano",
     limitEnv: "EP_LIMIT",
     exec: () => {
@@ -558,6 +583,7 @@ function runStatus(): void {
     { name: "sunass", docsPath: sunassConfig().docsPath },
     { name: "ositran", docsPath: ositranConfig().docsPath },
     { name: "gobpe", docsPath: gobpeConfig().docsPath },
+    { name: "sunat", docsPath: sunatConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
     { name: "spij", docsPath: spijConfig().docsPath },
     { name: "pj", docsPath: pjConfig().docsPath },
@@ -721,6 +747,14 @@ program
   .action(runGobpe);
 
 program
+  .command("sunat")
+  .description(
+    "SUNAT: informes, oficios y cartas vinculantes de su árbol de legislación (1997→hoy), e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runSunat);
+
+program
   .command("elperuano")
   .description(
     "Diario Oficial El Peruano: índice desde el CSV de datosabiertos.gob.pe " +
@@ -757,7 +791,7 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → elperuano → spij → pj). " +
+      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → sunat → elperuano → spij → pj). " +
       "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")

@@ -25,6 +25,13 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const SUNAT_CONCURRENCY = "SUNAT_CONCURRENCY";
+export const SUNAT_DELAY = "SUNAT_DELAY";
+export const SUNAT_LIMIT = "SUNAT_LIMIT";
+export const SUNAT_ANIO_DESDE = "SUNAT_ANIO_DESDE";
+export const SUNAT_ANIO_HASTA = "SUNAT_ANIO_HASTA";
+export const SUNAT_UA = "SUNAT_UA";
+
 export const GOBPE_CONCURRENCY = "GOBPE_CONCURRENCY";
 export const GOBPE_DELAY = "GOBPE_DELAY";
 export const GOBPE_LIMIT = "GOBPE_LIMIT";
