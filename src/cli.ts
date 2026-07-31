@@ -34,6 +34,8 @@ import { config as gobpeConfig } from "./modules/gobpe/config";
 import { run as gobpeRun } from "./modules/gobpe/run";
 import { config as sunatConfig } from "./modules/sunat/config";
 import { run as sunatRun } from "./modules/sunat/run";
+import { config as spleyConfig } from "./modules/spley/config";
+import { run as spleyRun } from "./modules/spley/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -274,6 +276,21 @@ async function runSunat(opts: { limit?: string }): Promise<void> {
   }
 }
 
+async function runSpley(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.SPLEY_LIMIT = opts.limit;
+  const cfg = spleyConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await spleyRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
 async function runElperuano(opts: {
   limit?: string;
   periodo?: string;
@@ -443,6 +460,14 @@ const DOC_SCRAPERS: Array<{
     },
   },
   {
+    name: "spley",
+    limitEnv: "SPLEY_LIMIT",
+    exec: () => {
+      const cfg = spleyConfig();
+      return spleyRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
     name: "elperuano",
     limitEnv: "EP_LIMIT",
     exec: () => {
@@ -584,6 +609,7 @@ function runStatus(): void {
     { name: "ositran", docsPath: ositranConfig().docsPath },
     { name: "gobpe", docsPath: gobpeConfig().docsPath },
     { name: "sunat", docsPath: sunatConfig().docsPath },
+    { name: "spley", docsPath: spleyConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
     { name: "spij", docsPath: spijConfig().docsPath },
     { name: "pj", docsPath: pjConfig().docsPath },
@@ -755,6 +781,14 @@ program
   .action(runSunat);
 
 program
+  .command("spley")
+  .description(
+    "SPLEY (Congreso): proyectos de ley (status 'En revisión'), vía la API del portal, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runSpley);
+
+program
   .command("elperuano")
   .description(
     "Diario Oficial El Peruano: índice desde el CSV de datosabiertos.gob.pe " +
@@ -791,7 +825,7 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → sunat → elperuano → spij → pj). " +
+      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → sunat → spley → elperuano → spij → pj). " +
       "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")
