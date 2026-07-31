@@ -21,6 +21,7 @@
     "tce": "tsx src/cli.ts tce",
     "sunarp": "tsx src/cli.ts sunarp",
     "servir": "tsx src/cli.ts servir",
+    "oefa": "tsx src/cli.ts oefa",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all",

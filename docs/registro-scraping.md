@@ -12,8 +12,8 @@
 
 ## Avance
 
-**11 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30** (módulo `servir`: smoke 10/10).
+**12 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-30** (módulo `oefa`: smoke 10/10 con OCR).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -23,10 +23,11 @@
   ser riesgo de calidad; los warnings del ledger quedan como auditoría.
 - **`gobpe` (normas por entidad) va AL FINAL** de la cola de construcción.
 
-**Cola de construcción de módulos** (mientras la VM corre la campaña):
-P3 tribunales administrativos reutilizando el molde PJ/TC — Tribunal Fiscal →
-INDECOPI → OSCE → SUNARP (TR y SIP) → SERVIR → OEFA — luego SUNAT y P4
-reguladores; `gobpe` al final; Congreso y doctrina (P5) tras decisión de Harry.
+**Cola de construcción de módulos:** ✅ P3 CERRADA 2026-07-30 (Tribunal Fiscal,
+INDECOPI, Contrataciones, SUNARP TR+SIP, SERVIR, OEFA — 6 módulos en un día
+con el patrón gob.pe compartido; SUNAT bloqueada por sitio caído, reintentar).
+Siguiente: P4 reguladores → `gobpe` al final; Congreso y doctrina (P5) tras
+decisión de Harry.
 
 ## Comandos de lo que ya existe
 
@@ -41,8 +42,9 @@ reguladores; `gobpe` al final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm tce [--limit n]` | `tce` | Tribunal de Contrataciones (OECE) — resoluciones TCP por sala vía gob.pe | `TCE_MAX_SHEETS`, `TCE_DELAY`. Filtro por sufijo TCP/TCE+sala sobre las 85.7k normas del OECE. Ver [`plan-tce.md`](./plan-tce.md) |
 | `pnpm sunarp [--limit n]` | `sunarp` | SUNARP — Tribunal Registral y Plenos vía gob.pe | `SUNARP_TERM`, `SUNARP_MAX_SHEETS`, `SUNARP_DELAY`. Filtro `-SUNARP-TR[-sede]` y `/PT`. Ver [`plan-sunarp.md`](./plan-sunarp.md) |
 | `pnpm servir [--limit n]` | `servir` | SERVIR — Tribunal del Servicio Civil vía gob.pe | `SERVIR_TERM` (default "TSC"), `SERVIR_MAX_SHEETS`, `SERVIR_DELAY`. Salas Primera/Segunda en court_chamber. Ver [`plan-servir.md`](./plan-servir.md) |
+| `pnpm oefa [--limit n]` | `oefa` | OEFA — Tribunal de Fiscalización Ambiental vía gob.pe | `OEFA_TERM` (default "TFA"), `OEFA_MAX_SHEETS`. Publicaciones/Report (no normas); escaneadas → OCR. Ver [`plan-oefa.md`](./plan-oefa.md) |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
-| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
+| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
 | `ops/campaign.sh` + systemd | — | La campaña VM completa | pasada idempotente cada 6 h + respaldo rotado de `state/`; ver [`campania-vm.md`](./campania-vm.md) |
 
@@ -75,7 +77,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
 | ⬜ | gob.pe – normas por entidad | P1 por volumen, **AL FINAL de la cola (owner 2026-07-30)** | `gobpe` (propuesto) | — | **Recon 2026-07-30**: la MISMA API JSON del módulo entidades (`busquedas.json?contenido[]=normas`) reporta **5.168.223 normas**; cada item `Rule` trae PDF nativo en CDN, entidad etiquetada, fecha y URL estable; hay normas de 2026 (sin rezago). Incluye municipales (la plataforma ya los soporta: selector de entidades pinta el catálogo completo). Colecciones aparte: p.ej. 13.420 resoluciones del Tribunal de Contrataciones (OECE) — podría cubrir filas P3 sin scraper propio |
-| ⬜ | SUNAT – legislación | P3/P4 | — | — | Legislación tributaria sistematizada |
+| ⬜ | SUNAT – legislación | P3/P4 — BLOQUEADA | — | — | Mismo bloqueo (es el mismo sitio /legislacion/). Solape alto: esa compilación son normas que YA entran por SPIJ y El Peruano |
 
 ### Congreso
 
@@ -109,8 +111,8 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ✅ | SUNARP – Tribunal Registral | P3 — hecho | `sunarp` | `pnpm sunarp` | Hecho 2026-07-30 vía gob.pe (término + filtro `-SUNARP-TR[-sede]`; sede en court_chamber). Smoke 10/10 born-digital |
 | ✅ | SUNARP – SIP (precedentes) | P3 — hecho | dentro de `sunarp` | `pnpm sunarp` | El sitio SIP está CAÍDO; los precedentes nacen en los acuerdos de Pleno (`…-SUNARP/PT`) que este módulo ingesta del mismo stream |
 | ✅ | SERVIR – Tribunal del Servicio Civil | P3 — hecho | `servir` | `pnpm servir` | Hecho 2026-07-30 vía gob.pe (term TSC + filtro; ~168k normas SERVIR, las TSC con sala en court_chamber). Smoke 10/10 born-digital |
-| ⬜ | OEFA – Tribunal de Fiscalización Ambiental | P3 | — | — | |
-| ⬜ | SUNAT – resoluciones e informes | P3/P4 | — | — | Informes vinculantes |
+| ✅ | OEFA – Tribunal de Fiscalización Ambiental | P3 — hecho | `oefa` | `pnpm oefa` | Hecho 2026-07-30 vía gob.pe: las TFA van como PUBLICACIONES (Report), ~7.3k con término; antiguas escaneadas → OCR local. Smoke 10/10 |
+| ⬜ | SUNAT – resoluciones e informes | P3 — BLOQUEADA | `sunat` (pendiente) | — | **Recon 2026-07-30**: www.sunat.gob.pe (árbol /legislacion/ con informes vinculantes) NO responde desde esta red (timeouts totales; ww1 vive pero sin ese árbol) y gob.pe solo tiene 60 normas de SUNAT. Reintentar cuando el sitio responda. Mientras: sus resoluciones de superintendencia YA fluyen por El Peruano/SPIJ |
 
 ### Reguladores y APIs de datos abiertos (P4)
 

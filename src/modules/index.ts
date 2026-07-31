@@ -7,3 +7,4 @@ export * as indecopi from "./indecopi";
 export * as tce from "./tce";
 export * as sunarp from "./sunarp";
 export * as servir from "./servir";
+export * as oefa from "./oefa";
