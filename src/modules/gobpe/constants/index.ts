@@ -9,8 +9,9 @@
  *    excluyen por slug los streams ya cubiertos completos y, además, todo gid
  *    presente en los ledgers de los módulos gob.pe existentes (doble defensa:
  *    re-ingestar aquí los sobreescribiría con la fuente genérica).
- *  - ÁMBITO nacional por defecto: emisores de Gobiernos Regionales/Locales se
- *    saltan (la pregunta de Harry queda como grifo, no como bloqueo).
+ *  - ÁMBITO "todos" por defecto (decisión del owner 2026-07-31: las
+ *    ordenanzas municipales/regionales SÍ entran — el Excel las lista);
+ *    GOBPE_AMBITO=nacional queda como restricción opcional.
  */
 export { GOBPE_BASE } from "../../../services/gobpe";
 
@@ -40,7 +41,7 @@ export const LEDGERS_MODULOS_DEDICADOS = [
   "ositran_ingest",
 ];
 
-/** Grupos del catálogo que quedan fuera con GOBPE_AMBITO=nacional. */
+/** Grupos que quedan fuera SOLO si GOBPE_AMBITO=nacional (opcional). */
 export const GRUPOS_SUBNACIONALES = ["Gobiernos Regionales", "Gobiernos Locales"];
 
 export const DEFAULT_USER_AGENT =

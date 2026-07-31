@@ -31,7 +31,7 @@ export function config(): Config {
     desde: env.get(ENV.GOBPE_DESDE).asString() || null,
     hasta: env.get(ENV.GOBPE_HASTA).asString() || null,
     dias: env.get(ENV.GOBPE_DIAS).default("7").asIntPositive(),
-    ambito: env.get(ENV.GOBPE_AMBITO).default("nacional").asString(),
+    ambito: env.get(ENV.GOBPE_AMBITO).default("todos").asString(),
     excluir: env
       .get(ENV.GOBPE_EXCLUIR)
       .default(EXCLUIR_SLUGS_DEFAULT.join(","))

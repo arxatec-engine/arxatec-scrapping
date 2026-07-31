@@ -12,7 +12,7 @@
 
 ## Avance
 
-**18 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+**19 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
 Última actualización: **2026-07-30** (módulo `gobpe`: el stream de 5.1M, smoke 10/10).
 
 **Decisiones del owner (2026-07-30):**
@@ -48,7 +48,7 @@ final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm osiptel [--limit n]` | `osiptel` | OSIPTEL — normativa vía gob.pe (~8k) | `OSIPTEL_MAX_SHEETS`, `OSIPTEL_DELAY` |
 | `pnpm sunass [--limit n]` | `sunass` | SUNASS — normativa vía gob.pe (~4.5k) | `SUNASS_MAX_SHEETS`, `SUNASS_DELAY` |
 | `pnpm ositran [--limit n]` | `ositran` | OSITRAN — normativa vía gob.pe (~10.3k) | `OSITRAN_MAX_SHEETS`, `OSITRAN_DELAY` |
-| `pnpm gobpe [--limit n] [--desde/--hasta YYYY-MM-DD] [--dias n] [--ambito nacional\|todos]` | `gobpe` | gob.pe — stream GENERAL de normas (5.1M) | Ventanas de 1 día (tope real ~400 hojas); emisor etiquetado; anti-colisión con módulos dedicados; ámbito nacional default. **NO corre en `all`** (decisión owner). Ver [`plan-gobpe.md`](./plan-gobpe.md) |
+| `pnpm gobpe [--limit n] [--desde/--hasta YYYY-MM-DD] [--dias n] [--ambito nacional\|todos]` | `gobpe` | gob.pe — stream GENERAL de normas (5.1M) | Ventanas de 1 día (tope real ~400 hojas); emisor etiquetado; anti-colisión con módulos dedicados; ámbito "todos" default. **NO corre en `all`** (decisión owner). Ver [`plan-gobpe.md`](./plan-gobpe.md) |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
 | `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
@@ -82,7 +82,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✅ | SPIJ – acceso libre | hecho | `spij` | `pnpm spij` | El módulo entra por la API autenticada del SPIJ (cuenta gratuita) y cubre el acceso libre. Escala medida: ~875k docs disponibles |
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
-| ✅ | gob.pe – normas por entidad | hecho (era "al final") | `gobpe` | `pnpm gobpe` | Hecho 2026-07-30: stream global por ventanas de 1 día (paginación topa en ~400 hojas), emisor etiquetado, anti-colisión con los 10 módulos gob.pe dedicados, ámbito nacional default (municipales = `--ambito todos`, pendiente Harry). Smoke 10/10. NO corre en `all` hasta decisión del owner |
+| ✅ | gob.pe – normas por entidad | hecho (era "al final") | `gobpe` | `pnpm gobpe` | Hecho 2026-07-30: stream global por ventanas de 1 día (paginación topa en ~400 hojas), emisor etiquetado, anti-colisión con los 10 módulos gob.pe dedicados, ámbito "todos" default (municipales INCLUIDAS, decisión owner 2026-07-31). Smoke 10/10. NO corre en `all` hasta decisión del owner |
 | ⬜ | SUNAT – legislación | P3/P4 — BLOQUEADA | — | — | Mismo bloqueo (es el mismo sitio /legislacion/). Solape alto: esa compilación son normas que YA entran por SPIJ y El Peruano |
 
 ### Congreso
@@ -131,7 +131,7 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ⬜ | OEFA – API datos abiertos | P4 — evaluada | — | — | **Veredicto 2026-07-30**: sus datasets son datos tabulares (inventarios ambientales, fiscalización), NO documentos legales. Decisión de producto si algún dataset interesa como dato |
 | ⬜ | PRONABEC – API datos abiertos | P4 — evaluada | — | — | **Veredicto 2026-07-30**: encuestas de becarios y postulaciones (datos tabulares), NO documentos legales. Sus resoluciones llegarían por `gobpe` |
 | ⬜ | Portal de Transparencia (PTE) | P4 — evaluada | — | — | **Veredicto 2026-07-30**: información de gestión institucional (portal vivo), NO fuentes del derecho. Decisión de producto |
-| ⬜ | Gobiernos regionales y locales | pregunta abierta | — | — | ¿Ordenanzas regionales/locales entran o solo alcance nacional? Pendiente de Harry (§8 estrategia) |
+| ✅ | Gobiernos regionales y locales | hecho (decisión owner 2026-07-31) | dentro de `gobpe` | `pnpm gobpe` | Las ordenanzas municipales/regionales entran: ámbito "todos" es el default del módulo (`GOBPE_AMBITO=nacional` queda como restricción opcional) |
 
 ### Doctrina (P5 — pendiente decisión de producto con Harry)
 

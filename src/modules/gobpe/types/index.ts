@@ -27,7 +27,7 @@ export interface Config {
   hasta: string | null;
   /** Modo incremental: días hacia atrás desde hoy (default 7). */
   dias: number;
-  /** "nacional" (default: salta Gobiernos Regionales/Locales) o "todos". */
+  /** "todos" (default, decisión owner 2026-07-31) o "nacional" (salta Gobiernos Regionales/Locales). */
   ambito: string;
   /** Slugs excluidos (streams cubiertos por módulos dedicados). */
   excluir: string[];

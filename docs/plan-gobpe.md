@@ -23,10 +23,10 @@
   slug de los streams cubiertos completos (indecopi + 4 reguladores);
   (b) todo gid presente en los ledgers de los 10 módulos gob.pe dedicados es
   INTOCABLE (se cargan al arrancar).
-- **Ámbito nacional por defecto** (`GOBPE_AMBITO=nacional`): tras resolver el
-  emisor, si su grupo es "Gobiernos Regionales"/"Gobiernos Locales" el doc se
-  salta (contador en el resumen). La pregunta abierta de Harry sobre
-  ordenanzas queda como grifo (`GOBPE_AMBITO=todos`), no como bloqueo.
+- **Ámbito "todos" por defecto** (decisión del owner 2026-07-31: las
+  ordenanzas municipales/regionales SÍ entran, el Excel las lista y la
+  plataforma ya las soporta end-to-end). `GOBPE_AMBITO=nacional` queda como
+  restricción opcional que salta Gobiernos Regionales/Locales.
 
 ## 3. Contrato
 
