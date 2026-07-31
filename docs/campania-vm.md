@@ -17,6 +17,7 @@
 | Trib. Registral (SUNARP) | miles (TR+Plenos dentro de 70k de SUNARP) | vía gob.pe, born-digital |
 | Trib. Servicio Civil | ~12k+ (2 salas) | vía gob.pe, born-digital |
 | Trib. Fisc. Ambiental | ~7.3k | vía gob.pe (publicaciones); antiguas → OCR |
+| Reguladores ×4 | ~51.6k | OSINERGMIN/OSIPTEL/SUNASS/OSITRAN vía gob.pe |
 | El Peruano | ~200k+ (2013→hoy) | universo enumerable por CSVs; `--todos` itera todos los periodos |
 | SPIJ | ~875k | API autenticada estable; el total lo dice la propia API |
 | **Total** | **~1.15M** | **la meta del millón, solo con módulos validados** |

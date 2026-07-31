@@ -32,6 +32,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 14 | [`plan-sunarp.md`](./plan-sunarp.md) | **El cuarto P3 (hecho, cubre 2 filas).** Tribunal Registral y acuerdos de Pleno (SIP caído) vía gob.pe; sede/Pleno en `court_chamber`. |
 | 15 | [`plan-servir.md`](./plan-servir.md) | **El quinto P3 (hecho).** Tribunal del Servicio Civil vía gob.pe (term TSC, formatos de número por época, salas en `court_chamber`). |
 | 16 | [`plan-oefa.md`](./plan-oefa.md) | **El sexto P3 (hecho).** TFA vía PUBLICACIONES de gob.pe (cliente generalizado a Report); escaneadas rescatadas por el OCR compartido. |
+| 17 | [`plan-reguladores.md`](./plan-reguladores.md) | **La tanda P4 (hecha).** Un módulo, cuatro fuentes (OSINERGMIN/OSIPTEL/SUNASS/OSITRAN, ~51.6k): source y emisor por documento, tanda P4 del catálogo canónico. |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)

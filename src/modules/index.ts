@@ -8,3 +8,4 @@ export * as tce from "./tce";
 export * as sunarp from "./sunarp";
 export * as servir from "./servir";
 export * as oefa from "./oefa";
+export * as reguladores from "./reguladores";

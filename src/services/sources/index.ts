@@ -105,6 +105,29 @@ export const LEGAL_SOURCES: readonly LegalSourceDef[] = [
     canonicalName: "Superintendencia Nacional de Aduanas y de Administración Tributaria",
     aliases: ["SUNAT"],
   },
+  // Tanda P4 (reguladores, registrada 2026-07-30): igual que la P3, todas de
+  // una vez para una sola rotación de huella; las sirve el módulo `reguladores`.
+  {
+    key: "osinergmin",
+    canonicalName: "Organismo Supervisor de la Inversión en Energía y Minería",
+    aliases: ["OSINERGMIN"],
+  },
+  {
+    key: "osiptel",
+    canonicalName: "Organismo Supervisor de Inversión Privada en Telecomunicaciones",
+    aliases: ["OSIPTEL"],
+  },
+  {
+    key: "sunass",
+    canonicalName: "Superintendencia Nacional de Servicios de Saneamiento",
+    aliases: ["SUNASS"],
+  },
+  {
+    key: "ositran",
+    canonicalName:
+      "Organismo Supervisor de la Inversión en Infraestructura de Transporte de Uso Público",
+    aliases: ["OSITRAN"],
+  },
 ] as const;
 
 /** minúsculas + sin tildes: la llave de comparación de alias. */
