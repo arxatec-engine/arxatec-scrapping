@@ -29,6 +29,7 @@
     "gobpe": "tsx src/cli.ts gobpe",
     "sunat": "tsx src/cli.ts sunat",
     "spley": "tsx src/cli.ts spley",
+    "doctrina": "tsx src/cli.ts doctrina",
     "ingest": "tsx src/cli.ts spij",
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all",

@@ -36,6 +36,8 @@ import { config as sunatConfig } from "./modules/sunat/config";
 import { run as sunatRun } from "./modules/sunat/run";
 import { config as spleyConfig } from "./modules/spley/config";
 import { run as spleyRun } from "./modules/spley/run";
+import { config as doctrinaConfig } from "./modules/doctrina/config";
+import { run as doctrinaRun } from "./modules/doctrina/run";
 import { run as entidadesRun } from "./modules/entidades";
 import { setupLogging } from "./utils";
 import { latestRecords } from "./utils/store";
@@ -291,6 +293,22 @@ async function runSpley(opts: { limit?: string }): Promise<void> {
   }
 }
 
+async function runDoctrina(opts: { limit?: string; repos?: string }): Promise<void> {
+  if (opts.limit) process.env.DOCTRINA_LIMIT = opts.limit;
+  if (opts.repos) process.env.DOCTRINA_REPOS = opts.repos;
+  const cfg = doctrinaConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await doctrinaRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
 async function runElperuano(opts: {
   limit?: string;
   periodo?: string;
@@ -468,6 +486,14 @@ const DOC_SCRAPERS: Array<{
     },
   },
   {
+    name: "doctrina",
+    limitEnv: "DOCTRINA_LIMIT",
+    exec: () => {
+      const cfg = doctrinaConfig();
+      return doctrinaRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
     name: "elperuano",
     limitEnv: "EP_LIMIT",
     exec: () => {
@@ -610,6 +636,7 @@ function runStatus(): void {
     { name: "gobpe", docsPath: gobpeConfig().docsPath },
     { name: "sunat", docsPath: sunatConfig().docsPath },
     { name: "spley", docsPath: spleyConfig().docsPath },
+    { name: "doctrina", docsPath: doctrinaConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
     { name: "spij", docsPath: spijConfig().docsPath },
     { name: "pj", docsPath: pjConfig().docsPath },
@@ -789,6 +816,15 @@ program
   .action(runSpley);
 
 program
+  .command("doctrina")
+  .description(
+    "Doctrina (OAI-PMH): tesis y artículos jurídicos de repositorios académicos, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .option("--repos <slugs>", "solo estos repositorios, separados por coma")
+  .action(runDoctrina);
+
+program
   .command("elperuano")
   .description(
     "Diario Oficial El Peruano: índice desde el CSV de datosabiertos.gob.pe " +
@@ -825,7 +861,7 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → sunat → spley → elperuano → spij → pj). " +
+      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → sunat → spley → doctrina → elperuano → spij → pj). " +
       "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")
