@@ -12,8 +12,8 @@
 
 ## Avance
 
-**19 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-30** (módulo `gobpe`: el stream de 5.1M, smoke 10/10).
+**20 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-31** (módulo `sunat` el día que su sitio revivió, smoke 10/10; gobpe con ámbito "todos").
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -49,6 +49,7 @@ final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm sunass [--limit n]` | `sunass` | SUNASS — normativa vía gob.pe (~4.5k) | `SUNASS_MAX_SHEETS`, `SUNASS_DELAY` |
 | `pnpm ositran [--limit n]` | `ositran` | OSITRAN — normativa vía gob.pe (~10.3k) | `OSITRAN_MAX_SHEETS`, `OSITRAN_DELAY` |
 | `pnpm gobpe [--limit n] [--desde/--hasta YYYY-MM-DD] [--dias n] [--ambito nacional\|todos]` | `gobpe` | gob.pe — stream GENERAL de normas (5.1M) | Ventanas de 1 día (tope real ~400 hojas); emisor etiquetado; anti-colisión con módulos dedicados; ámbito "todos" default. **NO corre en `all`** (decisión owner). Ver [`plan-gobpe.md`](./plan-gobpe.md) |
+| `pnpm sunat [--limit n]` | `sunat` | SUNAT — informes/oficios vinculantes (1997→hoy) | `SUNAT_ANIO_DESDE/HASTA`. Árbol estático (frameset); PDF moderno + .htm viejo renderizado; fecha = piso del año. Ver [`plan-sunat.md`](./plan-sunat.md) |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
 | `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
@@ -83,7 +84,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
 | ✅ | gob.pe – normas por entidad | hecho (era "al final") | `gobpe` | `pnpm gobpe` | Hecho 2026-07-30: stream global por ventanas de 1 día (paginación topa en ~400 hojas), emisor etiquetado, anti-colisión con los 10 módulos gob.pe dedicados, ámbito "todos" default (municipales INCLUIDAS, decisión owner 2026-07-31). Smoke 10/10. NO corre en `all` hasta decisión del owner |
-| ⬜ | SUNAT – legislación | P3/P4 — BLOQUEADA | — | — | Mismo bloqueo (es el mismo sitio /legislacion/). Solape alto: esa compilación son normas que YA entran por SPIJ y El Peruano |
+| ⬜ | SUNAT – legislación | evaluada | — | — | **Veredicto 2026-07-31**: la compilación tributaria concordada son las MISMAS normas que ya entran por SPIJ/El Peruano; su plus (vigencias/concordancias) es el problema `status` global diferido por Harry |
 
 ### Congreso
 
@@ -118,7 +119,7 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ✅ | SUNARP – SIP (precedentes) | P3 — hecho | dentro de `sunarp` | `pnpm sunarp` | El sitio SIP está CAÍDO; los precedentes nacen en los acuerdos de Pleno (`…-SUNARP/PT`) que este módulo ingesta del mismo stream |
 | ✅ | SERVIR – Tribunal del Servicio Civil | P3 — hecho | `servir` | `pnpm servir` | Hecho 2026-07-30 vía gob.pe (term TSC + filtro; ~168k normas SERVIR, las TSC con sala en court_chamber). Smoke 10/10 born-digital |
 | ✅ | OEFA – Tribunal de Fiscalización Ambiental | P3 — hecho | `oefa` | `pnpm oefa` | Hecho 2026-07-30 vía gob.pe: las TFA van como PUBLICACIONES (Report), ~7.3k con término; antiguas escaneadas → OCR local. Smoke 10/10 |
-| ⬜ | SUNAT – resoluciones e informes | P3 — BLOQUEADA | `sunat` (pendiente) | — | **Recon 2026-07-30**: www.sunat.gob.pe (árbol /legislacion/ con informes vinculantes) NO responde desde esta red (timeouts totales; ww1 vive pero sin ese árbol) y gob.pe solo tiene 60 normas de SUNAT. Reintentar cuando el sitio responda. Mientras: sus resoluciones de superintendencia YA fluyen por El Peruano/SPIJ |
+| ✅ | SUNAT – resoluciones e informes | P3 — hecho | `sunat` | `pnpm sunat` | El sitio revivió el 31-jul y el módulo se construyó ese día: informes/oficios/cartas 1997→hoy (índices anuales; los años nuevos existen aunque el frameset viejo tope en 2010). Smoke 10/10. Las resoluciones de superintendencia se omiten (fluyen por EP/SPIJ) |
 
 ### Reguladores y APIs de datos abiertos (P4)
 

@@ -34,6 +34,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 16 | [`plan-oefa.md`](./plan-oefa.md) | **El sexto P3 (hecho).** TFA vía PUBLICACIONES de gob.pe (cliente generalizado a Report); escaneadas rescatadas por el OCR compartido. |
 | 17 | [`plan-reguladores.md`](./plan-reguladores.md) | **La tanda P4 (hecha).** Un módulo, cuatro fuentes (OSINERGMIN/OSIPTEL/SUNASS/OSITRAN, ~51.6k): source y emisor por documento, tanda P4 del catálogo canónico. |
 | 18 | [`plan-gobpe.md`](./plan-gobpe.md) | **El stream general de gob.pe (hecho).** 5.1M normas por ventanas de 1 día (tope ~400 hojas), emisor etiquetado, anti-colisión con módulos dedicados y ámbito nacional como grifo. Fuera de `all` por decisión. |
+| 19 | [`plan-sunat.md`](./plan-sunat.md) | **SUNAT (hecho el día que revivió su sitio).** Informes/oficios vinculantes 1997→hoy del árbol estático; charset mixto y fecha-piso del año (validación del backend). |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)

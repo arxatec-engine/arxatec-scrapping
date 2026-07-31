@@ -13,3 +13,4 @@ export * as osiptel from "./osiptel";
 export * as sunass from "./sunass";
 export * as ositran from "./ositran";
 export * as gobpe from "./gobpe";
+export * as sunat from "./sunat";
