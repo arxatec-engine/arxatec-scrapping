@@ -37,6 +37,13 @@ export const SPLEY_LIMIT = "SPLEY_LIMIT";
 export const SPLEY_PERIODOS = "SPLEY_PERIODOS";
 export const SPLEY_UA = "SPLEY_UA";
 
+export const ADLP_CONCURRENCY = "ADLP_CONCURRENCY";
+export const ADLP_DELAY = "ADLP_DELAY";
+export const ADLP_LIMIT = "ADLP_LIMIT";
+export const ADLP_DESDE = "ADLP_DESDE";
+export const ADLP_HASTA = "ADLP_HASTA";
+export const ADLP_UA = "ADLP_UA";
+
 export const SUNAT_CONCURRENCY = "SUNAT_CONCURRENCY";
 export const SUNAT_DELAY = "SUNAT_DELAY";
 export const SUNAT_LIMIT = "SUNAT_LIMIT";

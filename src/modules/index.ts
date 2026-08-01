@@ -14,5 +14,6 @@ export * as sunass from "./sunass";
 export * as ositran from "./ositran";
 export * as gobpe from "./gobpe";
 export * as sunat from "./sunat";
+export * as adlp from "./adlp";
 export * as spley from "./spley";
 export * as doctrina from "./doctrina";

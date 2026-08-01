@@ -37,6 +37,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 19 | [`plan-sunat.md`](./plan-sunat.md) | **SUNAT (hecho el día que revivió su sitio).** Informes/oficios vinculantes 1997→hoy del árbol estático; charset mixto y fecha-piso del año (validación del backend). |
 | 20 | [`plan-spley.md`](./plan-spley.md) | **Congreso/SPLEY (hecho).** Proyectos de ley vía la API del portal (lista + expediente AES); estrena status "En revisión" y fija la política de vigencia (determinista por fuente, nunca IA). |
 | 21 | [`plan-doctrina.md`](./plan-doctrina.md) | **Doctrina (hecho, cubre 9 filas P5).** Un cosechador OAI-PMH para tesis/artículos jurídicos de repositorios académicos; filtro a lo jurídico, type=doctrine, fuente canónica nueva. |
+| 22 | [`plan-adlp.md`](./plan-adlp.md) | **ADLP del Congreso (hecho, el último construible).** Normas con rango de ley 1944-2016 del buscador WebForms (grid trunca a 20) + PDF directo con OCR; **vigencia determinista de la fuente: estrena "Derogado"**. HTTPS intermitente, no caído. |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)

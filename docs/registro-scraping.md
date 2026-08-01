@@ -12,10 +12,11 @@
 
 ## Avance
 
-**28 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-08-01** (tanda 2 de doctrina: UPC, URP, AMAG y
-SciELO —set Derecho PUCP— cosechando con smoke 5/5 cada uno; `REPOS` queda
-en 7 repositorios).
+**29 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-08-01** (módulo `adlp`: el último construible —
+su HTTPS era intermitente, no caído. Estrena el status "Derogado" con
+vigencia determinista de la fuente; smoke 15/15. Antes en el día: tanda 2 de
+doctrina, 4 repos nuevos).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -25,12 +26,12 @@ en 7 repositorios).
   ser riesgo de calidad; los warnings del ledger quedan como auditoría.
 - **`gobpe` (normas por entidad) va AL FINAL** de la cola de construcción.
 
-**Cola de construcción de módulos: CERRADA 2026-08-01.** ✅ P3 completa
-(incluida SUNAT, construida el 31-jul cuando su sitio revivió). ✅ P4
-reguladores completa. ✅ `gobpe` hecho. ✅ `spley` y `doctrina` (P5)
-construidos y mergeados. Resta solo: ADLP del Congreso (sitio caído —
-reintentar), ampliar `REPOS` de doctrina cuando sus endpoints OAI respondan
-([`plan-doctrina.md`](./plan-doctrina.md) §4), y las decisiones de producto
+**Cola de construcción de módulos: CERRADA 2026-08-01 — no queda NINGÚN
+módulo por construir.** ✅ P3 completa (incluida SUNAT). ✅ P4 reguladores
+completa. ✅ `gobpe`. ✅ `spley`, `doctrina` y `adlp` (el último construible).
+Resta solo: ampliar `REPOS` de doctrina cuando sus endpoints OAI respondan
+([`plan-doctrina.md`](./plan-doctrina.md) §4), la fase 2 del ADLP si producto
+la pide ([`plan-adlp.md`](./plan-adlp.md) §4), y las decisiones de producto
 con veredicto (OEFA API, PRONABEC, PTE).
 
 ## Comandos de lo que ya existe
@@ -95,7 +96,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
-| ⬜ | Congreso – Archivo Digital (ADLP) | sin priorizar | — | — | Evaluar valor vs El Peruano (mucho solape de normas) |
+| ✅ | Congreso – Archivo Digital (ADLP) | hecho 2026-08-01 | `adlp` | `pnpm adlp` | El sitio nunca estuvo del todo caído: su HTTPS es INTERMITENTE (reintentos, patrón elperuano). **Vigencia determinista de la fuente — estrena "Derogado"** (buscador vigentes/no-vigentes, grid trunca a 20 filas → ventanas de 20). PDFs `Documentos/Leyes/{n}.pdf` ≈ 10000 (1944) → 30480 (2016), escaneados → OCR local. Smoke 15/15 (RES.LEG. 26802 entró Derogado). Ver [`plan-adlp.md`](./plan-adlp.md) |
 | ✅ | Congreso – Proyectos de ley (SPLEY) | hecho (decisión owner 2026-07-31) | `spley` | `pnpm spley` | API del portal (14.864 proyectos período 2021-2026); status **"En revisión"** → el filtro vigente/no-vigente cobra vida (verificado E2E: 8 En revisión vs 128 Vigente). Smoke 8/8 |
 
 ### Jurisprudencia (el molde ya está validado)
