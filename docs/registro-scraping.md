@@ -12,8 +12,10 @@
 
 ## Avance
 
-**30 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-31** (módulo `doctrina` OAI-PMH: cubre las 9 filas P5 de tesis/revistas; smoke 8/8).
+**25 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-08-01** (`spley` y `doctrina` mergeados a main;
+tabla P5 alineada con el `REPOS` real del módulo: ✅ = repositorio cosechando
+de verdad, hoy pucp-tesis + uni + ulima).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -23,12 +25,13 @@
   ser riesgo de calidad; los warnings del ledger quedan como auditoría.
 - **`gobpe` (normas por entidad) va AL FINAL** de la cola de construcción.
 
-**Cola de construcción de módulos:** ✅ P3 CERRADA 2026-07-30 (Tribunal Fiscal,
-INDECOPI, Contrataciones, SUNARP TR+SIP, SERVIR, OEFA — 6 módulos en un día
-con el patrón gob.pe compartido; SUNAT bloqueada por sitio caído, reintentar).
-✅ P4 reguladores CERRADA 2026-07-30 (módulo único `reguladores`). Quedan de
-P4: OEFA API, PRONABEC API, PTE y regionales (decisión Harry); `gobpe` al
-final; Congreso y doctrina (P5) tras decisión de Harry.
+**Cola de construcción de módulos: CERRADA 2026-08-01.** ✅ P3 completa
+(incluida SUNAT, construida el 31-jul cuando su sitio revivió). ✅ P4
+reguladores completa. ✅ `gobpe` hecho. ✅ `spley` y `doctrina` (P5)
+construidos y mergeados. Resta solo: ADLP del Congreso (sitio caído —
+reintentar), ampliar `REPOS` de doctrina cuando sus endpoints OAI respondan
+([`plan-doctrina.md`](./plan-doctrina.md) §4), y las decisiones de producto
+con veredicto (OEFA API, PRONABEC, PTE).
 
 ## Comandos de lo que ya existe
 
@@ -136,24 +139,28 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ⬜ | Portal de Transparencia (PTE) | P4 — evaluada | — | — | **Veredicto 2026-07-30**: información de gestión institucional (portal vivo), NO fuentes del derecho. Decisión de producto |
 | ✅ | Gobiernos regionales y locales | hecho (decisión owner 2026-07-31) | dentro de `gobpe` | `pnpm gobpe` | Las ordenanzas municipales/regionales entran: ámbito "todos" es el default del módulo (`GOBPE_AMBITO=nacional` queda como restricción opcional) |
 
-### Doctrina (P5 — pendiente decisión de producto con Harry)
+### Doctrina (P5 — decisión owner 2026-07-31: entra al corpus)
 
-Técnicamente lo más limpio (OAI-PMH estándar), pero es otro tipo de contenido
-(tesis/artículos, no fuentes del derecho). **No construir hasta confirmar** si
-entra al mismo corpus (`type=doctrine` existe en el enum del backend).
+Módulo `doctrina` construido: UN cosechador OAI-PMH parametrizado por
+repositorio (`type=doctrine`, fuente canónica `doctrina`). Añadir un
+repositorio = una entrada en `REPOS` — pero **cada endpoint se confirma antes**
+(muchos portales sirven su SPA con falso 200; ver
+[`plan-doctrina.md`](./plan-doctrina.md) §4). En esta tabla ✅ = repositorio
+realmente en `REPOS` y cosechando; ⬜ = el módulo lo atiende, falta confirmar
+su endpoint.
 
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
-| ⬜ | ALICIA – CONCYTEC | P5 | `oai` (uno solo, config por repositorio) | — | Agregador nacional OAI-PMH — cubriría gran parte de las filas siguientes |
-| ⬜ | Repositorio CONCYTEC (OAI) | P5 | parte de `oai` | — | |
-| ⬜ | PUCP – repositorio de tesis | P5 | parte de `oai` | — | |
-| ⬜ | UNMSM – Cybertesis | P5 | parte de `oai` | — | |
-| ⬜ | UPC / UNI / URP – repositorios | P5 | parte de `oai` | — | |
-| ⬜ | Congreso / TC / AMAG – repositorios | P5 | parte de `oai` | — | |
-| ✅ | Revista Derecho PUCP | P5 — cubierto | `doctrina` | `pnpm doctrina` | OJS OAI; soloDerecho:true al añadir |
-| ✅ | IUS ET VERITAS | P5 — cubierto | `doctrina` | `pnpm doctrina` | OJS OAI; añadir a REPOS |
-| ✅ | THĒMIS | P5 — cubierto | `doctrina` | `pnpm doctrina` | OJS OAI; añadir a REPOS |
-| ✅ | SciELO Perú | P5 — cubierto | `doctrina` | `pnpm doctrina` | OAI-PMH estándar; añadir a REPOS |
+| ⬜ | ALICIA – CONCYTEC | P5 | `doctrina` | — | Agregador nacional OAI-PMH — cubriría gran parte de las filas siguientes; confirmar endpoint real antes de añadir a `REPOS` |
+| ⬜ | Repositorio CONCYTEC (OAI) | P5 | `doctrina` | — | Pendiente confirmar endpoint |
+| ✅ | PUCP – repositorio de tesis | P5 — hecho | `doctrina` | `pnpm doctrina --repos pucp-tesis` | En `REPOS` (`tesis.pucp.edu.pe/oai/request`). El smoke 8/8 del módulo fue con estas tesis; filtro jurídico activo (19/100 en la muestra) |
+| ⬜ | UNMSM – Cybertesis | P5 | `doctrina` | — | Su ruta OAI estándar sirve la SPA (falso 200); buscar el endpoint real (plan §4) |
+| ⬜ | UPC / UNI / URP – repositorios | P5 — parcial | `doctrina` | `pnpm doctrina --repos uni` | UNI **ya cosecha** (en `REPOS`, igual que ULima como extra fuera del Excel); UPC y URP pendientes de endpoint confirmado |
+| ⬜ | Congreso / TC / AMAG – repositorios | P5 | `doctrina` | — | Pendiente confirmar endpoints |
+| ⬜ | Revista Derecho PUCP | P5 | `doctrina` | — | OJS OAI; `revistas.pucp` dio timeout en el recon — añadir a `REPOS` (`soloDerecho:true`) cuando responda |
+| ⬜ | IUS ET VERITAS | P5 | `doctrina` | — | OJS OAI; añadir a `REPOS` (`soloDerecho:true`) cuando su endpoint responda |
+| ⬜ | THĒMIS | P5 | `doctrina` | — | OJS OAI; añadir a `REPOS` (`soloDerecho:true`) cuando su endpoint responda |
+| ⬜ | SciELO Perú | P5 | `doctrina` | — | OAI-PMH estándar; añadir a `REPOS` cuando se confirme el endpoint |
 | ⬜ | Dialnet / Redalyc / REDIB | P5 — externos | `doctrina` (posible) | — | Agregadores NO peruanos: OAI existe pero revisar términos de uso antes de cosechar |
 
 ### Actualización continua (jobs sobre módulos existentes, no módulos nuevos)
