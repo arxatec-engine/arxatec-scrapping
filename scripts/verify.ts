@@ -81,9 +81,10 @@ async function assistantArriba(baseUrl: string): Promise<boolean> {
 async function main(): Promise<void> {
   const fuente = process.argv[2];
   const limit = process.argv[3] ?? "5";
+  const extra = process.argv.slice(4);
   if (!fuente || !(fuente in LEDGERS)) {
     console.error(
-      `uso: pnpm verify <fuente> [limit]\nfuentes: ${Object.keys(LEDGERS).join(", ")}`
+      `uso: pnpm verify <fuente> [limit] [flags extra del módulo…]\nfuentes: ${Object.keys(LEDGERS).join(", ")}`
     );
     process.exit(2);
   }
@@ -105,7 +106,7 @@ async function main(): Promise<void> {
   const antes = contar(ledger);
   console.log(`[verify] ${fuente} --limit ${limit} · ledger previo: ${antes.ok} ok / ${antes.permanentes} permanentes`);
 
-  const corrida = spawnSync("pnpm", [fuente, "--limit", limit], { stdio: "inherit" });
+  const corrida = spawnSync("pnpm", [fuente, "--limit", limit, ...extra], { stdio: "inherit" });
 
   const despues = contar(ledger);
   const nuevosOk = despues.ok - antes.ok;
