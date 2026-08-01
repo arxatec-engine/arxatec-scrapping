@@ -136,6 +136,14 @@ export const LEGAL_SOURCES: readonly LegalSourceDef[] = [
     canonicalName: "Plataforma Digital Única del Estado Peruano",
     aliases: ["gob.pe", "gobpe", "Plataforma del Estado Peruano"],
   },
+  // Doctrina (2026-07-31): tesis y artículos jurídicos cosechados por OAI-PMH
+  // de repositorios académicos (módulo `doctrina`). Una sola faceta de fuente;
+  // el EMISOR es la universidad/revista concreta (entity.json).
+  {
+    key: "doctrina",
+    canonicalName: "Repositorios Académicos del Perú",
+    aliases: ["Doctrina", "Repositorios academicos", "OAI-PMH"],
+  },
 ] as const;
 
 /** minúsculas + sin tildes: la llave de comparación de alias. */

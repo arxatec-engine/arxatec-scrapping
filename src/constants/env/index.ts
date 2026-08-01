@@ -25,6 +25,12 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const DOCTRINA_CONCURRENCY = "DOCTRINA_CONCURRENCY";
+export const DOCTRINA_DELAY = "DOCTRINA_DELAY";
+export const DOCTRINA_LIMIT = "DOCTRINA_LIMIT";
+export const DOCTRINA_REPOS = "DOCTRINA_REPOS";
+export const DOCTRINA_UA = "DOCTRINA_UA";
+
 export const SPLEY_CONCURRENCY = "SPLEY_CONCURRENCY";
 export const SPLEY_DELAY = "SPLEY_DELAY";
 export const SPLEY_LIMIT = "SPLEY_LIMIT";

@@ -12,8 +12,8 @@
 
 ## Avance
 
-**21 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-31** (módulo `spley`: proyectos de ley con status "En revisión", el filtro cobró vida; smoke 8/8).
+**30 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-31** (módulo `doctrina` OAI-PMH: cubre las 9 filas P5 de tesis/revistas; smoke 8/8).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -51,10 +51,9 @@ final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm gobpe [--limit n] [--desde/--hasta YYYY-MM-DD] [--dias n] [--ambito nacional\|todos]` | `gobpe` | gob.pe — stream GENERAL de normas (5.1M) | Ventanas de 1 día (tope real ~400 hojas); emisor etiquetado; anti-colisión con módulos dedicados; ámbito "todos" default. **NO corre en `all`** (decisión owner). Ver [`plan-gobpe.md`](./plan-gobpe.md) |
 | `pnpm sunat [--limit n]` | `sunat` | SUNAT — informes/oficios vinculantes (1997→hoy) | `SUNAT_ANIO_DESDE/HASTA`. Árbol estático (frameset); PDF moderno + .htm viejo renderizado; fecha = piso del año. Ver [`plan-sunat.md`](./plan-sunat.md) |
 | `pnpm spley [--limit n]` | `spley` | Congreso — proyectos de ley (SPLEY) | `SPLEY_PERIODOS`. status **"En revisión"** (separa proyectos de normas vigentes en el filtro). API del portal (lista+expediente AES). Ver [`plan-spley.md`](./plan-spley.md) |
+| `pnpm doctrina [--limit n] [--repos <slugs>]` | `doctrina` | Tesis y artículos jurídicos (OAI-PMH) | `DOCTRINA_REPOS`. Un módulo, N repositorios; filtro a lo jurídico; type=doctrine. Ver [`plan-doctrina.md`](./plan-doctrina.md) |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
-| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `sunat` → `spley` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
-| `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos] [--cuadernillo --dias n]` | `elperuano` | Diario Oficial El Peruano — dispositivos + boletín diario | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
-| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
+| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `sunat` → `spley` → `doctrina` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
 | `ops/campaign.sh` + systemd | — | La campaña VM completa | pasada idempotente cada 6 h + respaldo rotado de `state/`; ver [`campania-vm.md`](./campania-vm.md) |
 
@@ -151,11 +150,11 @@ entra al mismo corpus (`type=doctrine` existe en el enum del backend).
 | ⬜ | UNMSM – Cybertesis | P5 | parte de `oai` | — | |
 | ⬜ | UPC / UNI / URP – repositorios | P5 | parte de `oai` | — | |
 | ⬜ | Congreso / TC / AMAG – repositorios | P5 | parte de `oai` | — | |
-| ⬜ | Revista Derecho PUCP | P5 | — | — | OJS |
-| ⬜ | IUS ET VERITAS | P5 | — | — | OJS |
-| ⬜ | THĒMIS | P5 | — | — | OJS |
-| ⬜ | SciELO Perú | P5 | — | — | |
-| ⬜ | Dialnet / Redalyc / REDIB | P5 | — | — | Agregadores externos: revisar términos de uso antes |
+| ✅ | Revista Derecho PUCP | P5 — cubierto | `doctrina` | `pnpm doctrina` | OJS OAI; soloDerecho:true al añadir |
+| ✅ | IUS ET VERITAS | P5 — cubierto | `doctrina` | `pnpm doctrina` | OJS OAI; añadir a REPOS |
+| ✅ | THĒMIS | P5 — cubierto | `doctrina` | `pnpm doctrina` | OJS OAI; añadir a REPOS |
+| ✅ | SciELO Perú | P5 — cubierto | `doctrina` | `pnpm doctrina` | OAI-PMH estándar; añadir a REPOS |
+| ⬜ | Dialnet / Redalyc / REDIB | P5 — externos | `doctrina` (posible) | — | Agregadores NO peruanos: OAI existe pero revisar términos de uso antes de cosechar |
 
 ### Actualización continua (jobs sobre módulos existentes, no módulos nuevos)
 

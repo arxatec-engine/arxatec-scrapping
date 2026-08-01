@@ -15,3 +15,4 @@ export * as ositran from "./ositran";
 export * as gobpe from "./gobpe";
 export * as sunat from "./sunat";
 export * as spley from "./spley";
+export * as doctrina from "./doctrina";
