@@ -16,6 +16,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 
 | # | Documento | Qué contiene |
 | --- | --- | --- |
+| 0 | [`runbook-arranque.md`](./runbook-arranque.md) | **Cómo se corre esto.** Requisitos, orden de arranque paso a paso (entidades primero, El Peruano/SPIJ al final), `pnpm verify` y `pnpm status`, qué hacer si algo se cae (todo es reanudable: re-ejecutar el mismo comando) y cómo empezar de cero. **Empieza aquí si vas a operar.** |
 | 1 | [`registro-scraping.md`](./registro-scraping.md) | **El tablero (doc VIVO).** Las 43 fuentes del Excel `Scraping_Simple.xlsx` con check de cuáles ya tienen módulo, qué comando corre cada una y el orquestador `pnpm all` (entidades siempre primero). Se actualiza al terminar cada módulo. |
 | 2 | [`estrategia-fuentes.md`](./estrategia-fuentes.md) | **El mapa.** Qué fuentes existen, priorizadas (P0…P5), la decisión de por dónde sale el millón (El Peruano) y por qué. Fuente ≠ emisor. |
 | 3 | [`plan-poder-judicial.md`](./plan-poder-judicial.md) | **El próximo módulo (P0).** Análisis técnico del portal del Poder Judicial (árbol, hojas, URLs, paginación, PDFs) + contrato de ingesta detallado (§3.1) + dónde vive el nuevo `src/modules/pj/`. |
