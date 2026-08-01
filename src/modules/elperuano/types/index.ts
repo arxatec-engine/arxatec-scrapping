@@ -12,7 +12,7 @@ import type {
 } from "../../../types";
 import type { IngestRecord, Stats } from "../../../types/ingest";
 
-export type { Classif, Area, IngestData, IngestResult, Logger, Metadata, Sem, Stats };
+export type { Classif, Area, IngestData, IngestResult, Logger, Metadata, Sem, Stats, Throttle };
 
 export interface Config {
   concurrency: number;
@@ -29,6 +29,10 @@ export interface Config {
   todos: boolean;
   /** URL directa de un CSV del dataset (salta el descubrimiento). */
   csvUrl: string | null;
+  /** Modo cuadernillo: ingesta el boletín diario oficial (1 doc/día). */
+  cuadernillo: boolean;
+  /** Días hacia atrás desde hoy para el cuadernillo (default 7). */
+  cuadernilloDias: number;
   docsPath: string;
   logFile: string;
   ingestBaseUrl: string;

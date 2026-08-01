@@ -81,7 +81,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
 | ✅ | El Peruano – buscador de normas | **P1 — la fuente del millón** | `elperuano` | `pnpm elperuano` | Hecho 2026-07-30 vía CSV índice + `visor_html/{OP}` (texto limpio, sin OCR); el buscador JSON del sitio no hizo falta. Smoke 15/15 OK. Escala: ~200k+ (2013→hoy) iterando `--periodo` |
-| ⬜ | El Peruano – cuadernillo diario | P1 | job sobre `elperuano` | — | `/cuadernillo/NL/{YYYYMMDD}`; el dataset publica con rezago (~meses) — el cuadernillo cubre el día a día cuando toque |
+| ✅ | El Peruano – cuadernillo diario | P1 — hecho | `elperuano --cuadernillo` | `pnpm elperuano --cuadernillo` | Hecho 2026-07-31: el boletín oficial diario (1 PDF/día, todo el día en un doc) cubre el rezago de ~meses del dataset. `--dias n`, reanudable (id=cuadernillo-YYYYMMDD). Smoke 5/5 |
 | ✅ | SPIJ – acceso libre | hecho | `spij` | `pnpm spij` | El módulo entra por la API autenticada del SPIJ (cuenta gratuita) y cubre el acceso libre. Escala medida: ~875k docs disponibles |
 | ✅ | Datos Abiertos – CSV Dispositivos Legales | P1b — hecho | dentro de `elperuano` | `pnpm elperuano` | ES el índice del módulo elperuano (services/datosabiertos): dataset mensual 2013→feb-2025, CP850, sin scraping |
 | ⬜ | Datos Abiertos – API datastore | P1b | — | — | DKAN sin API CKAN clásica (verificado); el CSV basta por ahora |
@@ -160,7 +160,7 @@ entra al mismo corpus (`type=doctrine` existe en el enum del backend).
 
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
-| ⬜ | Job diario El Peruano | post-`elperuano` | cron sobre `elperuano` | — | El cuadernillo diario del día anterior |
+| ✅ | Job diario El Peruano | hecho | `elperuano --cuadernillo` | `pnpm elperuano --cuadernillo --dias 1` | Es el modo cuadernillo agendado (cron/campaña); trae el boletín del día. Idempotente por ledger |
 | ✅ | Polling gob.pe | hecho (mecánica lista) | modo incremental de `gobpe` | `pnpm gobpe` | El default (últimos 7 días + ledger) ES el poll; se activa agendándolo (cron o sumar `gobpe` a `DOC_SCRAPERS` de la campaña) cuando el owner decida |
 | ✅ | Polling SPLEY | mecánica lista | modo reanudable de `spley` | `pnpm spley` | Re-ejecutar trae los proyectos nuevos (ledger dedupea); agendar cuando el owner decida |
 | ⬜ | Andina – normas del día | señal, no fuente | — | — | Noticias: sirve como alerta de publicación, no como fuente primaria de texto |

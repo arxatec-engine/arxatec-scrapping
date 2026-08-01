@@ -313,10 +313,14 @@ async function runElperuano(opts: {
   limit?: string;
   periodo?: string;
   todos?: boolean;
+  cuadernillo?: boolean;
+  dias?: string;
 }): Promise<void> {
   if (opts.limit) process.env.EP_LIMIT = opts.limit;
   if (opts.periodo) process.env.EP_PERIODO = opts.periodo;
   if (opts.todos) process.env.EP_TODOS = "true";
+  if (opts.cuadernillo) process.env.EP_CUADERNILLO = "true";
+  if (opts.dias) process.env.EP_CUADERNILLO_DIAS = opts.dias;
   const cfg = epConfig();
   const log = setupLogging(cfg.logFile);
   try {
@@ -833,6 +837,8 @@ program
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .option("--periodo <YYYY-MM>", "CSV mensual a procesar (default: el más reciente)")
   .option("--todos", "campaña: iterar TODOS los periodos del dataset, reciente-primero")
+  .option("--cuadernillo", "modo actualización diaria: ingesta el boletín oficial (1 PDF/día)")
+  .option("--dias <n>", "cuadernillo: días hacia atrás desde hoy (default 7)")
   .action(runElperuano);
 
 program
