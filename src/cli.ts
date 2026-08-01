@@ -34,6 +34,8 @@ import { config as gobpeConfig } from "./modules/gobpe/config";
 import { run as gobpeRun } from "./modules/gobpe/run";
 import { config as sunatConfig } from "./modules/sunat/config";
 import { run as sunatRun } from "./modules/sunat/run";
+import { config as adlpConfig } from "./modules/adlp/config";
+import { run as adlpRun } from "./modules/adlp/run";
 import { config as spleyConfig } from "./modules/spley/config";
 import { run as spleyRun } from "./modules/spley/run";
 import { config as doctrinaConfig } from "./modules/doctrina/config";
@@ -278,6 +280,23 @@ async function runSunat(opts: { limit?: string }): Promise<void> {
   }
 }
 
+async function runAdlp(opts: { limit?: string; desde?: string; hasta?: string }): Promise<void> {
+  if (opts.limit) process.env.ADLP_LIMIT = opts.limit;
+  if (opts.desde) process.env.ADLP_DESDE = opts.desde;
+  if (opts.hasta) process.env.ADLP_HASTA = opts.hasta;
+  const cfg = adlpConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await adlpRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
 async function runSpley(opts: { limit?: string }): Promise<void> {
   if (opts.limit) process.env.SPLEY_LIMIT = opts.limit;
   const cfg = spleyConfig();
@@ -482,6 +501,14 @@ const DOC_SCRAPERS: Array<{
     },
   },
   {
+    name: "adlp",
+    limitEnv: "ADLP_LIMIT",
+    exec: () => {
+      const cfg = adlpConfig();
+      return adlpRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
     name: "spley",
     limitEnv: "SPLEY_LIMIT",
     exec: () => {
@@ -639,6 +666,7 @@ function runStatus(): void {
     { name: "ositran", docsPath: ositranConfig().docsPath },
     { name: "gobpe", docsPath: gobpeConfig().docsPath },
     { name: "sunat", docsPath: sunatConfig().docsPath },
+    { name: "adlp", docsPath: adlpConfig().docsPath },
     { name: "spley", docsPath: spleyConfig().docsPath },
     { name: "doctrina", docsPath: doctrinaConfig().docsPath },
     { name: "elperuano", docsPath: epConfig().docsPath },
@@ -810,6 +838,16 @@ program
   )
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .action(runSunat);
+
+program
+  .command("adlp")
+  .description(
+    "ADLP (Congreso): normas con rango de ley del Archivo Digital, con vigencia Vigente/Derogado de la fuente, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .option("--desde <n>", "número de norma inicial del barrido")
+  .option("--hasta <n>", "número de norma final del barrido")
+  .action(runAdlp);
 
 program
   .command("spley")

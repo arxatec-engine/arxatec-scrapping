@@ -73,6 +73,9 @@ Gestor: **pnpm, nunca npm**. Puppeteer exige Chrome
   confirmar `?verb=Identify` devuelve XML OAI antes de añadir a `REPOS`.
 - **spley**: API con params cifrados AES (clave en `services/spley/crypto.ts`);
   el PDF del portal es inestable → se renderiza PDF propio.
+- **adlp**: el HTTPS de leyes.congreso.gob.pe es INTERMITENTE (cuelga o
+  responde al toque — no está "caído"); el grid del buscador trunca en
+  silencio a 20 filas → ventanas de ≤20 números.
 
 ## Entorno y verificación
 

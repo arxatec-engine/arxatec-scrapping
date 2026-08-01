@@ -45,6 +45,7 @@ const LEDGERS: Record<string, string> = {
   ositran: "state/ositran_ingest/ledger.jsonl",
   gobpe: "state/gobpe_ingest/ledger.jsonl",
   sunat: "state/sunat_ingest/ledger.jsonl",
+  adlp: "state/adlp_ingest/ledger.jsonl",
   spley: "state/spley_ingest/ledger.jsonl",
   doctrina: "state/doctrina_ingest/ledger.jsonl",
   elperuano: "state/elperuano_ingest/ledger.jsonl",
