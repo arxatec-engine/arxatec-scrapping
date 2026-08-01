@@ -25,6 +25,12 @@ export const TC_START_MONTH = "TC_START_MONTH";
 export const TC_END_MONTH = "TC_END_MONTH";
 export const TC_UA = "TC_UA";
 
+export const SPLEY_CONCURRENCY = "SPLEY_CONCURRENCY";
+export const SPLEY_DELAY = "SPLEY_DELAY";
+export const SPLEY_LIMIT = "SPLEY_LIMIT";
+export const SPLEY_PERIODOS = "SPLEY_PERIODOS";
+export const SPLEY_UA = "SPLEY_UA";
+
 export const SUNAT_CONCURRENCY = "SUNAT_CONCURRENCY";
 export const SUNAT_DELAY = "SUNAT_DELAY";
 export const SUNAT_LIMIT = "SUNAT_LIMIT";

@@ -19,6 +19,7 @@
 | Trib. Fisc. Ambiental | ~7.3k | vía gob.pe (publicaciones); antiguas → OCR |
 | Reguladores ×4 | ~51.6k | osinergmin/osiptel/sunass/ositran (módulo propio cada uno) vía gob.pe |
 | SUNAT | miles (informes vinculantes 1997→hoy) | árbol estático propio; fecha = piso del año |
+| SPLEY (Congreso) | ~15k proyectos/período | API del portal; status "En revisión" |
 | El Peruano | ~200k+ (2013→hoy) | universo enumerable por CSVs; `--todos` itera todos los periodos |
 | SPIJ | ~875k | API autenticada estable; el total lo dice la propia API |
 | **Total** | **~1.15M** | **la meta del millón, solo con módulos validados** |

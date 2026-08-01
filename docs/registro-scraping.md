@@ -12,8 +12,8 @@
 
 ## Avance
 
-**20 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-07-31** (módulo `sunat` el día que su sitio revivió, smoke 10/10; gobpe con ámbito "todos").
+**21 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-07-31** (módulo `spley`: proyectos de ley con status "En revisión", el filtro cobró vida; smoke 8/8).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -50,6 +50,9 @@ final; Congreso y doctrina (P5) tras decisión de Harry.
 | `pnpm ositran [--limit n]` | `ositran` | OSITRAN — normativa vía gob.pe (~10.3k) | `OSITRAN_MAX_SHEETS`, `OSITRAN_DELAY` |
 | `pnpm gobpe [--limit n] [--desde/--hasta YYYY-MM-DD] [--dias n] [--ambito nacional\|todos]` | `gobpe` | gob.pe — stream GENERAL de normas (5.1M) | Ventanas de 1 día (tope real ~400 hojas); emisor etiquetado; anti-colisión con módulos dedicados; ámbito "todos" default. **NO corre en `all`** (decisión owner). Ver [`plan-gobpe.md`](./plan-gobpe.md) |
 | `pnpm sunat [--limit n]` | `sunat` | SUNAT — informes/oficios vinculantes (1997→hoy) | `SUNAT_ANIO_DESDE/HASTA`. Árbol estático (frameset); PDF moderno + .htm viejo renderizado; fecha = piso del año. Ver [`plan-sunat.md`](./plan-sunat.md) |
+| `pnpm spley [--limit n]` | `spley` | Congreso — proyectos de ley (SPLEY) | `SPLEY_PERIODOS`. status **"En revisión"** (separa proyectos de normas vigentes en el filtro). API del portal (lista+expediente AES). Ver [`plan-spley.md`](./plan-spley.md) |
+| `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos]` | `elperuano` | Diario Oficial El Peruano — dispositivos legales | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
+| `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `sunat` → `spley` → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm elperuano [--limit n] [--periodo YYYY-MM] [--todos] [--cuadernillo --dias n]` | `elperuano` | Diario Oficial El Peruano — dispositivos + boletín diario | Índice = CSV de datosabiertos (default: mes más reciente; `--todos` = campaña por los 29 recursos 2013→hoy, reciente-primero); texto = `visor_html`. `EP_CSV_URL` para un CSV directo. ⚠ Exige Chrome (render PDF). Ver [`plan-el-peruano.md`](./plan-el-peruano.md) |
 | `pnpm all [--limit n] [--sync] [--todos] [--skip <módulos>]` | orquestador | **Todo en orden**: `entidades` → `tc` → `tfiscal` → `indecopi` → `tce` → `sunarp` → `servir` → `oefa` → los 4 reguladores → `elperuano` → `spij` → `pj` (pequeño-primero) | `--limit` aplica POR módulo (smoke test); `--sync` a entidades; `--todos` a elperuano; `--skip pj` en VMs (bot manager exige IP residencial). Módulos aislados; resumen final y exit 1 si algo falló |
 | `pnpm status` | — | Avance por fuente desde los ledgers | registrados / ok / pendientes / permanentes / warnings; no toca la red |
@@ -91,7 +94,7 @@ Leyenda: ✅ hecho · ⬜ pendiente · ❌ excluida por decisión. La columna
 | ✓ | Fuente (Excel) | Prioridad | Módulo | Comando | Notas |
 | --- | --- | --- | --- | --- | --- |
 | ⬜ | Congreso – Archivo Digital (ADLP) | sin priorizar | — | — | Evaluar valor vs El Peruano (mucho solape de normas) |
-| ⬜ | Congreso – Proyectos de ley (SPLEY) | sin priorizar | — | — | Proyectos ≠ normas vigentes: decidir con Harry si entran al corpus |
+| ✅ | Congreso – Proyectos de ley (SPLEY) | hecho (decisión owner 2026-07-31) | `spley` | `pnpm spley` | API del portal (14.864 proyectos período 2021-2026); status **"En revisión"** → el filtro vigente/no-vigente cobra vida (verificado E2E: 8 En revisión vs 128 Vigente). Smoke 8/8 |
 
 ### Jurisprudencia (el molde ya está validado)
 
@@ -160,7 +163,7 @@ entra al mismo corpus (`type=doctrine` existe en el enum del backend).
 | --- | --- | --- | --- | --- | --- |
 | ✅ | Job diario El Peruano | hecho | `elperuano --cuadernillo` | `pnpm elperuano --cuadernillo --dias 1` | Es el modo cuadernillo agendado (cron/campaña); trae el boletín del día. Idempotente por ledger |
 | ✅ | Polling gob.pe | hecho (mecánica lista) | modo incremental de `gobpe` | `pnpm gobpe` | El default (últimos 7 días + ledger) ES el poll; se activa agendándolo (cron o sumar `gobpe` a `DOC_SCRAPERS` de la campaña) cuando el owner decida |
-| ⬜ | Polling SPLEY | post-módulo SPLEY | cron | — | |
+| ✅ | Polling SPLEY | mecánica lista | modo reanudable de `spley` | `pnpm spley` | Re-ejecutar trae los proyectos nuevos (ledger dedupea); agendar cuando el owner decida |
 | ⬜ | Andina – normas del día | señal, no fuente | — | — | Noticias: sirve como alerta de publicación, no como fuente primaria de texto |
 
 ## Cómo añadir un módulo nuevo (checklist)

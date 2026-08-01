@@ -35,6 +35,7 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 17 | [`plan-reguladores.md`](./plan-reguladores.md) | **La tanda P4 (hecha).** Un módulo, cuatro fuentes (OSINERGMIN/OSIPTEL/SUNASS/OSITRAN, ~51.6k): source y emisor por documento, tanda P4 del catálogo canónico. |
 | 18 | [`plan-gobpe.md`](./plan-gobpe.md) | **El stream general de gob.pe (hecho).** 5.1M normas por ventanas de 1 día (tope ~400 hojas), emisor etiquetado, anti-colisión con módulos dedicados y ámbito nacional como grifo. Fuera de `all` por decisión. |
 | 19 | [`plan-sunat.md`](./plan-sunat.md) | **SUNAT (hecho el día que revivió su sitio).** Informes/oficios vinculantes 1997→hoy del árbol estático; charset mixto y fecha-piso del año (validación del backend). |
+| 20 | [`plan-spley.md`](./plan-spley.md) | **Congreso/SPLEY (hecho).** Proyectos de ley vía la API del portal (lista + expediente AES); estrena status "En revisión" y fija la política de vigencia (determinista por fuente, nunca IA). |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)
