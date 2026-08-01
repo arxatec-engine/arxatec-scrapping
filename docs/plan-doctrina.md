@@ -20,10 +20,20 @@ sin dependencia de XML. Registros `status="deleted"` se saltan.
 portales sirven su SPA en esa ruta (falso 200) — cada repo nuevo se confirma
 antes de añadirlo a `REPOS`.
 
+**Tanda 2** (2026-08-01), con sus gotchas: **UPC** exige UA de cosechador (su
+WAF responde 403 a UAs de navegador solo en `ListRecords` — al revés que un
+bot manager típico; campo `userAgent` por repo). **URP** y **AMAG** son
+DSpace 7: el OAI vive en `/server/oai/request`, no en `/oai/request`.
+**SciELO** se cosecha **por set** (campo `set`; sus sets son ISSN de revista:
+`0251-3420` = Derecho PUCP, la única jurídica del agregador) porque la
+paginación global devolvía 500 intermitente; además envuelve valores en CDATA
+y su `<record>` trae atributos — el parser quedó tolerante a ambos.
+
 ## 2. El módulo
 
-- `REPOS` (constants): lista `{key, baseUrl, emisor, soloDerecho?}`. Añadir un
-  repositorio = una entrada. `--repos <slugs>` restringe.
+- `REPOS` (constants): lista `{key, baseUrl, emisor, soloDerecho?, userAgent?,
+  set?}`. Añadir un repositorio = una entrada. `--repos <slugs>` restringe.
+  Hoy 7: pucp-tesis, uni, ulima, upc, urp, amag, scielo.
 - **Filtro a lo jurídico**: los repos generalistas traen TODAS las facultades;
   se conserva solo lo que matchea `LEGAL_KEYWORDS` en título/materias (en el
   smoke: 80 descartadas, 19 jurídicas de 100). Las revistas de derecho (OJS)
@@ -52,7 +62,11 @@ warning de emisor privado es el comportamiento correcto.
 
 ## 4. Pendiente menor
 
-Añadir más repos confirmados (UNMSM Cybertesis usa endpoint distinto — su SPA
-respondió; buscar el OAI real) y las revistas OJS de derecho
-(`soloDerecho:true`) cuando sus endpoints respondan (revistas.pucp dio timeout
-en el recon). El módulo ya los soporta: es solo ampliar `REPOS`.
+Recon 2026-08-01 de lo que falta: **ALICIA** y **UNMSM Cybertesis** sirven su
+SPA en las rutas OAI conocidas (falso 200 — buscar el endpoint real),
+**CONCYTEC** y el **cendocbib del Congreso** no responden (timeout), las
+revistas OJS de `revistas.pucp` siguen caídas (timeout desde el recon
+original) y el **TC** no tiene repositorio OAI conocido. Derecho PUCP quedó
+cubierta por otra vía: el set `0251-3420` de SciELO trae la revista completa.
+El módulo ya soporta todo — completar es una entrada en `REPOS` con el
+endpoint confirmado.
