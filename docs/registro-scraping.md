@@ -12,10 +12,10 @@
 
 ## Avance
 
-**25 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-08-01** (`spley` y `doctrina` mergeados a main;
-tabla P5 alineada con el `REPOS` real del módulo: ✅ = repositorio cosechando
-de verdad, hoy pucp-tesis + uni + ulima).
+**28 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-08-01** (tanda 2 de doctrina: UPC, URP, AMAG y
+SciELO —set Derecho PUCP— cosechando con smoke 5/5 cada uno; `REPOS` queda
+en 7 repositorios).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -155,12 +155,12 @@ su endpoint.
 | ⬜ | Repositorio CONCYTEC (OAI) | P5 | `doctrina` | — | Pendiente confirmar endpoint |
 | ✅ | PUCP – repositorio de tesis | P5 — hecho | `doctrina` | `pnpm doctrina --repos pucp-tesis` | En `REPOS` (`tesis.pucp.edu.pe/oai/request`). El smoke 8/8 del módulo fue con estas tesis; filtro jurídico activo (19/100 en la muestra) |
 | ⬜ | UNMSM – Cybertesis | P5 | `doctrina` | — | Su ruta OAI estándar sirve la SPA (falso 200); buscar el endpoint real (plan §4) |
-| ⬜ | UPC / UNI / URP – repositorios | P5 — parcial | `doctrina` | `pnpm doctrina --repos uni` | UNI **ya cosecha** (en `REPOS`, igual que ULima como extra fuera del Excel); UPC y URP pendientes de endpoint confirmado |
-| ⬜ | Congreso / TC / AMAG – repositorios | P5 | `doctrina` | — | Pendiente confirmar endpoints |
-| ⬜ | Revista Derecho PUCP | P5 | `doctrina` | — | OJS OAI; `revistas.pucp` dio timeout en el recon — añadir a `REPOS` (`soloDerecho:true`) cuando responda |
+| ✅ | UPC / UNI / URP – repositorios | P5 — hecho | `doctrina` | `pnpm doctrina --repos upc,uni,urp` | Los 3 en `REPOS` y cosechando (2026-08-01; +ULima como extra fuera del Excel). UPC exige UA de cosechador (su WAF da 403 a UAs de navegador en OAI); URP es DSpace 7 (`/server/oai/request`). Smokes 5/5 |
+| ⬜ | Congreso / TC / AMAG – repositorios | P5 — parcial | `doctrina` | `pnpm doctrina --repos amag` | AMAG **ya cosecha** (DSpace 7, emisor resuelto, smoke 5/5). Congreso (cendocbib) en timeout y TC sin OAI conocido — pendientes |
+| ✅ | Revista Derecho PUCP | P5 — hecho (vía SciELO) | `doctrina` | `pnpm doctrina --repos scielo` | Su contenido entra completo por el set `0251-3420` de SciELO. El OJS propio (`revistas.pucp`) sigue caído; queda como vía alternativa si SciELO falla |
 | ⬜ | IUS ET VERITAS | P5 | `doctrina` | — | OJS OAI; añadir a `REPOS` (`soloDerecho:true`) cuando su endpoint responda |
 | ⬜ | THĒMIS | P5 | `doctrina` | — | OJS OAI; añadir a `REPOS` (`soloDerecho:true`) cuando su endpoint responda |
-| ⬜ | SciELO Perú | P5 | `doctrina` | — | OAI-PMH estándar; añadir a `REPOS` cuando se confirme el endpoint |
+| ✅ | SciELO Perú | P5 — hecho | `doctrina` | `pnpm doctrina --repos scielo` | Cosecha **por set** (sus sets OAI son ISSN de revista; `0251-3420` = Derecho PUCP, la única jurídica del agregador — la paginación global daba 500). Parser tolerante a CDATA y `<record>` con atributos. Smoke 5/5 |
 | ⬜ | Dialnet / Redalyc / REDIB | P5 — externos | `doctrina` (posible) | — | Agregadores NO peruanos: OAI existe pero revisar términos de uso antes de cosechar |
 
 ### Actualización continua (jobs sobre módulos existentes, no módulos nuevos)

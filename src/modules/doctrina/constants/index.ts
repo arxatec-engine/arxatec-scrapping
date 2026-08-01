@@ -17,6 +17,10 @@ export interface RepoOai {
   emisor: string;
   /** true = ya es 100% jurídico (revistas de derecho): no filtra por materia. */
   soloDerecho?: boolean;
+  /** UA propio del repo cuando el default no pasa (el WAF de UPC bloquea UAs de navegador en OAI pero acepta cosechadores). */
+  userAgent?: string;
+  /** Set OAI a cosechar (en SciELO los sets son ISSN por revista): evita recorrer todo el agregador. */
+  set?: string;
 }
 
 export const REPOS: readonly RepoOai[] = [
@@ -34,6 +38,33 @@ export const REPOS: readonly RepoOai[] = [
     key: "ulima",
     baseUrl: "https://repositorio.ulima.edu.pe/oai/request",
     emisor: "Universidad de Lima",
+  },
+  {
+    key: "upc",
+    baseUrl: "https://repositorioacademico.upc.edu.pe/oai/request",
+    emisor: "Universidad Peruana de Ciencias Aplicadas",
+    userAgent: "arxatec-scraper/1.0 (cosechador OAI-PMH)",
+  },
+  // URP y AMAG son DSpace 7: el OAI vive bajo /server/, no en /oai/request.
+  {
+    key: "urp",
+    baseUrl: "https://repositorio.urp.edu.pe/server/oai/request",
+    emisor: "Universidad Ricardo Palma",
+  },
+  {
+    key: "amag",
+    baseUrl: "https://repositorio.amag.edu.pe/server/oai/request",
+    emisor: "Academia de la Magistratura",
+    soloDerecho: true,
+  },
+  // SciELO Perú se cosecha por set (= ISSN de revista); la única jurídica del
+  // agregador es Derecho PUCP, así que el set ES la tajada legal de SciELO.
+  {
+    key: "scielo",
+    baseUrl: "http://www.scielo.org.pe/oai/scielo-oai.php",
+    emisor: "Pontificia Universidad Católica del Perú",
+    set: "0251-3420",
+    soloDerecho: true,
   },
 ];
 

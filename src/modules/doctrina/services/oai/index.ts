@@ -10,7 +10,7 @@ import type { Ctx, Doc } from "../../types";
  * parser por regex basta. Paginación por `resumptionToken` (el estándar).
  */
 
-function fetchOai(ctx: Ctx, url: string): Promise<string> {
+function fetchOai(ctx: Ctx, url: string, userAgent: string): Promise<string> {
   const { cfg, log } = ctx;
   return (async () => {
     let lastErr: unknown = null;
@@ -18,7 +18,7 @@ function fetchOai(ctx: Ctx, url: string): Promise<string> {
       await throttleWait(ctx.oaiThrottle, "oai");
       try {
         const res = await fetch(url, {
-          headers: { "User-Agent": cfg.userAgent, Accept: "application/xml,text/xml" },
+          headers: { "User-Agent": userAgent, Accept: "application/xml,text/xml" },
           redirect: "follow",
           signal: AbortSignal.timeout(cfg.requestTimeout * 1000),
         });
@@ -59,7 +59,13 @@ function tagValues(xml: string, tag: string): string[] {
   const re = new RegExp(`<dc:${tag}[^>]*>([\\s\\S]*?)</dc:${tag}>`, "g");
   const out: string[] = [];
   for (const m of xml.matchAll(re)) {
-    const v = decodeEntities(m[1].replace(/\s+/g, " ").trim());
+    // SciELO envuelve los valores en CDATA; el resto los manda planos.
+    const plano = m[1]
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/^<!\[CDATA\[/, "")
+      .replace(/\]\]>$/, "");
+    const v = decodeEntities(plano.trim());
     if (v) out.push(v);
   }
   return out;
@@ -91,11 +97,12 @@ export async function harvestPage(
 ): Promise<HarvestPage> {
   const q = token
     ? `verb=ListRecords&resumptionToken=${encodeURIComponent(token)}`
-    : "verb=ListRecords&metadataPrefix=oai_dc";
-  const xml = await fetchOai(ctx, `${repo.baseUrl}?${q}`);
+    : `verb=ListRecords&metadataPrefix=oai_dc${repo.set ? `&set=${encodeURIComponent(repo.set)}` : ""}`;
+  const xml = await fetchOai(ctx, `${repo.baseUrl}?${q}`, repo.userAgent ?? ctx.cfg.userAgent);
 
   const docs: Doc[] = [];
-  for (const m of xml.matchAll(/<record>([\s\S]*?)<\/record>/g)) {
+  // `<record>` puede traer atributos (SciELO le cuelga el xmlns de DC).
+  for (const m of xml.matchAll(/<record(?:\s[^>]*)?>([\s\S]*?)<\/record>/g)) {
     const rec = m[1];
     // Registros borrados (status="deleted") no traen metadata: se saltan.
     if (/<header[^>]*status="deleted"/.test(rec)) continue;
