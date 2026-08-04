@@ -973,8 +973,11 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → tfl → essalud → oefa → reguladores(×4) → sunat → spley → doctrina → elperuano → spij → pj). " +
-      "Módulos aislados: uno roto no tumba el resto; resumen al final."
+      "scraper de documentos, pequeño-primero (" +
+      // Se lee de DOC_SCRAPERS, no se escribe a mano: así la ayuda nunca
+      // miente cuando se añade un módulo (pasó con `adlp`).
+      `entidades → ${DOC_SCRAPERS.map((s) => s.name).join(" → ")}` +
+      "). Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")
   .option("--sync", "entidades escribe también el seed del assistant")

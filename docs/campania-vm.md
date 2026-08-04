@@ -19,10 +19,18 @@
 | Trib. Fisc. Ambiental | ~7.3k | vía gob.pe (publicaciones); antiguas → OCR |
 | Reguladores ×4 | ~51.6k | osinergmin/osiptel/sunass/ositran (módulo propio cada uno) vía gob.pe |
 | SUNAT | miles (informes vinculantes 1997→hoy) | árbol estático propio; fecha = piso del año |
+| TFL (SUNAFIL) | ~55 | tribunal laboral; detecta las de Sala Plena (precedentes) |
+| ESSALUD | decenas de miles | stream completo; ~mitad son actos internos (plan-essalud §1) |
 | SPLEY (Congreso) | ~15k proyectos/período | API del portal; status "En revisión" |
+| ADLP (Congreso) | ~20.5k leyes | **trae la vigencia real**: estrena "Derogado". Casi todo OCR |
+| Doctrina | 10 repositorios OAI | tesis y revistas jurídicas; `type=doctrine` |
 | El Peruano | ~200k+ (2013→hoy) | universo enumerable por CSVs; `--todos` itera todos los periodos |
 | SPIJ | ~875k | API autenticada estable; el total lo dice la propia API |
 | **Total** | **~1.15M** | **la meta del millón, solo con módulos validados** |
+
+> Tabla orientativa: la lista que realmente corre es `DOC_SCRAPERS` en
+> `src/cli.ts`. Cuando se añade un módulo (como TFL y ESSALUD el 2026-08-03),
+> entra a la campaña sin tocar `ops/`.
 
 **PJ queda FUERA de la VM**: su bot manager (Radware) bloquea IPs de
 datacenter. Es chico (~5–8k) y se corre aparte desde una IP residencial
@@ -35,11 +43,16 @@ requisito de "que no quede incompleto" se verifica, no se supone.
 
 ## 2. Las piezas (todas en el repo)
 
-- **`pnpm all --todos --skip pj`** — una pasada completa: entidades primero,
-  luego tc → elperuano (todos los periodos) → spij. Módulos aislados,
+- **`pnpm all --todos --skip pj`** — una pasada completa: **entidades
+  primero** y luego TODOS los módulos de `DOC_SCRAPERS` (`src/cli.ts`), en
+  orden pequeño-primero con `elperuano` y `spij` al final. Módulos aislados,
   idempotente por ledger: re-ejecutarla continúa/verifica, nunca duplica.
+  La lista viva está en el código, no aquí: añadir un módulo a `DOC_SCRAPERS`
+  lo mete en la campaña automáticamente.
 - **`ops/campaign.sh`** — la pasada + respaldo rotado de `state/` (últimos 14)
-  + `pnpm status` al final. Log natural: la salida del timer (journalctl).
+  + `pnpm status` al final. **No lleva argumentos**; se usa así:
+  `./ops/campaign.sh` (manual) o `sudo systemctl start arxatec-scraping.service`
+  (una pasada vía systemd). Log natural: la salida del timer (journalctl).
 - **`ops/arxatec-scraping.service` + `.timer`** — el supervisor: systemd
   relanza la pasada cada 6 h contadas desde que la anterior terminó (sin
   solapes) y recupera pasadas perdidas si la VM se reinició (`Persistent`).
