@@ -191,7 +191,7 @@ Campos del `metadata` (ver `utils/metadata/index.ts` y `types/`):
   "language": "es",
   "published_at": "...", "effective_date": "...",
   "issued_at": "2012-01-26",      // fecha de resolución (F3, trazabilidad)
-  // Trazabilidad de fuente (F3, ver arxatec-lawyer-assistant/docs/TRAZABILIDAD_FUENTES.md):
+  // Trazabilidad de fuente (F3, ver arxatec-lawyer-assistant/docs/registro/2026-07-24/TRAZABILIDAD_FUENTES.md):
   // citation la emite el chat VERBATIM como respaldo; sala/distrito, estructurados.
   "citation": "Recurso 001061-2011, Sala Civil Permanente, Lima Norte, 26-ene-2012",
   "court_chamber": "Sala Civil Permanente",   // null en normativa (SPIJ)

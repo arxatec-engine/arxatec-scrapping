@@ -74,7 +74,7 @@ export interface Metadata {
   issued_at?: string | null;
   /**
    * Cita humana preformateada — trazabilidad de fuente (F3, ver
-   * arxatec-lawyer-assistant/docs/TRAZABILIDAD_FUENTES.md). El chat la emite
+   * arxatec-lawyer-assistant/docs/registro/2026-07-24/TRAZABILIDAD_FUENTES.md). El chat la emite
    * VERBATIM como respaldo: "Recurso 001061-2011, Sala Civil Permanente,
    * Lima Norte, 26-ene-2012". Cada módulo formatea la suya.
    */
