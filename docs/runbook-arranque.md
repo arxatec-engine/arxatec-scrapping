@@ -146,8 +146,21 @@ pnpm status    # todo en 0
 ~4.2k entidades sobreviven, que es lo que se quiere — sin ellas ninguna
 ingesta podría vincular emisores.
 
-## 7. Desatendido (la VM)
+## 7. Desatendido (la VM): `ops/campaign.sh`
 
-Para la campaña larga no se corre nada a mano: `ops/campaign.sh` +
-el timer de systemd hacen una pasada idempotente cada 6 h con respaldo
-rotado. Guía completa en [`campania-vm.md`](./campania-vm.md).
+Para la campaña larga no se corre nada a mano. El script **no lleva
+argumentos**: siempre hace la pasada completa.
+
+```bash
+./ops/campaign.sh                                # una pasada, a mano
+sudo systemctl start arxatec-scraping.service    # una pasada, vía systemd
+sudo systemctl enable --now arxatec-scraping.timer  # el supervisor: cada 6 h
+systemctl list-timers arxatec-scraping.timer     # cuándo toca la próxima
+journalctl -u arxatec-scraping -f                # verla en vivo
+```
+
+Cada pasada hace tres cosas: `pnpm all --todos --skip pj` (todos los módulos
+en el orden de `DOC_SCRAPERS`), respaldo rotado de `state/` (últimos 14) y
+`pnpm status`. Es idempotente: si la anterior murió a medias, esta retoma;
+si no hay nada nuevo, es barata. Guía de despliegue completa en
+[`campania-vm.md`](./campania-vm.md).
