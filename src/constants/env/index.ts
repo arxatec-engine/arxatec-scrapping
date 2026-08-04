@@ -93,6 +93,20 @@ export const OEFA_TERM = "OEFA_TERM";
 export const OEFA_MAX_SHEETS = "OEFA_MAX_SHEETS";
 export const OEFA_UA = "OEFA_UA";
 
+export const TFL_CONCURRENCY = "TFL_CONCURRENCY";
+export const TFL_DELAY = "TFL_DELAY";
+export const TFL_LIMIT = "TFL_LIMIT";
+export const TFL_TERM = "TFL_TERM";
+export const TFL_MAX_SHEETS = "TFL_MAX_SHEETS";
+export const TFL_UA = "TFL_UA";
+
+export const ESSALUD_CONCURRENCY = "ESSALUD_CONCURRENCY";
+export const ESSALUD_DELAY = "ESSALUD_DELAY";
+export const ESSALUD_LIMIT = "ESSALUD_LIMIT";
+export const ESSALUD_TERM = "ESSALUD_TERM";
+export const ESSALUD_MAX_SHEETS = "ESSALUD_MAX_SHEETS";
+export const ESSALUD_UA = "ESSALUD_UA";
+
 export const SERVIR_CONCURRENCY = "SERVIR_CONCURRENCY";
 export const SERVIR_DELAY = "SERVIR_DELAY";
 export const SERVIR_LIMIT = "SERVIR_LIMIT";

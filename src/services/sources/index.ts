@@ -100,6 +100,18 @@ export const LEGAL_SOURCES: readonly LegalSourceDef[] = [
     canonicalName: "Tribunal de Fiscalización Ambiental",
     aliases: ["OEFA", "TFA"],
   },
+  // Tanda 2026-08-03 (pedido del abogado): el tribunal laboral —hermano del
+  // TSC y el TFA— y el seguro social, ambos vía el patrón gob.pe.
+  {
+    key: "tfl",
+    canonicalName: "Tribunal de Fiscalización Laboral",
+    aliases: ["SUNAFIL", "TFL"],
+  },
+  {
+    key: "essalud",
+    canonicalName: "Seguro Social de Salud",
+    aliases: ["ESSALUD"],
+  },
   {
     key: "sunat",
     canonicalName: "Superintendencia Nacional de Aduanas y de Administración Tributaria",

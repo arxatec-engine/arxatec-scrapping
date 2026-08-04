@@ -20,6 +20,12 @@ sin dependencia de XML. Registros `status="deleted"` se saltan.
 portales sirven su SPA en esa ruta (falso 200) — cada repo nuevo se confirma
 antes de añadirlo a `REPOS`.
 
+**Tanda 3** (2026-08-03): las revistas OJS de derecho de la PUCP —THĒMIS,
+IUS ET VERITAS y Derecho PUCP— **nunca estuvieron caídas**: su OAI responde,
+solo que tarda más de los 40 s del timeout global (la web tarda 13 s). Se
+añadió `timeoutSec` por repo (120 s) y las tres cosechan. Lección: reprobar
+siempre con timeout largo antes de dar un endpoint por muerto.
+
 **Tanda 2** (2026-08-01), con sus gotchas: **UPC** exige UA de cosechador (su
 WAF responde 403 a UAs de navegador solo en `ListRecords` — al revés que un
 bot manager típico; campo `userAgent` por repo). **URP** y **AMAG** son
@@ -33,7 +39,8 @@ y su `<record>` trae atributos — el parser quedó tolerante a ambos.
 
 - `REPOS` (constants): lista `{key, baseUrl, emisor, soloDerecho?, userAgent?,
   set?}`. Añadir un repositorio = una entrada. `--repos <slugs>` restringe.
-  Hoy 7: pucp-tesis, uni, ulima, upc, urp, amag, scielo.
+  Hoy 10: pucp-tesis, uni, ulima, upc, urp, amag, scielo, themis,
+  iusetveritas, derechopucp.
 - **Filtro a lo jurídico**: los repos generalistas traen TODAS las facultades;
   se conserva solo lo que matchea `LEGAL_KEYWORDS` en título/materias (en el
   smoke: 80 descartadas, 19 jurídicas de 100). Las revistas de derecho (OJS)
