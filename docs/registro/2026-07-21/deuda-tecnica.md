@@ -3,8 +3,14 @@
 > Escrito 2026-07-21. Producto de auditar el **código real** de dos repos, no los
 > planes: `arxatec-scrapping` (este repo, el scraper) y `arxatec-lawyer-assistant`
 > (el backend Python que recibe la ingesta). Cada punto cita `archivo:línea` para
-> que se pueda verificar. Documentos hermanos: `estrategia-fuentes.md` (qué
-> fuentes y en qué orden) y `plan-poder-judicial.md` (el próximo módulo, PJ).
+> que se pueda verificar. Documentos hermanos: `../../estrategia-fuentes.md` (qué
+> fuentes y en qué orden) y `../../plan-poder-judicial.md` (el módulo PJ, que
+> entonces era el siguiente).
+>
+> **Ruta:** movido a `docs/registro/2026-07-21/` el 2026-08-04, al estrenar la
+> carpeta de registro; antes era `docs/deuda-tecnica.md`. La carpeta lleva la
+> fecha que declara esta cabecera; el commit que lo trajo es del día siguiente
+> (`45749cc`, 2026-07-22). El contenido **no** se reverificó en la mudanza.
 >
 > **Este doc responde el checklist §7 de `estrategia-fuentes.md`** (lo que había
 > que verificar del lado del assistant). Ver la tabla al final.
@@ -448,3 +454,12 @@ local arranca OK (1 head Alembic, sin problema de migración). Qdrant
 `legal_documents_pe` estaba vacío (0 puntos); los 8 "documentos basura" eran demo
 del seed en Postgres → script `clean_demo_docs.py` (en el assistant) para borrarlos
 conservando PJ/SPIJ.
+
+---
+
+## Registro de cambios
+
+| Fecha | Cambio |
+| --- | --- |
+| 2026-07-21 | Nace: auditoría del código real de scrapping + assistant, con `archivo:línea`. Segunda y tercera pasada el mismo día (arreglos aplicados + las 4 decisiones de Harry por Slack). |
+| 2026-08-04 | Mudanza a `docs/registro/2026-07-21/` al estrenar la carpeta de registro, y rutas relativas de los documentos hermanos corregidas. Solo cambia la ruta; el contenido no se tocó ni se reverificó. Estado según `arxatec-lawyer-service/docs/registro/2026-08-04/MAPA_DEUDA.md`: A1–A4 mayormente cerradas, B3 (`INGEST_SOURCE`/`INGEST_STATUS`) sigue ⏸ diferido. |

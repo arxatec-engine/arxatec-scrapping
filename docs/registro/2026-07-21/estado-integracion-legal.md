@@ -5,6 +5,39 @@
 > retomar y priorizar. Repos: `arxatec-scrapping` (scrapers), `arxatec-lawyer-assistant`
 > (Python: plano legal + ingesta), `arxatec-lawyer-service` (Node: API + chat),
 > `arxatec-ui` (front).
+>
+> **Ruta:** movido a `docs/registro/2026-07-21/` el 2026-08-04, al estrenar la
+> carpeta de registro; antes era `docs/estado-integracion-legal.md`.
+
+---
+
+## ⚠️ Reverificado el 2026-08-04 — los dos huecos ya no existen
+
+> Reverificado contra `e6a0eef` (este repo), `f776a8f` (assistant) y `6cc4d83d`
+> (service). Método: lectura del código real de los tres repos, no de la
+> documentación de ninguno.
+
+Este documento es un **testigo del 21-22 de julio** y así hay que leerlo. Dos
+semanas después, sus dos huecos están cerrados —y el primero **no** por la vía
+que este documento especificaba:
+
+| Lo que decía | Lo que pasó de verdad |
+| --- | --- |
+| **Hueco 1**: el chat no usa el corpus legal; falta que el Python exponga `POST /legal-documents/internal/search`. | Ese endpoint **nunca llegó a existir en el Python** —y no va a existir. Se resolvió por la Opción B de `arxatec-lawyer-assistant/docs/registro/2026-07-24/TRAZABILIDAD_FUENTES.md` §4: el Node lee **Qdrant directo** y reusa el vector ya calculado del turno, así que ni siquiera gasta embeddings. Ver `arxatec-lawyer-service/src/modules/assistant/facade/turn_preparation/legal_search/index.ts:24-40` y `.../vector_storage/collections/legal_documents/v2/index.ts:7`. Comprobado además que `app/modules/legal_documents/` del Python no tiene slice `internal_search`. |
+| **Hueco 2**: falta la pantalla de biblioteca jurídica **en `arxatec-ui`**. | Está construida, y en **otro repo**: `arxatec-lawyer-platform`, en `src/modules/cases/features/view_legal_documents/` con ruta propia (`RouteHelpers.viewLegalLibrary`, usada en `src/components/layout/cases/components/panel_content/index.tsx:24`). En `arxatec-ui` no hay nada legal. |
+
+La lección no es que el documento estuviera mal: era correcto el 22 de julio.
+La lección es la **regla 4** — un `.md` describe el código del día en que se
+escribió, y el código siguió. Por eso este archivo vive ahora en una carpeta con
+fecha en vez de en `docs/`, donde se leía como si fuera el estado de hoy.
+
+**Lo que de este documento sigue siendo útil:** el contrato de fuentes canónicas
+(sigue vigente, con su espejo en tres repos) y el diagnóstico del portal del PJ.
+**Lo que ya no:** los dos huecos, el backlog priorizado y el estado del scraper
+PJ. Para el estado real de las fuentes, el tablero vivo es
+[`../../registro-scraping.md`](../../registro-scraping.md).
+
+---
 
 ## El pipeline, tramo por tramo
 
@@ -124,3 +157,14 @@ normativa de muchos emisores y mapearla a un ministerio sería engañoso.
    `Could not find Chrome (ver. 131.0.6778.204)` y el ledger queda intacto (reanudable).
    Fix directo, sin tocar el lockfile: `npx puppeteer browsers install chrome`.
    Solo SPIJ lo necesita — renderiza el PDF desde HTML; PJ y TC descargan el PDF original.
+
+---
+
+## Registro de cambios
+
+| Fecha | Cambio |
+| --- | --- |
+| 2026-07-21/22 | Nace (`45749cc`): traza del dato de punta a punta, los 2 huecos y el backlog priorizado. |
+| 2026-07-22 | Se añade el contrato de fuentes canónicas (`acf9b4f`). |
+| 2026-07-25 | Última actualización de contenido, junto al catálogo canónico con alias (`e1cec31`). |
+| 2026-08-04 | Mudanza a `docs/registro/2026-07-21/` y **reverificación**: los dos huecos están cerrados y el Hueco 1 se resolvió por una arquitectura distinta a la que este documento especificaba (Qdrant directo desde Node, no endpoint HTTP en Python). Ver el aviso de la cabecera. El cuerpo del documento se deja **tal cual**: es el testigo de julio, no el estado de hoy. |

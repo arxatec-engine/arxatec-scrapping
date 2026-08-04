@@ -50,7 +50,7 @@ export async function classifyLegalArea(
 }
 
 /**
- * Fallback de emisor con IA (decisión de Harry, ver docs/deuda-tecnica.md A4):
+ * Fallback de emisor con IA (decisión de Harry, ver docs/registro/2026-07-21/deuda-tecnica.md A4):
  * solo cuando el classifier determinista queda unmatched. Groq elige entre los
  * candidatos con mayor solapamiento de tokens; el resultado se cachea por
  * sector para no repetir la llamada, y se marca match_confidence="ia".

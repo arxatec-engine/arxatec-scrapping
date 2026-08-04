@@ -104,7 +104,7 @@ documentos ya completados (dedupe por `id` en el ledger) y reanuda desde el
 checkpoint. Estado en `state/spij_ingest/` (`ledger.jsonl`, `checkpoint.json`).
 
 ⚠️ El ledger es **la única** defensa contra duplicados: el backend no deduplica
-(ver `docs/deuda-tecnica.md` §A1). No borres `state/` de una corrida ya ingestada.
+(ver `docs/registro/2026-07-21/deuda-tecnica.md` §A1). No borres `state/` de una corrida ya ingestada.
 
 ## Convenciones (no romper)
 

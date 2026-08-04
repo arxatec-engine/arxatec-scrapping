@@ -272,7 +272,7 @@ Hecho:
 - [x] **Acceso a `pj.gob.pe` verificado desde la máquina de desarrollo** (§2.5:
       curl + cookie jar + UA de navegador; sin Puppeteer)
 - [x] Contrato verificado contra el código del assistant y decisiones de Harry
-      registradas (ver `deuda-tecnica.md`): camino libre
+      registradas (ver `registro/2026-07-21/deuda-tecnica.md`): camino libre
 - [x] **Censo del árbol** (§2.6): ≥3.046 docs medidos, ~5–8k estimados totales
 - [x] **`cheerio` añadido** (`pnpm add cheerio`) — parser de HTML del WCM
 - [x] **Módulo `src/modules/pj/` IMPLEMENTADO** (subcomando `pj` en el CLI):
@@ -295,12 +295,12 @@ Pendiente (orden sugerido):
 3. Siguiente fuente: Tribunal Constitucional (~10k expedientes, "Ver PDF").
 
 Preguntas abiertas — RESPONDIDAS (Harry por Slack + auditoría del backend,
-2026-07-21; detalle en `deuda-tecnica.md`):
+2026-07-21; detalle en `registro/2026-07-21/deuda-tecnica.md`):
 - ~~¿`source` para PJ?~~ → texto libre en el backend; el módulo fija `"PJ"`
   como constante propia.
 - ~~¿`status` para jurisprudencia?~~ → provisional **`"Vigente"`** (vocabulario
   único de producción hasta que se resuelva el problema de vigencias; es el
-  único valor que los filtros actuales encuentran — ver `deuda-tecnica.md` A2).
+  único valor que los filtros actuales encuentran — ver `registro/2026-07-21/deuda-tecnica.md` A2).
 - ~~¿Sumilla del tema o generada?~~ → **no hace falta mandar sumilla**: el
   backend la genera con LLM on-demand desde los chunks
   (`legal_documents/summary/`). La sumilla del tema puede ir en

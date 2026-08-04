@@ -34,7 +34,7 @@ export interface Config {
   ingestMaxRetries: number;
   ingestCountry: string;
   ingestSource: string; // "PJ"
-  ingestStatus: string; // "Vigente" (provisional; ver docs/deuda-tecnica.md A2)
+  ingestStatus: string; // "Vigente" (provisional; ver docs/registro/2026-07-21/deuda-tecnica.md A2)
 }
 
 /** Un nodo del árbol WCM pendiente de visitar, con su ruta legible. */

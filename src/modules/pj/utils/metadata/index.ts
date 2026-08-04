@@ -21,7 +21,7 @@ export function cleanRecurso(recurso: string | null): string | null {
  * documento (la misma casación aparece bajo varios temas): dedup por archivo,
  * sin falsos positivos entre secciones ni riesgo de colisión de nº de recurso.
  * recurso/sala se guardan aparte en el ledger para lectura. Es la defensa
- * anti-duplicados del punto A1 (ver docs/deuda-tecnica.md).
+ * anti-duplicados del punto A1 (ver docs/registro/2026-07-21/deuda-tecnica.md).
  */
 export function naturalId(doc: PjDoc): string {
   return doc.pdfUrl;
@@ -63,7 +63,7 @@ function absolutePdf(cfg: Config, pdfUrl: string): string {
  * Arma el JSON del contrato de ingesta para un documento del PJ. type siempre
  * "jurisprudence"; emisor constante (Poder Judicial como issuer, Corte Suprema
  * como court); área derivada del árbol (no IA). status="Vigente" es provisional
- * (ver docs/deuda-tecnica.md A2) — para jurisprudencia es una constante sin
+ * (ver docs/registro/2026-07-21/deuda-tecnica.md A2) — para jurisprudencia es una constante sin
  * semántica de vigencia.
  */
 export function buildMetadata(
