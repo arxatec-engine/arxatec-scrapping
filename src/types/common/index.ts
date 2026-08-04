@@ -51,7 +51,7 @@ export interface RequestOptions {
  * Contrato de ingesta del backend (`POST /legal-documents/ingest` del
  * arxatec-lawyer-assistant). Es EL MISMO para todas las fuentes: cada módulo
  * llena este objeto y lo manda como campo `metadata` (string JSON) del
- * multipart. Ver docs/plan-poder-judicial.md §3.1 y docs/deuda-tecnica.md.
+ * multipart. Ver docs/plan-poder-judicial.md §3.1 y docs/registro/2026-07-21/deuda-tecnica.md.
  */
 export interface Metadata {
   country: string;
@@ -74,7 +74,7 @@ export interface Metadata {
   issued_at?: string | null;
   /**
    * Cita humana preformateada — trazabilidad de fuente (F3, ver
-   * arxatec-lawyer-assistant/docs/TRAZABILIDAD_FUENTES.md). El chat la emite
+   * arxatec-lawyer-assistant/docs/registro/2026-07-24/TRAZABILIDAD_FUENTES.md). El chat la emite
    * VERBATIM como respaldo: "Recurso 001061-2011, Sala Civil Permanente,
    * Lima Norte, 26-ene-2012". Cada módulo formatea la suya.
    */

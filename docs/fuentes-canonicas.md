@@ -42,6 +42,6 @@ Cada fuente tiene tres piezas, con roles que NO se mezclan:
 
 1. Registrar `key` + `canonicalName` + `aliases` en los TRES catálogos.
 2. El módulo scraper usa `sourceByKey("<key>").canonicalName` como default.
-3. Añadir la fila a la tabla de `estado-integracion-legal.md`.
+3. Añadir la fila a la tabla de `registro/2026-07-21/estado-integracion-legal.md`.
 4. Actualizar la validación/pruebas de cada repo (fijan el mapeo).
 5. Nunca añadir la sigla al filtro visual: el enum solo lleva canónicos.
