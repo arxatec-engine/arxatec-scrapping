@@ -11,6 +11,9 @@ del backend `arxatec-lawyer-assistant`. Aquí se **construyen y validan** módul
 0. [`docs/runbook-arranque.md`](docs/runbook-arranque.md) — **cómo se opera**:
    orden de arranque, reanudación (re-ejecutar el mismo comando), verificación
    y reset. Lo primero si vas a CORRER algo, no a programarlo.
+0b. [`docs/arquitectura-produccion.md`](docs/arquitectura-produccion.md) — dónde
+   corre en producción y por qué (PC propia > nube por la IP del PJ; secuencial >
+   20 sesiones porque el cuello es el backend). Medido: ~800 MB por sesión.
 1. [`docs/registro-scraping.md`](docs/registro-scraping.md) — **EL TABLERO VIVO.**
    Las 43 fuentes del Excel, qué está hecho, el contador de avance y el comando
    de cada módulo. La verdad del estado está AQUÍ (la sección "Estado actual" de
