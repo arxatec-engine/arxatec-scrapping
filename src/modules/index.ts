@@ -7,6 +7,8 @@ export * as indecopi from "./indecopi";
 export * as tce from "./tce";
 export * as sunarp from "./sunarp";
 export * as servir from "./servir";
+export * as tfl from "./tfl";
+export * as essalud from "./essalud";
 export * as oefa from "./oefa";
 export * as osinergmin from "./osinergmin";
 export * as osiptel from "./osiptel";

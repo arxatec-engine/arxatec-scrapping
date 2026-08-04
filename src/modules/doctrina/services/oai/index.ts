@@ -10,7 +10,12 @@ import type { Ctx, Doc } from "../../types";
  * parser por regex basta. Paginación por `resumptionToken` (el estándar).
  */
 
-function fetchOai(ctx: Ctx, url: string, userAgent: string): Promise<string> {
+function fetchOai(
+  ctx: Ctx,
+  url: string,
+  userAgent: string,
+  timeoutSec: number
+): Promise<string> {
   const { cfg, log } = ctx;
   return (async () => {
     let lastErr: unknown = null;
@@ -20,7 +25,7 @@ function fetchOai(ctx: Ctx, url: string, userAgent: string): Promise<string> {
         const res = await fetch(url, {
           headers: { "User-Agent": userAgent, Accept: "application/xml,text/xml" },
           redirect: "follow",
-          signal: AbortSignal.timeout(cfg.requestTimeout * 1000),
+          signal: AbortSignal.timeout(timeoutSec * 1000),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status} en ${url}`);
         const body = await res.text();
@@ -98,7 +103,12 @@ export async function harvestPage(
   const q = token
     ? `verb=ListRecords&resumptionToken=${encodeURIComponent(token)}`
     : `verb=ListRecords&metadataPrefix=oai_dc${repo.set ? `&set=${encodeURIComponent(repo.set)}` : ""}`;
-  const xml = await fetchOai(ctx, `${repo.baseUrl}?${q}`, repo.userAgent ?? ctx.cfg.userAgent);
+  const xml = await fetchOai(
+    ctx,
+    `${repo.baseUrl}?${q}`,
+    repo.userAgent ?? ctx.cfg.userAgent,
+    repo.timeoutSec ?? ctx.cfg.requestTimeout
+  );
 
   const docs: Doc[] = [];
   // `<record>` puede traer atributos (SciELO le cuelga el xmlns de DC).

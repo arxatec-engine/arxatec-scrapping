@@ -12,11 +12,11 @@
 
 ## Avance
 
-**29 de 42 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
-Última actualización: **2026-08-01** (módulo `adlp`: el último construible —
-su HTTPS era intermitente, no caído. Estrena el status "Derogado" con
-vigencia determinista de la fuente; smoke 15/15. Antes en el día: tanda 2 de
-doctrina, 4 repos nuevos).
+**33 de 44 fuentes scrapeables listas** · 1 excluida por decisión (CEJ).
+Última actualización: **2026-08-03** (tanda del abogado: 2 fuentes NUEVAS
+fuera del Excel original —`tfl` y `essalud`, +2 al denominador— y las 3
+revistas OJS de derecho de la PUCP desbloqueadas: NO estaban caídas, solo
+tardan >40 s. Smokes 8/8, 6/6 y 3/3×3).
 
 **Decisiones del owner (2026-07-30):**
 - **Campaña VM 2 meses** con los módulos ya validados (TC + El Peruano + SPIJ
@@ -125,6 +125,8 @@ están registradas en los 3 repos (huella `553994ae…`).
 | ✅ | SUNARP – SIP (precedentes) | P3 — hecho | dentro de `sunarp` | `pnpm sunarp` | El sitio SIP está CAÍDO; los precedentes nacen en los acuerdos de Pleno (`…-SUNARP/PT`) que este módulo ingesta del mismo stream |
 | ✅ | SERVIR – Tribunal del Servicio Civil | P3 — hecho | `servir` | `pnpm servir` | Hecho 2026-07-30 vía gob.pe (term TSC + filtro; ~168k normas SERVIR, las TSC con sala en court_chamber). Smoke 10/10 born-digital |
 | ✅ | OEFA – Tribunal de Fiscalización Ambiental | P3 — hecho | `oefa` | `pnpm oefa` | Hecho 2026-07-30 vía gob.pe: las TFA van como PUBLICACIONES (Report), ~7.3k con término; antiguas escaneadas → OCR local. Smoke 10/10 |
+| ✅ | **Tribunal de Fiscalización Laboral (TFL)** | añadida 2026-08-03 (pedido del abogado) | `tfl` | `pnpm tfl` | El hermano laboral del TSC y el TFA, vía gob.pe (term TFL, ~55 resoluciones). **Detecta las Resoluciones de Sala Plena = precedentes de observancia obligatoria** en `court_chamber`. Smoke 8/8 sin warnings. Ver [`plan-tfl.md`](./plan-tfl.md) |
+| ✅ | **ESSALUD – normativa** | añadida 2026-08-03 (pedido del abogado) | `essalud` | `pnpm essalud` | Stream completo de normas del Seguro Social vía gob.pe. ⚠ Entre 40% y 70% son actos administrativos internos (RRHH/donaciones) — entran igual por la regla "volumen primero"; el corte, si producto lo pide, es una línea. Smoke 6/6. Ver [`plan-essalud.md`](./plan-essalud.md) |
 | ✅ | SUNAT – resoluciones e informes | P3 — hecho | `sunat` | `pnpm sunat` | El sitio revivió el 31-jul y el módulo se construyó ese día: informes/oficios/cartas 1997→hoy (índices anuales; los años nuevos existen aunque el frameset viejo tope en 2010). Smoke 10/10. Las resoluciones de superintendencia se omiten (fluyen por EP/SPIJ) |
 
 ### Reguladores y APIs de datos abiertos (P4)
@@ -159,10 +161,10 @@ su endpoint.
 | ✅ | UPC / UNI / URP – repositorios | P5 — hecho | `doctrina` | `pnpm doctrina --repos upc,uni,urp` | Los 3 en `REPOS` y cosechando (2026-08-01; +ULima como extra fuera del Excel). UPC exige UA de cosechador (su WAF da 403 a UAs de navegador en OAI); URP es DSpace 7 (`/server/oai/request`). Smokes 5/5 |
 | ⬜ | Congreso / TC / AMAG – repositorios | P5 — parcial | `doctrina` | `pnpm doctrina --repos amag` | AMAG **ya cosecha** (DSpace 7, emisor resuelto, smoke 5/5). Congreso (cendocbib) en timeout y TC sin OAI conocido — pendientes |
 | ✅ | Revista Derecho PUCP | P5 — hecho (vía SciELO) | `doctrina` | `pnpm doctrina --repos scielo` | Su contenido entra completo por el set `0251-3420` de SciELO. El OJS propio (`revistas.pucp`) sigue caído; queda como vía alternativa si SciELO falla |
-| ⬜ | IUS ET VERITAS | P5 | `doctrina` | — | OJS OAI; añadir a `REPOS` (`soloDerecho:true`) cuando su endpoint responda |
-| ⬜ | THĒMIS | P5 | `doctrina` | — | OJS OAI; añadir a `REPOS` (`soloDerecho:true`) cuando su endpoint responda |
+| ✅ | IUS ET VERITAS | P5 — hecho | `doctrina` | `pnpm doctrina --repos iusetveritas` | OJS OAI real con `timeoutSec: 120` (el sitio es lento, no estaba caído). Smoke 3/3 |
+| ✅ | THĒMIS | P5 — hecho | `doctrina` | `pnpm doctrina --repos themis` | OJS OAI real con `timeoutSec: 120` (el sitio es lento, no estaba caído). Smoke 3/3 |
 | ✅ | SciELO Perú | P5 — hecho | `doctrina` | `pnpm doctrina --repos scielo` | Cosecha **por set** (sus sets OAI son ISSN de revista; `0251-3420` = Derecho PUCP, la única jurídica del agregador — la paginación global daba 500). Parser tolerante a CDATA y `<record>` con atributos. Smoke 5/5 |
-| ⬜ | Dialnet / Redalyc / REDIB | P5 — externos | `doctrina` (posible) | — | Agregadores NO peruanos: OAI existe pero revisar términos de uso antes de cosechar |
+| ⬜ | Dialnet / Redalyc / REDIB | P5 — evaluada 2026-08-03 | — | — | **Veredicto**: Dialnet tiene OAI real, pero (1) es un ÍNDICE — sus registros son metadatos + resumen, sin texto completo; (2) es multidisciplinar y español, lo peruano-jurídico es una fracción; (3) las revistas peruanas que indexa (Derecho PUCP, IUS ET VERITAS, THĒMIS) **ya las cosechamos directo**, así que sería duplicado con menos contenido; (4) su `robots.txt` bloquea explícitamente a GPTBot → señal sobre reutilización por IA, consultar con legal |
 
 ### Actualización continua (jobs sobre módulos existentes, no módulos nuevos)
 
@@ -171,7 +173,7 @@ su endpoint.
 | ✅ | Job diario El Peruano | hecho | `elperuano --cuadernillo` | `pnpm elperuano --cuadernillo --dias 1` | Es el modo cuadernillo agendado (cron/campaña); trae el boletín del día. Idempotente por ledger |
 | ✅ | Polling gob.pe | hecho (mecánica lista) | modo incremental de `gobpe` | `pnpm gobpe` | El default (últimos 7 días + ledger) ES el poll; se activa agendándolo (cron o sumar `gobpe` a `DOC_SCRAPERS` de la campaña) cuando el owner decida |
 | ✅ | Polling SPLEY | mecánica lista | modo reanudable de `spley` | `pnpm spley` | Re-ejecutar trae los proyectos nuevos (ledger dedupea); agendar cuando el owner decida |
-| ⬜ | Andina – normas del día | señal, no fuente | — | — | Noticias: sirve como alerta de publicación, no como fuente primaria de texto |
+| ⬜ | Andina – normas del día | evaluada 2026-08-03 | — | — | **Veredicto ratificado**: su sección de normas legales ya ni existe (redirige a "miscellaneous"). Es agencia de noticias: daría una alerta de que salió una norma, pero el **cuadernillo diario de El Peruano ya trae el texto oficial el mismo día**. No aporta nada que no tengamos |
 
 ## Cómo añadir un módulo nuevo (checklist)
 

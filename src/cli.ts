@@ -20,6 +20,10 @@ import { config as sunarpConfig } from "./modules/sunarp/config";
 import { run as sunarpRun } from "./modules/sunarp/run";
 import { config as servirConfig } from "./modules/servir/config";
 import { run as servirRun } from "./modules/servir/run";
+import { config as tflConfig } from "./modules/tfl/config";
+import { run as tflRun } from "./modules/tfl/run";
+import { config as essaludConfig } from "./modules/essalud/config";
+import { run as essaludRun } from "./modules/essalud/run";
 import { config as oefaConfig } from "./modules/oefa/config";
 import { run as oefaRun } from "./modules/oefa/run";
 import { config as osinergminConfig } from "./modules/osinergmin/config";
@@ -141,6 +145,36 @@ async function runSunarp(opts: { limit?: string }): Promise<void> {
   const log = setupLogging(cfg.logFile);
   try {
     await sunarpRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runTfl(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.TFL_LIMIT = opts.limit;
+  const cfg = tflConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await tflRun(cfg, log);
+  } catch (e) {
+    log.error(
+      "La corrida terminó por un error. Reanudable con el mismo comando."
+    );
+    log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
+    process.exitCode = 1;
+  }
+}
+
+async function runEssalud(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) process.env.ESSALUD_LIMIT = opts.limit;
+  const cfg = essaludConfig();
+  const log = setupLogging(cfg.logFile);
+  try {
+    await essaludRun(cfg, log);
   } catch (e) {
     log.error(
       "La corrida terminó por un error. Reanudable con el mismo comando."
@@ -445,6 +479,22 @@ const DOC_SCRAPERS: Array<{
     },
   },
   {
+    name: "tfl",
+    limitEnv: "TFL_LIMIT",
+    exec: () => {
+      const cfg = tflConfig();
+      return tflRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
+    name: "essalud",
+    limitEnv: "ESSALUD_LIMIT",
+    exec: () => {
+      const cfg = essaludConfig();
+      return essaludRun(cfg, setupLogging(cfg.logFile));
+    },
+  },
+  {
     name: "servir",
     limitEnv: "SERVIR_LIMIT",
     exec: () => {
@@ -659,6 +709,8 @@ function runStatus(): void {
     { name: "tce", docsPath: tceConfig().docsPath },
     { name: "sunarp", docsPath: sunarpConfig().docsPath },
     { name: "servir", docsPath: servirConfig().docsPath },
+    { name: "tfl", docsPath: tflConfig().docsPath },
+    { name: "essalud", docsPath: essaludConfig().docsPath },
     { name: "oefa", docsPath: oefaConfig().docsPath },
     { name: "osinergmin", docsPath: osinergminConfig().docsPath },
     { name: "osiptel", docsPath: osiptelConfig().docsPath },
@@ -769,6 +821,22 @@ program
   )
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .action(runSunarp);
+
+program
+  .command("tfl")
+  .description(
+    "TFL (SUNAFIL): resoluciones del Tribunal de Fiscalización Laboral —incluidas las de Sala Plena— publicadas en gob.pe, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runTfl);
+
+program
+  .command("essalud")
+  .description(
+    "ESSALUD: normativa del Seguro Social de Salud publicada en gob.pe, e ingesta."
+  )
+  .option("--limit <n>", "tope de documentos nuevos (pruebas)")
+  .action(runEssalud);
 
 program
   .command("servir")
@@ -905,7 +973,7 @@ program
   .command("all")
   .description(
     "Corre TODO en orden: entidades primero (regla del pipeline) y luego cada " +
-      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → oefa → reguladores(×4) → sunat → spley → doctrina → elperuano → spij → pj). " +
+      "scraper de documentos, pequeño-primero (tc → tfiscal → indecopi → tce → sunarp → servir → tfl → essalud → oefa → reguladores(×4) → sunat → spley → doctrina → elperuano → spij → pj). " +
       "Módulos aislados: uno roto no tumba el resto; resumen al final."
   )
   .option("--limit <n>", "tope de documentos nuevos POR módulo (pruebas)")

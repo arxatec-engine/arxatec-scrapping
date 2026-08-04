@@ -39,6 +39,8 @@ existe un módulo funcionando: **SPIJ** (normativa, MINJUS).
 | 20 | [`plan-spley.md`](./plan-spley.md) | **Congreso/SPLEY (hecho).** Proyectos de ley vía la API del portal (lista + expediente AES); estrena status "En revisión" y fija la política de vigencia (determinista por fuente, nunca IA). |
 | 21 | [`plan-doctrina.md`](./plan-doctrina.md) | **Doctrina (hecho, cubre 9 filas P5).** Un cosechador OAI-PMH para tesis/artículos jurídicos de repositorios académicos; filtro a lo jurídico, type=doctrine, fuente canónica nueva. |
 | 22 | [`plan-adlp.md`](./plan-adlp.md) | **ADLP del Congreso (hecho, el último construible).** Normas con rango de ley 1944-2016 del buscador WebForms (grid trunca a 20) + PDF directo con OCR; **vigencia determinista de la fuente: estrena "Derogado"**. HTTPS intermitente, no caído. |
+| 23 | [`plan-tfl.md`](./plan-tfl.md) | **Tribunal de Fiscalización Laboral (2026-08-03).** El hermano laboral del TSC/TFA vía gob.pe; detecta las Resoluciones de Sala Plena (precedentes vinculantes). |
+| 24 | [`plan-essalud.md`](./plan-essalud.md) | **ESSALUD (2026-08-03).** Normativa del Seguro Social vía gob.pe, sin filtro de tribunal; con el aviso de calidad medido (40-70% son actos internos). |
 | — | `Fuentes Públicas … RAG.pdf` | El informe original de fuentes (insumo de la estrategia; lo accionable ya está destilado en el doc 1). |
 
 ## Estado actual (2026-07-21)

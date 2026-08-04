@@ -21,6 +21,8 @@
     "tce": "tsx src/cli.ts tce",
     "sunarp": "tsx src/cli.ts sunarp",
     "servir": "tsx src/cli.ts servir",
+    "tfl": "tsx src/cli.ts tfl",
+    "essalud": "tsx src/cli.ts essalud",
     "oefa": "tsx src/cli.ts oefa",
     "osinergmin": "tsx src/cli.ts osinergmin",
     "osiptel": "tsx src/cli.ts osiptel",

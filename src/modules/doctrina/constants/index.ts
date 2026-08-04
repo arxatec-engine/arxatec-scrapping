@@ -21,6 +21,12 @@ export interface RepoOai {
   userAgent?: string;
   /** Set OAI a cosechar (en SciELO los sets son ISSN por revista): evita recorrer todo el agregador. */
   set?: string;
+  /**
+   * Timeout propio en segundos. Las revistas OJS de la PUCP tardan >40 s en
+   * responder el OAI (el sitio está VIVO, solo es lento — durante semanas se
+   * las dio por caídas por usar el timeout global).
+   */
+  timeoutSec?: number;
 }
 
 export const REPOS: readonly RepoOai[] = [
@@ -56,6 +62,29 @@ export const REPOS: readonly RepoOai[] = [
     baseUrl: "https://repositorio.amag.edu.pe/server/oai/request",
     emisor: "Academia de la Magistratura",
     soloDerecho: true,
+  },
+  // Revistas OJS de derecho de la PUCP: 100% jurídicas (sin filtro de materia)
+  // y LENTAS (timeout propio de 120 s; ver `timeoutSec`).
+  {
+    key: "themis",
+    baseUrl: "https://revistas.pucp.edu.pe/index.php/themis/oai",
+    emisor: "Pontificia Universidad Católica del Perú",
+    soloDerecho: true,
+    timeoutSec: 120,
+  },
+  {
+    key: "iusetveritas",
+    baseUrl: "https://revistas.pucp.edu.pe/index.php/iusetveritas/oai",
+    emisor: "Pontificia Universidad Católica del Perú",
+    soloDerecho: true,
+    timeoutSec: 120,
+  },
+  {
+    key: "derechopucp",
+    baseUrl: "https://revistas.pucp.edu.pe/index.php/derechopucp/oai",
+    emisor: "Pontificia Universidad Católica del Perú",
+    soloDerecho: true,
+    timeoutSec: 120,
   },
   // SciELO Perú se cosecha por set (= ISSN de revista); la única jurídica del
   // agregador es Derecho PUCP, así que el set ES la tajada legal de SciELO.

@@ -38,6 +38,8 @@ const LEDGERS: Record<string, string> = {
   tce: "state/tce_ingest/ledger.jsonl",
   sunarp: "state/sunarp_ingest/ledger.jsonl",
   servir: "state/servir_ingest/ledger.jsonl",
+  tfl: "state/tfl_ingest/ledger.jsonl",
+  essalud: "state/essalud_ingest/ledger.jsonl",
   oefa: "state/oefa_ingest/ledger.jsonl",
   osinergmin: "state/osinergmin_ingest/ledger.jsonl",
   osiptel: "state/osiptel_ingest/ledger.jsonl",
