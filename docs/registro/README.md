@@ -94,6 +94,7 @@ Corolario para agentes: la salida de una sesión anterior es **evidencia**, no
 | --- | --- | --- | --- | --- |
 | 2026-07-21 | [deuda-tecnica.md](2026-07-21/deuda-tecnica.md) | Auditoría del código real de este repo y del assistant, con `archivo:línea`: los 4 bloqueantes de contrato (A1–A4), la deuda del repo (B1–B4) y las decisiones que Harry cerró por Slack. | ✅ A1–A4 decididas y mayormente cerradas · ⏸ B3 diferido | 2026-07-21 · **no reverificado** en la mudanza del 2026-08-04 |
 | 2026-07-21 | [estado-integracion-legal.md](2026-07-21/estado-integracion-legal.md) | El dato de punta a punta a través de los cuatro repos, con los 2 huecos de producto y el backlog. **Testigo de julio, no estado de hoy.** | ⚠️ superado — los 2 huecos están cerrados, el Hueco 1 por otra arquitectura | 2026-08-04 · `e6a0eef` + `f776a8f` + `6cc4d83d` · reverificado contra el código de los 3 repos |
+| 2026-08-04 | [deuda-abierta.md](2026-08-04/deuda-abierta.md) | Inventario de la deuda abierta del repo con los gates en verde. El único punto con fecha es el default `llama-3.1-8b-instant` (apagado el 2026-08-16), mitigable en caliente con `LLM_MODEL`. | 🔴 D-1 vence el 2026-08-16 · 🟡 D-2 · ⏸ D-3 | 2026-08-04 · `e6a0eef` · typecheck limpio, 22/22 tests |
 
 Añadir un registro = una fila aquí, en la misma sesión que lo crea. Un registro
 sin fila en el índice es un registro que nadie va a encontrar.
