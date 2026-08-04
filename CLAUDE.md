@@ -15,12 +15,16 @@ del backend `arxatec-lawyer-assistant`. Aquí se **construyen y validan** módul
    corre en producción y por qué (PC propia > nube por la IP del PJ; secuencial >
    20 sesiones porque el cuello es el backend). Medido: ~800 MB por sesión.
 1. [`docs/registro-scraping.md`](docs/registro-scraping.md) — **EL TABLERO VIVO.**
-   Las 43 fuentes del Excel, qué está hecho, el contador de avance y el comando
-   de cada módulo. La verdad del estado está AQUÍ (la sección "Estado actual" de
-   `docs/README.md` es histórica y puede estar vieja).
-2. [`docs/README.md`](docs/README.md) — índice de los ~21 docs: estrategia de
-   fuentes, anti-bloqueo, campaña VM y un `plan-<fuente>.md` por módulo.
-3. Antes de tocar un módulo concreto: su `docs/plan-<fuente>.md`.
+   Las fuentes del Excel, qué está hecho, el contador de avance y el comando de
+   cada módulo. La verdad del estado está AQUÍ y **solo** aquí: la sección
+   "Estado actual" de `docs/README.md` se retiró el 2026-08-04 justamente por
+   duplicarla y quedarse vieja.
+2. [`docs/README.md`](docs/README.md) — índice de los docs de `docs/`: estrategia
+   de fuentes, anti-bloqueo, campaña VM y un `plan-<fuente>.md` por módulo.
+3. [`docs/registro/README.md`](docs/registro/README.md) — **la memoria de sesión**:
+   las cuatro reglas del registro y la tabla de qué documento **no** es registro y
+   por qué. Léela antes de mover un `.md` de sitio o de fiarte de uno.
+4. Antes de tocar un módulo concreto: su `docs/plan-<fuente>.md`.
 
 ## Comandos
 
@@ -92,10 +96,53 @@ Gestor: **pnpm, nunca npm**. Puppeteer exige Chrome
 - El smoke real necesita el assistant corriendo. GOTCHA: al matar su uvicorn,
   los hijos retienen `:8000` — matar los PID de `ss -tlnp | grep 8000`.
 
+## Registro de sesión y la regla que lo gobierna
+
+**Esta sección es canónica.** `docs/registro/README.md` desarrolla las reglas con
+ejemplos; no las repliques en un tercer sitio.
+
+**Nunca asumas que la documentación está actualizada — tampoco este archivo.**
+Un `.md` describe el código del día en que alguien lo escribió; el código siguió.
+Antes de apoyar una decisión en una afirmación documentada —una ruta, un
+`archivo:línea`, un número, un "ya está hecho"—, **compruébala contra el código**.
+Si falla, corregirla es parte del trabajo en curso, no un ticket para después.
+
+No es paranoia. El 2026-08-04, al reverificar `estado-integracion-legal.md`, sus
+dos huecos abiertos estaban cerrados —y el principal por una arquitectura
+distinta a la que el propio documento especificaba—; y `docs/README.md` seguía
+diciendo que había **un** módulo funcionando cuando el tablero contaba 33 de 44.
+Nada de eso rompía un test. **La salida de una sesión anterior es evidencia, no
+verdad.**
+
+Todo hallazgo, auditoría o decisión con consecuencias va a
+`docs/registro/<YYYY-MM-DD>/<tema>.md`, en `kebab-case`, con la fecha en que se
+escribe. Cuatro reglas, detalladas en
+[`docs/registro/README.md`](docs/registro/README.md):
+
+1. **Documento nuevo = carpeta nueva** con la fecha de creación.
+2. **Cambio sobre un registro existente = se anota en la carpeta de ese
+   registro**, con fila nueva en su *Registro de cambios*. No se abre carpeta
+   nueva para actualizar algo que ya existe.
+3. **Cabecera obligatoria** con fecha, commit verificado y método. Sin commit, un
+   registro es una opinión. Como aquí casi nada empieza y termina en este repo,
+   si el hallazgo cruza a `assistant`/`service`/`platform`, declara **el commit de
+   cada repo** que cites.
+4. **Nunca asumas que la documentación está actualizada** — la regla de arriba.
+
+Higiene: **añadir un registro incluye añadir su fila al índice** de
+`docs/registro/README.md`, en la misma sesión.
+
+Qué **no** es registro en este repo: casi todo `docs/`. `registro-scraping.md`
+es el tablero **vivo** pese al nombre; los `plan-<fuente>.md`, el runbook, la
+campaña VM, la arquitectura de producción, los catálogos y la estrategia
+describen el sistema y se **reescriben**. La tabla completa de «se queda y por
+qué» está en `docs/registro/README.md`. **El error caro aquí es mover en bloque.**
+
 ## Git
 
 - Rama por unidad de trabajo + PR; el owner mergea en GitHub. **Nunca push
   directo a main.** `gh` no está instalado: los PR se crean con la URL
   `github.com/arxatec-engine/arxatec-scrapping/pull/new/<rama>`.
-- Al terminar un módulo, el MISMO PR actualiza el registro: ✅ en su fila +
-  contador (convención: ✅ = fuente cosechando de verdad, no "cubrible").
+- Al terminar un módulo, el MISMO PR actualiza el tablero
+  (`docs/registro-scraping.md`): ✅ en su fila + contador (convención: ✅ = fuente
+  cosechando de verdad, no "cubrible").
