@@ -1,5 +1,7 @@
 import axios from "axios";
 
+import { DEFAULT_LLM_MODEL } from "../../../../services/llm";
+
 const _URL = "https://api.groq.com/openai/v1/chat/completions";
 
 const _MAX_CONCEPTS = 8;
@@ -76,7 +78,7 @@ export async function analizarNorma(
   if (!key || !texto) {
     return EMPTY;
   }
-  const model = process.env.LLM_MODEL || "llama-3.1-8b-instant";
+  const model = process.env.LLM_MODEL || DEFAULT_LLM_MODEL;
   const prompt =
     "Eres un analista de normas legales peruanas. A partir del TEXTO de la " +
     "norma haz tres cosas:\n" +
@@ -95,7 +97,7 @@ export async function analizarNorma(
     model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0,
-    max_tokens: 500,
+    max_tokens: 2000,
     response_format: { type: "json_object" },
   };
 
@@ -134,7 +136,7 @@ export async function elegirEntidad(
   if (!key || !sector.trim() || candidatos.length === 0) {
     return null;
   }
-  const model = process.env.LLM_MODEL || "llama-3.1-8b-instant";
+  const model = process.env.LLM_MODEL || DEFAULT_LLM_MODEL;
   const lista = candidatos.map((c) => `${c.id}\t${c.name}`).join("\n");
   const prompt =
     "El SECTOR es el texto libre con que el SPIJ identifica al emisor de una " +
@@ -149,7 +151,7 @@ export async function elegirEntidad(
     model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0,
-    max_tokens: 100,
+    max_tokens: 1500,
     response_format: { type: "json_object" },
   };
 

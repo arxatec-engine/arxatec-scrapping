@@ -28,7 +28,16 @@ sudo pacman -S poppler                    # (Debian: apt install poppler-utils) 
 INGEST_BASE_URL=http://127.0.0.1:8000
 INGEST_TOKEN=<el ASSISTANT_SYNC_TOKEN del assistant, idéntico>
 GROQ_API_KEY=<key>
+LLM_MODEL="openai/gpt-oss-20b"     # ⚠ ver aviso abajo
 ```
+
+⚠ **`LLM_MODEL` NO puede quedar en `llama-3.1-8b-instant`**: Groq lo apaga el
+**2026-08-16**. Si se queda fijado ahí, a partir de esa fecha la API responde
+400, el scraper **sigue ingestando** pero el área legal de TODOS los documentos
+cae al valor por defecto — degradación silenciosa. El código ya trae
+`openai/gpt-oss-20b` como default (verificado el 2026-08-04: clasifica igual o
+mejor) y avisa por consola si el modelo falla, pero **una línea en el `.env`
+gana sobre el default del código**: revísala.
 
 ⚠ **No definir `INGEST_SOURCE` ni `INGEST_STATUS`**: son globales y pisarían
 la fuente/estado que cada módulo calcula.
@@ -120,6 +129,7 @@ incluso con una corrida en curso.
 | `warnings > 0` | Ingestó **bien**, pero imperfecto: emisor sin enlazar, área por defecto, texto por OCR | No bloquea. Auditar con `grep '"warning":' state/<fuente>_ingest/ledger.jsonl` |
 | HTTP 401 en la ingesta | `INGEST_TOKEN` no coincide con el del assistant | Comparar con su `ASSISTANT_SYNC_TOKEN` (va entre comillas en su `.env`: leer con dotenv, **nunca** con `cut`) |
 | Todo falla con 500 en embeddings | Al backend le falta `.gcloud_key.json` | Colocar la service-account de Vertex en el assistant |
+| `[llm] fallo #N con el modelo …` en consola, y `warnings` sube en `pnpm status` | El modelo de Groq no responde (apagado, sin cuota o mal escrito) | Fijar `LLM_MODEL` a un modelo vigente. **Sin esto la ingesta continúa pero clasifica todo con el área por defecto** |
 | Un módulo revienta entero en `pnpm all` | Los demás siguen (están aislados) | Correrlo suelto para ver su error |
 
 **`state/` es activo de producción**: es lo único que evita re-ingestar todo.

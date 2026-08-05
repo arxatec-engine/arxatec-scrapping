@@ -208,6 +208,35 @@ por agresividad costaría mucho más que ir lento.
 - **Verificación mecánica**: `pnpm verify <fuente>` da PASS/FAIL por diferencia
   del ledger, con código de salida legible por un script.
 
+## 5b. Riesgo con fecha: el modelo de Groq se apaga el 2026-08-16
+
+El scraper llama a Groq para clasificar el área legal de cada documento y
+extraer conceptos y referencias. **Groq apaga `llama-3.1-8b-instant` el
+2026-08-16** (lo documentó el equipo del `service` en su
+`docs/registro/2026-08-04/MODELOS_GROQ.md`).
+
+Lo que se descubrió al verificarlo aquí el 2026-08-04:
+
+1. **El fallo habría sido SILENCIOSO.** El `catch` de `analizarNorma` devolvía
+   un análisis vacío sin registrar nada: la campaña habría seguido ingestando
+   con normalidad y **cada documento posterior al 16/08 se habría clasificado
+   con el área por defecto**, sin concepts ni references. En una campaña de dos
+   meses eso son cientos de miles de documentos mal clasificados antes de que
+   alguien lo note.
+2. **Cambiar solo el id del modelo NO bastaba.** Los modelos `gpt-oss` emiten
+   razonamiento que consume `max_tokens`, y con los 500 que fijaba el código
+   Groq respondía `400 Failed to generate JSON`. Hubo que subirlo a 2000.
+3. **El `.env` mandaba sobre el código.** Tenía `LLM_MODEL` fijado al modelo
+   moribundo, así que arreglar el default no habría servido de nada.
+
+Ya aplicado: default `openai/gpt-oss-20b`, `max_tokens` con holgura y un aviso
+por consola en cada fallo (los 3 primeros y luego 1 de cada 50). Verificado que
+clasifica **igual o mejor** que el anterior.
+
+> Para el despliegue: al crear el `.env` de la PC servidor, **no copiar el
+> `LLM_MODEL` viejo**. Es la clase de detalle que sobrevive a un `scp` del
+> archivo de configuración.
+
 ## 6. Estado y reanudación
 
 **Ya resuelto, y es la propiedad más importante del sistema**: cada módulo

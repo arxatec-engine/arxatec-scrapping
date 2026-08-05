@@ -62,6 +62,22 @@ function parseAnalisis(content: string): NormaAnalisis {
 }
 
 /**
+ * Modelo por defecto. ⚠ `llama-3.1-8b-instant` (el anterior) lo APAGA Groq el
+ * **2026-08-16**: a partir de esa fecha devolvía HTTP 400 y, como aquí se
+ * captura todo, el área habría caído SILENCIOSAMENTE al default en cada
+ * documento. Sustituto verificado el 2026-08-04 (clasifica igual o mejor:
+ * acertó "Parte general" donde llama decía "Delitos contra la administración
+ * pública"). Se puede fijar otro con LLM_MODEL.
+ *
+ * OJO: los `gpt-oss` emiten razonamiento que consume `max_tokens`; con los 500
+ * de antes Groq respondía 400 "Failed to generate JSON". Por eso 2000.
+ */
+export const DEFAULT_LLM_MODEL = "openai/gpt-oss-20b";
+
+/** Holgura para el razonamiento de los modelos que lo emiten (ver arriba). */
+const _MAX_TOKENS = 2000;
+
+/**
  * Una sola llamada a Groq que clasifica un documento legal (subárea del
  * catálogo) y, de paso, extrae `concepts` (materias/temas) y `references`
  * (normas citadas). Genérica: la usan todos los módulos (spij, tc, ...). Ante
@@ -76,7 +92,7 @@ export async function analizarNorma(
   if (!key || !texto) {
     return EMPTY;
   }
-  const model = process.env.LLM_MODEL || "llama-3.1-8b-instant";
+  const model = process.env.LLM_MODEL || DEFAULT_LLM_MODEL;
   const prompt =
     "Eres un analista de normas legales peruanas. A partir del TEXTO de la " +
     "norma haz tres cosas:\n" +
@@ -95,7 +111,7 @@ export async function analizarNorma(
     model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0,
-    max_tokens: 500,
+    max_tokens: _MAX_TOKENS,
     response_format: { type: "json_object" },
   };
 
@@ -112,7 +128,30 @@ export async function analizarNorma(
     const data: any = r.data;
     const content = String(data.choices[0].message.content ?? "");
     return parseAnalisis(content);
-  } catch {
+  } catch (e) {
+    // NO se silencia: un fallo del LLM degrada el área al default en TODOS los
+    // documentos, y sin este aviso es invisible hasta que alguien nota que todo
+    // quedó clasificado igual (es lo que habría pasado el 2026-08-16 con el
+    // modelo apagado). Sigue sin lanzar: el documento se ingesta igual.
+    warnLlm(model, e);
     return EMPTY;
   }
+}
+
+/** Cuántos avisos de fallo del LLM van, para no inundar el log. */
+let _fallosLlm = 0;
+
+function warnLlm(model: string, e: unknown): void {
+  _fallosLlm += 1;
+  // Los primeros 3 siempre; luego uno de cada 50 (el ledger ya marca cada
+  // documento con `warning: area por defecto`).
+  if (_fallosLlm > 3 && _fallosLlm % 50 !== 0) return;
+  const err = e as { response?: { status?: number; data?: { error?: { message?: string } } }; message?: string };
+  const status = err.response?.status;
+  const detalle = err.response?.data?.error?.message ?? err.message ?? String(e);
+  console.warn(
+    `[llm] fallo #${_fallosLlm} con el modelo "${model}"${status ? ` (HTTP ${status})` : ""}: ` +
+      `${String(detalle).slice(0, 160)} — el área cae al default. ` +
+      `Si el modelo fue apagado por Groq, fija LLM_MODEL a uno vigente.`
+  );
 }
