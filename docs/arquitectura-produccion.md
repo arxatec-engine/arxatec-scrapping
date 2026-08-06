@@ -134,8 +134,25 @@ Con 16 GB → 10-12 de techo, 6 prudente. **Nunca 20.**
 Cada documento que baja el scraper se manda a
 `POST /legal-documents/ingest`, y ahí el backend hace lo caro: extraer texto,
 **generar embeddings** (Vertex), escribir en S3, Postgres y Qdrant. Veinte
-scrapers en paralelo no hacen ese trabajo más rápido: **hacen cola en el mismo
-backend**. El resultado es la misma velocidad con 20 veces más RAM ocupada.
+scrapers en paralelo no hacen ese trabajo más rápido: el resultado es la misma
+velocidad con 20 veces más RAM ocupada.
+
+> **Precisión añadida el 2026-08-06, con mediciones.** Este párrafo decía que los
+> 20 scrapers «hacen cola en el mismo backend». Medido, el mecanismo es otro y
+> conviene nombrarlo bien: de los 290 chunks de la corrida real de `tfl`, el
+> upsert a Qdrant cuesta **0,41 s** y los embeddings **100 s** — Qdrant y Postgres
+> son el ~0,4 %. Lo que domina es **un request HTTPS por chunk contra Vertex,
+> hechos en serie** (0,34 s/chunk), porque la ingesta llama a `aadd_documents` y
+> `langchain_qdrant` no tiene ruta async: cae al método síncrono. La ruta
+> concurrente ya está escrita en el assistant (`aembed_documents`, semáforo 8) y
+> nadie la llama; usarla da **×3,8** sin RAM extra.
+>
+> La conclusión de esta sección **no cambia** (19 Chromes siguen sin ser la
+> palanca), pero el motivo sí: no es que el backend esté saturado, es que
+> desperdicia espera de red en serie. Detalle, cadena de llamadas y qué hacer —
+> incluida la respuesta a «¿nginx delante de varias instancias?» (nginx reparte,
+> no añade capacidad; quien añade capacidad es `gunicorn -w N`) — en
+> `arxatec-lawyer-assistant/docs/registro/2026-08-06/CUELLO_DE_BOTELLA_INGESTA.md`.
 
 La regla práctica: **subir el paralelismo del scraper solo cuando se compruebe
 que el backend está ocioso**, no antes.
