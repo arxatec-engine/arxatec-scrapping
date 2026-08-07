@@ -102,8 +102,11 @@ export async function saveDocument(
     await client.query("BEGIN");
 
     await client.query(
+      // ⚠️ La columna se llama `type`, no `document_type`: el modelo de
+      // SQLAlchemy expone `document_type` pero mapea a `type` en la tabla.
+      // Verificado contra information_schema el 2026-08-07.
       `INSERT INTO documents (
-         document_id, country, document_type, title, normalized_title,
+         document_id, country, type, title, normalized_title,
          document_number, citation, court_chamber, origin_district,
          legal_area_id, legal_subarea_id, jurisdiction, legal_area, subarea,
          source, source_url, status, version, effective_date, issued_at,
@@ -115,7 +118,7 @@ export async function saveDocument(
        )
        ON CONFLICT (document_id) DO UPDATE SET
          country = EXCLUDED.country,
-         document_type = EXCLUDED.document_type,
+         type = EXCLUDED.type,
          title = EXCLUDED.title,
          normalized_title = EXCLUDED.normalized_title,
          document_number = EXCLUDED.document_number,
@@ -166,9 +169,12 @@ export async function saveDocument(
         null,
         metadata.language,
         metadata.key,
-        metadata.keywords,
-        metadata.concepts,
-        metadata.references,
+        // keywords/concepts/references son JSONB, no arrays de Postgres: hay
+        // que serializarlos, o node-pg los manda como `{a,b}` y el servidor
+        // responde "invalid input syntax for type json".
+        JSON.stringify(metadata.keywords),
+        JSON.stringify(metadata.concepts),
+        JSON.stringify(metadata.references),
         metadata.created_at,
         metadata.updated_at,
       ]
@@ -182,11 +188,14 @@ export async function saveDocument(
     const unique = new Map(links.map((l) => [`${l.entityId}|${l.role}`, l]));
 
     for (const link of unique.values()) {
+      // created_at/updated_at son NOT NULL sin default en la tabla: en Python
+      // los rellena SQLAlchemy, aquí hay que ponerlos a mano.
       await client.query(
-        `INSERT INTO legal_document_entities (document_id, entity_id, role)
-         VALUES ($1, $2, $3)
+        `INSERT INTO legal_document_entities
+           (document_id, entity_id, role, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $4)
          ON CONFLICT DO NOTHING`,
-        [metadata.document_id, link.entityId, link.role]
+        [metadata.document_id, link.entityId, link.role, metadata.updated_at]
       );
     }
 

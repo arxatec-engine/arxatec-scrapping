@@ -158,3 +158,17 @@ export const INGEST_MAX_RETRIES = "INGEST_MAX_RETRIES";
 export const INGEST_COUNTRY = "INGEST_COUNTRY";
 export const INGEST_SOURCE = "INGEST_SOURCE";
 export const INGEST_STATUS = "INGEST_STATUS";
+
+// Ingesta local (cada módulo escribe directo a Vertex + Qdrant + PG + S3 en vez
+// de hacer POST al assistant). `INGEST_MODE=local` la activa; por defecto sigue
+// siendo `remote`, así que ningún módulo cambia de comportamiento sin pedirlo.
+export const INGEST_MODE = "INGEST_MODE";
+export const QDRANT_URL = "QDRANT_URL";
+export const DATABASE_URL = "DATABASE_URL";
+export const GOOGLE_CLOUD_PROJECT = "GOOGLE_CLOUD_PROJECT";
+export const GOOGLE_CLOUD_LOCATION = "GOOGLE_CLOUD_LOCATION";
+export const GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
+export const EMBEDDING_MAX_CONCURRENCY = "EMBEDDING_MAX_CONCURRENCY";
+export const EMBEDDING_MAX_RETRIES = "EMBEDDING_MAX_RETRIES";
+export const AWS_BUCKET_NAME = "AWS_BUCKET_NAME";
+export const AWS_BUCKET_REGION = "AWS_BUCKET_REGION";

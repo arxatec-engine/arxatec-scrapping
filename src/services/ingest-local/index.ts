@@ -136,10 +136,10 @@ export async function ingestLocal(
     await upsertChunks(cfg, country, chunks, ids, vectors);
 
     cfg.log.info(
-      "Indexado local doc=%s chunks=%d en %.2fs",
+      "Indexado local doc=%s chunks=%d en %ss",
       documentId,
       chunks.length,
-      (Date.now() - started) / 1000
+      ((Date.now() - started) / 1000).toFixed(2)
     );
 
     const saved = await saveDocument(cfg.databaseUrl, resolved, validLinks);
