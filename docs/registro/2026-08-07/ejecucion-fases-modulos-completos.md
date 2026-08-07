@@ -124,6 +124,15 @@ sueltos siguen sirviendo para pruebas — que es justo lo que pidió el owner.
 Lo que **no** cambia: cada subfuente conserva su ledger y su log, así que
 `pnpm status` y `pnpm verify` siguen funcionando por fuente.
 
+**Un bug propio, encontrado corriéndolo**: el `--limit` del carril derivaba el
+nombre de la variable de entorno del nombre del módulo, y dos de las trece no
+siguen el patrón (`indecopi` usa `IND_LIMIT`, `tfiscal` usa `TF_LIMIT`). En la
+corrida completa, `indecopi` ignoró el tope y se puso a ingerir sin límite — se
+notó porque PostgreSQL creció en cientos de documentos cuando debía crecer de 25
+en 25. Ahora la variable se **declara junto a cada subfuente** en vez de
+adivinarse. Adivinar nombres por convención, cuando dos casos la rompen, falla
+en silencio.
+
 ---
 
 ## 4. Lo que confirmó la ejecución sobre el piloto
@@ -145,7 +154,8 @@ Lo que **no** cambia: cada subfuente conserva su ledger y su log, así que
 | D-1 | **Cuota de Vertex**: con los 8 carriles a la vez el techo efectivo es 8 × `EMBEDDING_MAX_CONCURRENCY`. Sigue sin conocerse (403 con la cuenta de servicio) | 🔴 |
 | D-2 | **Presupuesto real de `www.gob.pe`**: cuántas peticiones tolera antes de 429/403. Condiciona cuánta concurrencia admite el carril de 13 | 🔴 |
 | D-3 | **Reingesta del corpus ya cargado** con la clasificación arreglada. En local se rehizo; en producción hay que decidirlo | 🔴 decisión del owner |
-| D-4 | **Fusión de los 13 en un proceso**: hoy funcionan uno a uno. Fundirlos daría un throttle compartido de verdad y ~9,6 GB menos de RAM | ⏳ |
+| D-4 | Fusión de los 13 en un proceso | ✅ hecha: `pnpm carril-gobpe` |
+| D-6 | **Corrida completa del carril de punta a punta**: se detuvo a mitad al descubrir el bug del `--limit`. Falta repetirla entera con el arreglo | 🟡 |
 | D-5 | `INGEST_SKIP_UNCHANGED=false` en el `.env` local para las pruebas. **En campaña conviene ponerlo a `true`** o se re-paga cada reingesta | 🟡 recordatorio |
 
 ---
