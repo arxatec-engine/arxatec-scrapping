@@ -131,8 +131,99 @@ repetirse en los otros 7 módulos si no se sabe:
 
 ---
 
+## 5. Revisión del piloto: tres fallos que la lectura no dio
+
+Se repasó el código ya funcionando, y aparecieron tres cosas. Merecen quedar
+escritas porque **las tres se repetirían en los otros 7 módulos**:
+
+| Fallo | Por qué importa |
+| --- | --- |
+| **pdf.js *desprende* el ArrayBuffer** que recibe | Tras extraer el texto, el PDF quedaba inservible. Rompía S3 **y habría roto el fallback de OCR**, que reutiliza esos mismos bytes. Se le pasa una copia |
+| Credenciales de S3 con nombres no estándar | El assistant usa `AWS_KEY_ACCESS`/`AWS_KEY_ACCESS_SECRET`; el SDK de AWS busca `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`. Con la cadena por defecto **la subida falla por autenticación aunque el bucket esté bien** |
+| Semáforo reinventado y clasificación de errores por regex | El repo ya tenía `semaphore()` en `utils/http`. Y adivinar el código de estado con una regex de `4xx\|5xx` puede confundir cualquier número del mensaje: clasificar mal es caro en las dos direcciones |
+
+**S3 verificado de punta a punta** tras el arreglo: el original aparece en
+`public/legal_documents/PE/<document_id>/005-2023-SUNAFIL-TFL.pdf` (455 KB), con
+la misma convención de ruta que usa el assistant.
+
+---
+
+## 6. Plan por fases para los otros 7 módulos
+
+El objetivo no es clonar `tfl`: **cada fuente es distinta**. Lo que se replica es
+la *lógica* —ingesta local, ritmo cortés, antibloqueo, reanudación— y, donde se
+pueda, se mejora.
+
+### Fase 1 · Lo que hay que resolver ANTES de tocar módulos
+
+Son deudas del piloto que bloquean a fuentes concretas:
+
+| Id | Qué | Bloquea a |
+| --- | --- | --- |
+| P-1 | Troceado **por artículo** para `document_type='codigo'` | `spij`, `elperuano` |
+| P-2 | Extracción de **docx/xlsx/pptx/imágenes** | según lo que sirva cada fuente |
+| P-6 | **Cuota de Vertex**: con 8 módulos el techo es 8 × `EMBEDDING_MAX_CONCURRENCY` | los 8 |
+
+**P-6 es el único que puede tumbar la campaña entera** y sigue sin dato.
+
+### Fase 2 · El módulo unificado de `gob.pe` (el más grande)
+
+Absorbe 13 subfuentes, y es donde el ritmo cortés importa de verdad porque las 13
+comparten `www.gob.pe/busquedas.json`.
+
+Lo que se gana al fundirlas en un proceso: **un throttle compartido de verdad**
+(hoy son 13 independientes), **un Chrome en vez de 13** (~9,6 GB) y un pool de
+OCR controlado.
+
+Orden sugerido dentro del módulo: por volumen de documentos, porque **este carril
+es el camino crítico de la campaña**.
+
+Antes de subir su concurrencia: medir qué tolera `www.gob.pe` con **una** sola
+subfuente, por escalones (2 → 4 → 6), anotando cuándo aparecen 429/403. Ese
+número es el presupuesto del carril y se reparte entre las 13.
+
+### Fase 3 · Los carriles propios, por dificultad creciente
+
+| Orden | Módulo | Por qué en esa posición |
+| --- | --- | --- |
+| 1 | `tc` | Carril propio, sin antibot conocido: el segundo piloto más barato |
+| 2 | `sunat` | Carril propio; ojo al charset mixto UTF-8/latin-1 |
+| 3 | `congreso` (`adlp` + `spley`) | Su HTTPS es **intermitente** (cuelga o responde al toque, no está caído): exige timeout corto y reintento con espera creciente |
+| 4 | `elperuano` | Mucho volumen y visor intermitente. **Necesita P-1** |
+| 5 | `doctrina` | 8 hosts universitarios distintos; los repositorios OAI sirven a veces su SPA con un falso 200 |
+| 6 | `spij` | Entra por API con cuenta: distinto a todo lo demás. **Necesita P-1** |
+| 7 | `pj` | **El último a propósito**: Radware bloquea por IP de datacenter y throttlea por conexión. Exige IP residencial y ritmo lento |
+
+### Fase 4 · Regla de operación (decisión del owner)
+
+> Si una fuente falla porque su sitio está caído o la bloquea el antibot, **no se
+> detiene la tanda**: se anota como deuda, se pasa a la siguiente y se reintenta
+> al cerrar la ronda.
+
+Esto ya es barato porque cada módulo tiene su ledger: reintentar es reejecutar el
+mismo comando.
+
+### Fase 5 · Mejoras sobre la ruta de Python (opcionales, medibles)
+
+No es obligación replicar lo que hacía el assistant si se puede hacer mejor:
+
+| Id | Mejora | Ganancia |
+| --- | --- | --- |
+| P-4 | **OCR en el sitio**: hoy se hereda el rodeo «falla → OCR → re-render a PDF → reingesta». En local se puede OCR-ear y trocear directamente | Se ahorra un render y una segunda pasada completa |
+| P-5 | **Saltar lo ya ingerido**: si el `content_hash` de los chunks no cambió, no volver a pedir los embeddings | Ahorro directo de dinero en re-ingestas |
+
+### Qué NO se toca en ningún módulo
+
+El formato del punto de Qdrant, los ids deterministas y el esquema de PostgreSQL
+**no son estilo, son contrato**: el chat del assistant lee de esa misma
+colección. Mejorar la extracción o el ritmo, sí; cambiar la forma del dato,
+solo con los tres repos a la vez.
+
+---
+
 ## Registro de cambios
 
 | Fecha | Commit verificado | Qué cambió |
 | --- | --- | --- |
+| 2026-08-07 | `e2fb04e` (rama `feat/ingesta-local`) · `2d540b0` (assistant) | Revisión del piloto (§5): pdf.js desprende el ArrayBuffer y dejaba inservible el PDF para S3 y para el OCR; las credenciales de S3 tienen nombres que el SDK de AWS no reconoce; y se reutiliza el semáforo del repo en vez del que había escrito. S3 verificado de punta a punta. Nace §6 con el plan por fases de los 7 módulos restantes. |
 | 2026-08-07 | `71ab190` (rama `feat/ingesta-local`) · `2d540b0` (assistant) | Nace el registro. Librería `ingest-local`, `tfl` cableado tras `INGEST_MODE`, y las mediciones: 22 chunks por ambas rutas, 94,1 % de similitud de texto, estructura de punto idéntica, el lector del assistant recupera lo escrito por Node, `pnpm verify tfl 3` en PASS y ≈2,5× de ritmo. |
