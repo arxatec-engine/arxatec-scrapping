@@ -92,17 +92,28 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  const baseUrl = process.env.INGEST_BASE_URL;
-  if (!baseUrl) {
-    console.error("[verify] Falta INGEST_BASE_URL en .env — no hay backend contra el cual verificar.");
-    process.exit(2);
-  }
-  if (!(await assistantArriba(baseUrl))) {
-    console.error(
-      `[verify] El assistant no responde en ${baseUrl}. Levántalo antes del smoke ` +
-        "(y recuerda: si quedó un uvicorn zombi, los hijos retienen :8000 — `ss -tlnp`)."
-    );
-    process.exit(2);
+  // Con INGEST_MODE=local el módulo ingiere él mismo: no hay assistant al que
+  // pedirle salud, y exigirlo dejaría al piloto sin señal de verificación. Sus
+  // dependencias (Qdrant, PostgreSQL, Vertex) las comprueba la propia ingesta al
+  // arrancar, y un fallo ahí sale como error del módulo, que es lo que este
+  // script ya sabe leer.
+  const modoLocal = process.env.INGEST_MODE === "local";
+
+  if (modoLocal) {
+    console.log("[verify] INGEST_MODE=local — se omite la comprobación del assistant.");
+  } else {
+    const baseUrl = process.env.INGEST_BASE_URL;
+    if (!baseUrl) {
+      console.error("[verify] Falta INGEST_BASE_URL en .env — no hay backend contra el cual verificar.");
+      process.exit(2);
+    }
+    if (!(await assistantArriba(baseUrl))) {
+      console.error(
+        `[verify] El assistant no responde en ${baseUrl}. Levántalo antes del smoke ` +
+          "(y recuerda: si quedó un uvicorn zombi, los hijos retienen :8000 — `ss -tlnp`)."
+      );
+      process.exit(2);
+    }
   }
 
   const ledger = LEDGERS[fuente];

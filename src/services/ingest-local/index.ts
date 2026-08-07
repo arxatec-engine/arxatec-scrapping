@@ -2,7 +2,12 @@ import { buildChunks } from "./chunk";
 import { embedDocuments } from "./embeddings";
 import { buildDocumentId, buildPointIds } from "./ids";
 import { fetchEntities, saveDocument, type EntityLink } from "./postgres";
-import { deleteExistingPoints, upsertChunks } from "./qdrant";
+import {
+  assertCollectionExists,
+  deleteExistingPoints,
+  existingContentHashes,
+  upsertChunks,
+} from "./qdrant";
 import { buildKey, uploadOriginal } from "./s3";
 import { extractPages } from "./text";
 import type { LocalIngestClient, ResolvedMetadata } from "./types";
@@ -50,6 +55,21 @@ function fail(error: string, permanent: boolean): IngestResult {
 }
 
 /**
+ * Comprobación de entorno, una sola vez por país y proceso.
+ *
+ * Va aquí y no en el `prepare()` de cada módulo para que replicar esto a los
+ * otros 7 no exija acordarse de llamarla: el primer documento paga la
+ * comprobación y el resto no.
+ */
+const preflighted = new Set<string>();
+
+async function preflight(cfg: LocalIngestClient, country: string): Promise<void> {
+  if (preflighted.has(country)) return;
+  await assertCollectionExists(cfg, country);
+  preflighted.add(country);
+}
+
+/**
  * Ingesta local: hace lo que hace `POST /legal-documents/ingest` del assistant,
  * pero dentro del propio scraper — extraer, trocear, embeddings, Qdrant, PG, S3.
  *
@@ -75,6 +95,8 @@ export async function ingestLocal(
     }
 
     const country = metadata.country.trim().toUpperCase();
+    await preflight(cfg, country);
+
     const documentId = buildDocumentId(country, metadata.source_url);
 
     const pages = await extractPages(pdfBytes);
@@ -129,18 +151,37 @@ export async function ingestLocal(
 
     const started = Date.now();
 
-    await deleteExistingPoints(cfg, country, documentId);
+    // ¿Ya está indexado exactamente esto? Los embeddings son lo caro y lo que
+    // se factura: si el contenido no cambió, no hay nada que volver a pagar.
+    // Solo se salta si coinciden el NÚMERO de chunks y TODAS las huellas: una
+    // corrida anterior interrumpida a medias no debe darse por buena.
+    const indexed = await existingContentHashes(cfg, country, documentId);
+    const unchanged =
+      indexed.size === chunks.length &&
+      chunks.every(
+        (chunk, index) => indexed.get(index) === chunk.metadata.content_hash
+      );
 
-    const ids = buildPointIds(documentId, chunks.length);
-    const vectors = await embedDocuments(cfg, chunks.map((c) => c.text));
-    await upsertChunks(cfg, country, chunks, ids, vectors);
+    if (unchanged) {
+      cfg.log.info(
+        "Sin cambios doc=%s (%d chunks ya indexados): se omiten los embeddings",
+        documentId,
+        chunks.length
+      );
+    } else {
+      await deleteExistingPoints(cfg, country, documentId);
 
-    cfg.log.info(
-      "Indexado local doc=%s chunks=%d en %ss",
-      documentId,
-      chunks.length,
-      ((Date.now() - started) / 1000).toFixed(2)
-    );
+      const ids = buildPointIds(documentId, chunks.length);
+      const vectors = await embedDocuments(cfg, chunks.map((c) => c.text));
+      await upsertChunks(cfg, country, chunks, ids, vectors);
+
+      cfg.log.info(
+        "Indexado local doc=%s chunks=%d en %ss",
+        documentId,
+        chunks.length,
+        ((Date.now() - started) / 1000).toFixed(2)
+      );
+    }
 
     const saved = await saveDocument(cfg.databaseUrl, resolved, validLinks);
 

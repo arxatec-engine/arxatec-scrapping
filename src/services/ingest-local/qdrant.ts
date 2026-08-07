@@ -30,6 +30,71 @@ export function collectionName(country: string): string {
 }
 
 /**
+ * Comprueba que la colección existe antes de empezar a trabajar.
+ *
+ * El scraper NO la crea a propósito: la colección la define el assistant, con su
+ * tamaño de vector, su distancia y sus 20+ índices de payload. Una colección
+ * creada aquí "a ojo" arrancaría bien y rompería la búsqueda semanas después.
+ * Mejor fallar al arrancar con un mensaje que diga qué hacer.
+ */
+export async function assertCollectionExists(
+  cfg: LocalIngestClient,
+  country: string
+): Promise<void> {
+  const name = collectionName(country);
+  const { collections } = await getClient(cfg).getCollections();
+
+  if (!collections.some((c) => c.name === name)) {
+    throw new Error(
+      `La colección "${name}" no existe en ${cfg.qdrantUrl}. La crea el ` +
+        "assistant al arrancar (sus migraciones de Qdrant), con los índices de " +
+        "payload que necesita la búsqueda. Arranca el assistant una vez contra " +
+        "este Qdrant antes de ingestar."
+    );
+  }
+}
+
+/**
+ * Huellas de los chunks ya indexados de un documento, por índice.
+ *
+ * Sirve para no volver a pagar embeddings de algo que no cambió: ver
+ * `alreadyIndexed` en index.ts.
+ */
+export async function existingContentHashes(
+  cfg: LocalIngestClient,
+  country: string,
+  documentId: string
+): Promise<Map<number, string>> {
+  const hashes = new Map<number, string>();
+  let offset: string | number | undefined | null = undefined;
+
+  do {
+    const page = await getClient(cfg).scroll(collectionName(country), {
+      filter: {
+        must: [{ key: "metadata.document_id", match: { value: documentId } }],
+      },
+      with_payload: ["metadata"],
+      with_vector: false,
+      limit: 256,
+      offset: offset ?? undefined,
+    });
+
+    for (const point of page.points) {
+      const meta = (point.payload?.metadata ?? {}) as Record<string, unknown>;
+      const index = meta.chunk_index;
+      const hash = meta.content_hash;
+      if (typeof index === "number" && typeof hash === "string") {
+        hashes.set(index, hash);
+      }
+    }
+
+    offset = page.next_page_offset as string | number | null;
+  } while (offset !== null && offset !== undefined);
+
+  return hashes;
+}
+
+/**
  * Delete-first: borra los puntos previos del documento antes del upsert.
  *
  * Los ids de punto son deterministas por (document_id, índice), así que el
