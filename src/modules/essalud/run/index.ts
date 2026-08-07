@@ -1,3 +1,4 @@
+import type { GobpeLane } from "../../../services/gobpe/lane";
 import { basename, join } from "node:path";
 
 import * as classifier from "../../spij/utils/classifier";
@@ -30,7 +31,13 @@ function resolveIssuer(idx: Index): Classif {
   return clasif;
 }
 
-export async function run(cfg: Config, log: Logger): Promise<void> {
+export async function run(
+  cfg: Config,
+  log: Logger,
+  /** Carril compartido de gob.pe. Si viene, este módulo NO abre ni cierra
+   *  el navegador: lo hace el orquestador del carril. */
+  lane?: GobpeLane
+): Promise<void> {
   const processed = new Set<string>();
   for (const [id, rec] of store.latestRecords<StoredRecord>(cfg.docsPath)) {
     if (ingest.isDone(rec)) processed.add(id);
@@ -47,7 +54,7 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
   const issuer = resolveIssuer(idx);
   log.info("Emisor fijo del módulo: %s (%s).", issuer.entity_name, issuer.entity_id);
 
-  const browser = await launchBrowser();
+  const browser = lane?.browser ?? (await launchBrowser());
   const ctx: Ctx = {
     cfg,
     log,
@@ -55,7 +62,7 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
     issuer,
     stats: newStats(),
     ingestThrottle: newThrottle(cfg.minDelay),
-    gobpeThrottle: newThrottle(cfg.minDelay),
+    gobpeThrottle: lane?.throttle ?? newThrottle(cfg.minDelay),
     browser,
   };
   ingest.prepare(ctx);
@@ -98,8 +105,11 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
 
     await ingest.finalize(ctx, sem);
   } finally {
-    await browser.close();
-    await closeOcr();
+    // Con carril compartido, el navegador y el OCR los cierra el orquestador.
+    if (!lane) {
+      await browser.close();
+      await closeOcr();
+    }
   }
   summary(cfg, log, ctx.stats, vistos.size, topeAlcanzado);
 }

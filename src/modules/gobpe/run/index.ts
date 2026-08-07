@@ -1,3 +1,4 @@
+import type { GobpeLane } from "../../../services/gobpe/lane";
 import { existsSync } from "node:fs";
 import { basename, join } from "node:path";
 
@@ -61,7 +62,13 @@ function cargarAjenos(log: Logger): Set<string> {
   return ajenos;
 }
 
-export async function run(cfg: Config, log: Logger): Promise<void> {
+export async function run(
+  cfg: Config,
+  log: Logger,
+  /** Carril compartido de gob.pe. Si viene, este módulo NO abre ni cierra
+   *  el navegador: lo hace el orquestador del carril. */
+  lane?: GobpeLane
+): Promise<void> {
   const processed = new Set<string>();
   for (const [id, rec] of store.latestRecords<StoredRecord>(cfg.docsPath)) {
     if (ingest.isDone(rec)) processed.add(id);
@@ -85,7 +92,7 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
     );
   }
 
-  const browser = await launchBrowser();
+  const browser = lane?.browser ?? (await launchBrowser());
   const ctx: Ctx = {
     cfg,
     log,
@@ -93,7 +100,7 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
     ajenos,
     stats: newStats(),
     ingestThrottle: newThrottle(cfg.minDelay),
-    gobpeThrottle: newThrottle(cfg.minDelay),
+    gobpeThrottle: lane?.throttle ?? newThrottle(cfg.minDelay),
     browser,
   };
   ingest.prepare(ctx);
@@ -153,8 +160,11 @@ export async function run(cfg: Config, log: Logger): Promise<void> {
 
     await ingest.finalize(ctx, sem);
   } finally {
-    await browser.close();
-    await closeOcr();
+    // Con carril compartido, el navegador y el OCR los cierra el orquestador.
+    if (!lane) {
+      await browser.close();
+      await closeOcr();
+    }
   }
   log.info(
     "Omitidos: %d de módulos dedicados · %d por ámbito nacional.",
