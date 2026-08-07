@@ -155,8 +155,15 @@ export async function ingestLocal(
     // se factura: si el contenido no cambió, no hay nada que volver a pagar.
     // Solo se salta si coinciden el NÚMERO de chunks y TODAS las huellas: una
     // corrida anterior interrumpida a medias no debe darse por buena.
-    const indexed = await existingContentHashes(cfg, country, documentId);
+    //
+    // Se puede desactivar con INGEST_SKIP_UNCHANGED=false: mientras se prueba
+    // que la ingesta embebe de verdad, saltarse el trabajo estorba más de lo
+    // que ahorra. En campaña conviene dejarlo activo.
+    const indexed = cfg.skipUnchanged
+      ? await existingContentHashes(cfg, country, documentId)
+      : new Map<number, string>();
     const unchanged =
+      cfg.skipUnchanged &&
       indexed.size === chunks.length &&
       chunks.every(
         (chunk, index) => indexed.get(index) === chunk.metadata.content_hash

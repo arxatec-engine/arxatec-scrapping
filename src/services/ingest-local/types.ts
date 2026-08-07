@@ -17,6 +17,12 @@ export interface LocalIngestClient {
   /** Techo de embeddings en vuelo POR PROCESO (no por documento). */
   embeddingMaxConcurrency: number;
   embeddingMaxRetries: number;
+  /**
+   * Saltar el re-embedding cuando el documento ya está indexado y su contenido
+   * no cambió. Ahorra dinero en re-ingestas; se apaga para comprobar que la
+   * ingesta embebe de verdad.
+   */
+  skipUnchanged: boolean;
   /** S3 (opcional: sin bucket no se sube el original) */
   awsBucket: string | null;
   awsRegion: string | null;

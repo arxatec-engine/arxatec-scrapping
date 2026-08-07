@@ -29,6 +29,10 @@ dist/
 .env.*
 !.env.example
 
+# Clave de cuenta de servicio de Google (Vertex): NUNCA a git.
+# Estaba sin ignorar y aparecía como no rastreada, a un `git add -A` de filtrarse.
+.gcloud_key.json
+
 # macOS
 .DS_Store
 
