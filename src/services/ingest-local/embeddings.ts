@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 
+import { semaphore } from "../../utils/http";
 import { sleep } from "../../utils/time";
+import type { Sem } from "../../types";
 import type { LocalIngestClient } from "./types";
 
 const MODEL = "gemini-embedding-001";
@@ -39,28 +41,18 @@ function getClient(cfg: LocalIngestClient): GoogleGenAI {
  * requests en vuelo y la cuota de Vertex la decidía el azar. Aquí el techo es
  * del proceso desde el principio.
  *
+ * Se reutiliza el `semaphore` de utils/http en vez de escribir otro: es el mismo
+ * que usan los módulos para su concurrencia interna y ya está probado.
+ *
  * ⚠️ Con los 8 módulos corriendo a la vez, el techo EFECTIVO contra Vertex es
  * 8 × este valor. La cuota del proyecto es la que manda; ver la deuda anotada
  * en docs/registro/2026-08-07/.
  */
-let slots = 0;
-let limit = 0;
-const waiters: Array<() => void> = [];
+let sem: Sem | null = null;
 
-async function acquire(max: number): Promise<void> {
-  limit = max;
-  if (slots < limit) {
-    slots += 1;
-    return;
-  }
-  await new Promise<void>((resolve) => waiters.push(resolve));
-  slots += 1;
-}
-
-function release(): void {
-  slots -= 1;
-  const next = waiters.shift();
-  if (next) next();
+function getSemaphore(max: number): Sem {
+  if (sem === null) sem = semaphore(max);
+  return sem;
 }
 
 /** L2 — Vertex lo exige cuando se trunca la dimensión nativa (3072 → 1024). */
@@ -69,17 +61,30 @@ function normalizeL2(vector: number[]): number[] {
   return norm === 0 ? vector : vector.map((v) => v / norm);
 }
 
-function statusOf(error: unknown): number | null {
-  if (error && typeof error === "object") {
-    const e = error as { status?: unknown; code?: unknown; message?: unknown };
-    for (const candidate of [e.status, e.code]) {
-      if (typeof candidate === "number") return candidate;
-    }
-    const message = String(e.message ?? "");
-    const match = message.match(/\b(4\d\d|5\d\d)\b/);
-    if (match) return Number(match[1]);
+/**
+ * ¿Es transitorio este error?
+ *
+ * Se mira primero el código numérico que trae el SDK. El texto solo se usa como
+ * respaldo y con marcadores inequívocos: una regex genérica de "4xx|5xx" llegó a
+ * confundir un número cualquiera del mensaje con un código de estado, y
+ * clasificar mal aquí es caro en las dos direcciones — reintentar lo que no debe
+ * gasta dinero, y no reintentar una cuota momentánea tira el documento entero.
+ */
+function isRetryable(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+
+  const e = error as { status?: unknown; code?: unknown; message?: unknown };
+
+  for (const candidate of [e.status, e.code]) {
+    if (typeof candidate === "number") return RETRYABLE_STATUS.has(candidate);
   }
-  return null;
+
+  const message = String(e.message ?? "");
+  return (
+    /RESOURCE_EXHAUSTED|UNAVAILABLE|DEADLINE_EXCEEDED/i.test(message) ||
+    /\b(429|503)\b/.test(message) ||
+    /\bECONNRESET|ETIMEDOUT|EAI_AGAIN\b/.test(message)
+  );
 }
 
 function backoffSeconds(attempt: number): number {
@@ -97,33 +102,31 @@ async function embedOne(
   const retries = cfg.embeddingMaxRetries;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
-    await acquire(cfg.embeddingMaxConcurrency);
     let response;
     try {
-      response = await getClient(cfg).models.embedContent({
-        model: MODEL,
-        contents: text,
-        config: { taskType, outputDimensionality: OUTPUT_DIMENSION },
-      });
+      // El semáforo se libera al salir de `run`: la espera del backoff de abajo
+      // NO ocupa una plaza de concurrencia.
+      response = await getSemaphore(cfg.embeddingMaxConcurrency).run(() =>
+        getClient(cfg).models.embedContent({
+          model: MODEL,
+          contents: text,
+          config: { taskType, outputDimensionality: OUTPUT_DIMENSION },
+        })
+      );
     } catch (error) {
-      release();
-      const status = statusOf(error);
-      if (status === null || !RETRYABLE_STATUS.has(status) || attempt === retries) {
-        throw error;
-      }
+      if (!isRetryable(error) || attempt === retries) throw error;
+
       const delay = backoffSeconds(attempt);
       cfg.log.warn(
-        "Embedding transitorio (%s), reintento %d/%d en %.1fs",
-        status,
+        "Embedding transitorio, reintento %d/%d en %ss: %s",
         attempt,
         retries,
-        delay
+        delay.toFixed(1),
+        error instanceof Error ? error.message.slice(0, 120) : String(error)
       );
-      // El backoff espera FUERA del semáforo: no ocupa plaza mientras duerme.
       await sleep(delay);
       continue;
     }
-    release();
 
     const values = response.embeddings?.[0]?.values;
     if (!values || values.length === 0) {

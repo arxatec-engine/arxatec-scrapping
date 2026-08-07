@@ -15,7 +15,12 @@ import type { Page } from "./types";
  * carácter a carácter con el mismo texto de entrada.
  */
 export async function extractPages(pdfBytes: Uint8Array): Promise<Page[]> {
-  const pdf = await getDocumentProxy(pdfBytes);
+  // ⚠️ pdf.js DESPRENDE (detach) el ArrayBuffer que recibe. Si se le pasa el
+  // original, cualquier uso posterior de esos bytes revienta con "Cannot
+  // perform Construct on a detached ArrayBuffer" — y hay dos usos posteriores
+  // reales: la subida a S3 y el fallback de OCR de los módulos. Se le da una
+  // copia y el original queda intacto.
+  const pdf = await getDocumentProxy(new Uint8Array(pdfBytes));
   const { text } = await extractText(pdf, { mergePages: false });
 
   const pages: Page[] = [];

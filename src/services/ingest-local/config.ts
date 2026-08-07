@@ -67,6 +67,9 @@ export function localIngestConfig(log: Logger): LocalIngestClient {
         .asIntPositive(),
       awsBucket: env.get(ENV.AWS_BUCKET_NAME).default("").asString() || null,
       awsRegion: env.get(ENV.AWS_BUCKET_REGION).default("").asString() || null,
+      awsKeyId: env.get(ENV.AWS_KEY_ACCESS).default("").asString() || null,
+      awsKeySecret:
+        env.get(ENV.AWS_KEY_ACCESS_SECRET).default("").asString() || null,
     };
   }
 

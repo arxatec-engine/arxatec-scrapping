@@ -12,9 +12,23 @@ let client: S3Client | null = null;
 
 function getClient(cfg: LocalIngestClient): S3Client {
   if (client === null) {
-    // Credenciales por el mecanismo estándar del SDK (variables de entorno o
-    // perfil): no se pasan por config para no multiplicarlas por 8 módulos.
-    client = new S3Client({ region: cfg.awsRegion ?? undefined });
+    // ⚠️ El assistant guarda las credenciales como AWS_KEY_ACCESS y
+    // AWS_KEY_ACCESS_SECRET, que NO son los nombres que busca el SDK de AWS
+    // (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY). Si se deja la cadena de
+    // credenciales por defecto, la subida falla por autenticación aunque el
+    // bucket esté bien configurado. Por eso se pasan explícitas cuando existen,
+    // y si no, se cae a la cadena estándar (perfil, rol de instancia…).
+    client = new S3Client({
+      region: cfg.awsRegion ?? undefined,
+      ...(cfg.awsKeyId && cfg.awsKeySecret
+        ? {
+            credentials: {
+              accessKeyId: cfg.awsKeyId,
+              secretAccessKey: cfg.awsKeySecret,
+            },
+          }
+        : {}),
+    });
   }
   return client;
 }

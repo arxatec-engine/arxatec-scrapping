@@ -20,6 +20,8 @@ export interface LocalIngestClient {
   /** S3 (opcional: sin bucket no se sube el original) */
   awsBucket: string | null;
   awsRegion: string | null;
+  awsKeyId: string | null;
+  awsKeySecret: string | null;
   log: Logger;
 }
 
