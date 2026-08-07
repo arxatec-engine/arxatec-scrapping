@@ -3,7 +3,11 @@
 # puppeteer: descargaría Chromium (~150MB); solo lo necesita el módulo SPIJ, no PJ.
 #   Cuando toque correr SPIJ, poner puppeteer: true y `pnpm install` (baja Chromium).
 allowBuilds:
+  # @google/genai y protobufjs: sus postinstall solo generan tipos/artefactos
+  # opcionales; el SDK funciona sin ellos (verificado con la ingesta local).
+  '@google/genai': false
   esbuild: false
+  protobufjs: false
   puppeteer: false
   # tesseract.js: el WASM viene precompilado; el postinstall es opcional.
   tesseract.js: false
