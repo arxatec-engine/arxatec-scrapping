@@ -85,18 +85,44 @@ lo ya cargado (§5, deuda D-3).
 | 4 | `elperuano` | **PASS** 25/25 · 0 warnings | Sin incidencias del visor en esta tanda |
 | 5 | `doctrina` | **PASS** 25/25 · 25 warnings | Warnings **correctos**: las universidades privadas no están en el catálogo de entidades del Estado |
 | 6 | `spij` | **PASS** 25/25 · 0 warnings | Funciona con la cuenta pública del código (`spijext`): **no hacen falta credenciales**, al contrario de lo que yo había anotado |
-| 7 | carril `gob.pe` | en curso | 13 subfuentes, secuenciales por compartir host |
+| 7 | carril `gob.pe` | **PASS 13/13** | Las 13 subfuentes, más la fusión en un proceso (§3.2) |
 
 ### 3.1 Carril `gob.pe`
 
 Se ejecutan **en secuencia a propósito**: las 13 comparten
 `www.gob.pe/busquedas.json` y lanzarlas a la vez es autobloquearse.
 
-| Subfuente | Veredicto |
-| --- | --- |
-| `essalud` | **PASS** 25/25 |
-| `indecopi` | **PASS** 25/25 |
-| resto (11) | en curso |
+**Las 13 en PASS**, ejecutadas una tras otra:
+
+| Subfuente | Veredicto | Segundos |
+| --- | --- | --- |
+| `essalud` | PASS 25/25 | — |
+| `indecopi` | PASS 25/25 | — |
+| `oefa` | PASS 25/25 | 211 |
+| `servir` | PASS 25/25 | 79 |
+| `sunarp` | PASS 25/25 | 75 |
+| `sunass` | PASS 25/25 | 93 |
+| `osinergmin` | PASS 25/25 | 88 |
+| `osiptel` | PASS 25/25 | 79 |
+| `ositran` | PASS 25/25 | 71 |
+| `tce` | PASS 25/25 | 101 |
+| `tfiscal` | PASS 17/17 | 710 · con OCR, la más lenta con diferencia |
+| `tfl` | PASS 25/25 | 90 |
+| `gobpe` | PASS 25/25 | 125 |
+
+### 3.2 La fusión: `pnpm carril-gobpe`
+
+Verificar las 13 una a una demuestra que funcionan, pero **no arregla el
+problema de fondo**: el throttle de `utils/http` es un objeto en memoria, así que
+trece procesos son trece ritmos corteses independientes contra un solo portal.
+
+El comando `carril-gobpe` abre **un** navegador y **un** throttle y recorre las
+subfuentes en secuencia, inyectándolos. Los 13 `run()` aceptan ahora un carril
+opcional: sin él se comportan exactamente como antes, así que los comandos
+sueltos siguen sirviendo para pruebas — que es justo lo que pidió el owner.
+
+Lo que **no** cambia: cada subfuente conserva su ledger y su log, así que
+`pnpm status` y `pnpm verify` siguen funcionando por fuente.
 
 ---
 
