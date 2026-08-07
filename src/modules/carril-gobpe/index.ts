@@ -38,6 +38,15 @@ import { run as gobpeRun } from "../gobpe/run";
  */
 interface Subfuente {
   nombre: string;
+  /**
+   * Variable de entorno con la que ESA subfuente acota su corrida.
+   *
+   * Se declara aquí, junto al módulo, en vez de derivarla del nombre: dos de las
+   * trece no siguen el patrón (`indecopi` usa `IND_LIMIT` y `tfiscal` usa
+   * `TF_LIMIT`). Derivarla hizo que `--limit` no les llegara y se pusieran a
+   * ingerir sin tope.
+   */
+  limitEnv: string;
   minDelay: () => number;
   ejecutar: (log: Logger, lane: GobpeLane) => Promise<void>;
 }
@@ -46,33 +55,38 @@ interface Subfuente {
  *  que el carril no tenga que conocer trece formas distintas. */
 function sub<C extends { minDelay: number }>(
   nombre: string,
+  limitEnv: string,
   config: () => C,
   run: (cfg: C, log: Logger, lane?: GobpeLane) => Promise<void>
 ): Subfuente {
   return {
     nombre,
+    limitEnv,
     minDelay: () => config().minDelay,
     ejecutar: (log, lane) => run(config(), log, lane),
   };
 }
 
 const SUBFUENTES: Subfuente[] = [
-  sub("tfl", tflConfig, tflRun),
-  sub("tfiscal", tfiscalConfig, tfiscalRun),
-  sub("tce", tceConfig, tceRun),
-  sub("indecopi", indecopiConfig, indecopiRun),
-  sub("sunarp", sunarpConfig, sunarpRun),
-  sub("servir", servirConfig, servirRun),
-  sub("essalud", essaludConfig, essaludRun),
-  sub("oefa", oefaConfig, oefaRun),
-  sub("osinergmin", osinergminConfig, osinergminRun),
-  sub("osiptel", osiptelConfig, osiptelRun),
-  sub("sunass", sunassConfig, sunassRun),
-  sub("ositran", ositranConfig, ositranRun),
-  sub("gobpe", gobpeConfig, gobpeRun),
+  sub("tfl", "TFL_LIMIT", tflConfig, tflRun),
+  sub("tfiscal", "TF_LIMIT", tfiscalConfig, tfiscalRun),
+  sub("tce", "TCE_LIMIT", tceConfig, tceRun),
+  sub("indecopi", "IND_LIMIT", indecopiConfig, indecopiRun),
+  sub("sunarp", "SUNARP_LIMIT", sunarpConfig, sunarpRun),
+  sub("servir", "SERVIR_LIMIT", servirConfig, servirRun),
+  sub("essalud", "ESSALUD_LIMIT", essaludConfig, essaludRun),
+  sub("oefa", "OEFA_LIMIT", oefaConfig, oefaRun),
+  sub("osinergmin", "OSINERGMIN_LIMIT", osinergminConfig, osinergminRun),
+  sub("osiptel", "OSIPTEL_LIMIT", osiptelConfig, osiptelRun),
+  sub("sunass", "SUNASS_LIMIT", sunassConfig, sunassRun),
+  sub("ositran", "OSITRAN_LIMIT", ositranConfig, ositranRun),
+  sub("gobpe", "GOBPE_LIMIT", gobpeConfig, gobpeRun),
 ];
 
 export const NOMBRES = SUBFUENTES.map((s) => s.nombre);
+
+/** Variables de entorno con las que el CLI acota cada subfuente. */
+export const LIMIT_ENVS = SUBFUENTES.map((s) => s.limitEnv);
 
 export interface Resultado {
   nombre: string;

@@ -32,7 +32,10 @@ import { config as osiptelConfig } from "./modules/osiptel/config";
 import { run as osiptelRun } from "./modules/osiptel/run";
 import { config as sunassConfig } from "./modules/sunass/config";
 import { run as sunassRun } from "./modules/sunass/run";
-import { NOMBRES as CARRIL_GOBPE, run as carrilGobpeRun } from "./modules/carril-gobpe";
+import {
+  LIMIT_ENVS as CARRIL_GOBPE_LIMITS,
+  run as carrilGobpeRun,
+} from "./modules/carril-gobpe";
 import { config as ositranConfig } from "./modules/ositran/config";
 import { run as ositranRun } from "./modules/ositran/run";
 import { config as gobpeConfig } from "./modules/gobpe/config";
@@ -177,10 +180,7 @@ async function runCarrilGobpe(opts: {
   // El --limit se propaga a TODAS las subfuentes: cada una lee su propia
   // variable de entorno, así que se fijan todas de golpe.
   if (opts.limit) {
-    for (const n of CARRIL_GOBPE) {
-      const clave = n === "tfiscal" ? "TF_LIMIT" : `${n.toUpperCase()}_LIMIT`;
-      process.env[clave] = opts.limit;
-    }
+    for (const clave of CARRIL_GOBPE_LIMITS) process.env[clave] = opts.limit;
   }
   // El carril escribe su propio log; cada subfuente sigue escribiendo el suyo.
   const log = setupLogging(tflConfig().logFile.replace("tfl_ingest/scraper.log", "carril_gobpe.log"));
