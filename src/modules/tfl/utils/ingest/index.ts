@@ -1,4 +1,8 @@
 import { analizarNorma } from "../../../../services/llm";
+import {
+  ingestMode,
+  localIngestConfig,
+} from "../../../../services/ingest-local/config";
 import { ocrPdf } from "../../../../services/ocr";
 import {
   defaultResolved,
@@ -27,6 +31,19 @@ import type {
 
 export function prepare(ctx: Ctx): void {
   const { cfg, log } = ctx;
+
+  // En modo local no hay servidor al que apuntar: la ingesta ocurre aquí.
+  if (ingestMode() === "local") {
+    const local = localIngestConfig(log);
+    log.info(
+      "Ingesta LOCAL → Qdrant %s · PG %s · S3 %s",
+      local.qdrantUrl,
+      local.databaseUrl.replace(/:\/\/[^@]*@/, "://***@"),
+      local.awsBucket ?? "(sin bucket: no se sube el original)"
+    );
+    return;
+  }
+
   if (!cfg.ingestBaseUrl) {
     throw new Error(
       "Falta INGEST_BASE_URL: define la URL del servidor de ingesta " +
