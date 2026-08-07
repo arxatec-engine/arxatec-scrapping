@@ -257,6 +257,88 @@ assistant si el PDF sigue pasando por él.
 
 ---
 
+## 7. La arquitectura decidida: 8 módulos completos
+
+Decisión del owner del 2026-08-07, tras §6 y el registro hermano del assistant.
+
+### 7.1 Los 8 módulos
+
+Cada uno pasa a ser un **módulo completo**: scrapea **y** ingiere por su cuenta
+(texto, embeddings, Qdrant, PostgreSQL, S3), sin pasar por
+`POST /legal-documents/ingest`.
+
+| # | Módulo | Fuentes que absorbe | Carril (host) |
+| --- | --- | --- | --- |
+| 1 | **`gobpe` unificado** | 13: `essalud`, `indecopi`, `oefa`, `osinergmin`, `osiptel`, `ositran`, `servir`, `sunarp`, `sunass`, `tce`, `tfiscal`, `tfl`, `gobpe` | `www.gob.pe` (búsquedas) + `cdn.www.gob.pe` (PDF) |
+| 2 | `tc` | Tribunal Constitucional | `*.sedetc.gob.pe` |
+| 3 | `elperuano` | El Peruano | `busquedas.elperuano.pe` |
+| 4 | `spij` | SPIJ (API) | `*.minjus.gob.pe` |
+| 5 | `pj` | Poder Judicial | `www.pj.gob.pe` |
+| 6 | `sunat` | SUNAT | `www.sunat.gob.pe` |
+| 7 | `congreso` | `adlp` + `spley` | `*.congreso.gob.pe` |
+| 8 | `doctrina` | 8 repositorios universitarios | PUCP, UPC, ULima, UNI, URP, AMAG, SciELO |
+
+**Los 8 se lanzan en simultáneo**: un carril por módulo, sin colisión de host.
+Dentro del módulo 1, las 13 subfuentes comparten un throttle y un Chrome, y se
+conserva el modo individual **solo para pruebas**, nunca por defecto.
+
+### 7.2 El diseño de la ingesta local
+
+No se duplica lógica 13 ni 8 veces. **Una librería compartida + un cambio de una
+línea por módulo**, apoyándose en una costura que ya existe:
+
+```
+hoy:    ingestOne() → ingestRequest(ctx, pdfBytes, filename, meta) → HTTP → assistant
+nuevo:  ingestOne() → ingestRequest(...)  →  ingestLocal(...)  → Vertex + Qdrant + PG + S3
+                       └── misma firma, mismo IngestResult ──┘
+```
+
+Al respetar la firma `(ctx, pdfBytes, filename, metadata) → IngestResult`, **el
+resto del módulo no se entera**: el ledger, el fallback de OCR, los warnings y
+`pnpm verify` siguen funcionando sin tocarlos. Y el flag permite ingerir el
+**mismo** documento por las dos rutas para compararlas.
+
+### 7.3 Hallazgo que condiciona el criterio de aceptación
+
+Se comparó la extracción de texto de un PDF real por las dos vías:
+
+| | Páginas | Caracteres |
+| --- | --- | --- |
+| Python (`PyPDFLoader`/pypdf) | 10 | 23 353 |
+| Node (`unpdf`/pdf.js) | 10 | 23 412 |
+
+**Similitud media por página: 99,6 %** (mínimo 98,7 %). Las diferencias son de
+espaciado y ligaduras.
+
+Consecuencia: **la igualdad byte a byte del texto NO es alcanzable** con
+extractores distintos, y por tanto los embeddings tampoco serán idénticos. El
+criterio de aceptación del piloto se ajusta a:
+
+| Debe ser idéntico | Debe ser equivalente |
+| --- | --- |
+| `document_id` (determinista por `source_url`) | Texto de cada chunk: **≥ 98 % de similitud** |
+| Ids de punto (deterministas por índice) | Nº de chunks: igual o ±1 |
+| Claves de payload y las 41 de metadatos | La búsqueda devuelve el mismo documento |
+| Dimensión del vector (1024, sin nombre) | |
+| Filas en `documents`, `legal_document_entities`, `document_relations` | |
+
+### 7.4 Especificación de la VPS (confirmada)
+
+Es una máquina **exclusiva del corpus legal**, no solo del scraping: aloja
+Qdrant, PostgreSQL y los 8 procesos.
+
+| Recurso | Decisión |
+| --- | --- |
+| RAM | **16 GB para empezar, ampliable a 32** — Qdrant pide ~8 GB medidos; el resto es caché y concurrencia |
+| Hilos | **Lo más prioritario** — los pide el OCR (15 de los módulos originales) |
+| Disco | **1 TB NVMe** (con 256 GB también bastaría: Qdrant + PG son ~90 GB) |
+| S3 | El bucket actual, ~0,9-1 TB de PDF |
+
+Detalle y señales de ampliación en
+`arxatec-lawyer-assistant/docs/registro/2026-08-07/AUDITORIA_PROPUESTA_CUELLO_BOTELLA.md` §13.
+
+---
+
 ## Registro de cambios
 
 | Fecha | Commit verificado | Qué cambió |
