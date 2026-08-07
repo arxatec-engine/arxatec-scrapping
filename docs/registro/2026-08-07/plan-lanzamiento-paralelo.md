@@ -170,8 +170,96 @@ Fase B en la mano.
 
 ---
 
+## 6. La propuesta del owner: fundir los 13 de gob.pe en un solo módulo
+
+> «Que los scraping de una sola página sean un solo scraping, así lanzamos los 8
+> sin preocuparnos. Dentro del módulo se podrá correr cada uno individualmente,
+> pero solo para pruebas, no por defecto.»
+
+**Recomendado.** Es más limpio que las dos opciones de §3 y las cubre a la vez:
+si el recurso compartido tiene **un solo dueño**, el throttle en memoria que ya
+existe **se vuelve el contador compartido** sin escribir coordinación
+distribuida. Se resuelve A1 y A2 de una vez, sin Redis.
+
+### 6.1 Lo que además se gana (medido)
+
+Los 13 módulos de gob.pe **lanzan Chrome y usan OCR los 13** (verificado módulo
+por módulo). Fundirlos en un proceso:
+
+| | Hoy (13 procesos) | Fundido (1 proceso) |
+| --- | --- | --- |
+| Instancias de Chrome | 13 × ~800 MB ≈ **10,4 GB** | 1 × ~800 MB |
+| Throttle contra `www.gob.pe` | 13 independientes | **1, compartido** |
+| Workers de OCR compitiendo por CPU | 13 | 1 pool controlado |
+
+**Se liberan ~9,6 GB de RAM y desaparece la contención de CPU del OCR.** Eso solo
+ya cambia el dimensionado de la VPS.
+
+### 6.2 Matiz importante que apareció al medir: hay dos hosts, no uno
+
+Al muestrear los PDF reales salió esto, y conviene tenerlo claro antes de diseñar:
+
+```
+www.gob.pe/busquedas.json   ← el BUSCADOR (JSON, pequeño). Es el recurso
+                              compartido y el que throttlea. 13 módulos.
+cdn.www.gob.pe              ← los PDF (718 KB - 1,6 MB medidos). Es un CDN.
+```
+
+El servicio compartido lo dice en su cabecera: la búsqueda va por
+`busquedas.json`, **sin páginas de detalle ni Puppeteer**, y el PDF sale del CDN.
+
+Consecuencia: **el presupuesto que hay que compartir es el de las llamadas de
+búsqueda**, que son JSON pequeños, no el de las descargas, que van a un CDN hecho
+para volumen. El carril gob.pe es **menos estrecho de lo que temíamos** — pero
+sigue necesitando un solo contador, que es justo lo que da la fusión.
+
+### 6.3 Lo que hay que cuidar al fundirlos
+
+| Riesgo | Cómo se evita |
+| --- | --- |
+| Perder el ledger por fuente | **No fusionar ledgers.** Cada subfuente conserva `state/<fuente>_ingest/`, o `pnpm status` y `pnpm verify` dejan de funcionar |
+| Un fallo se lleva las 13 | El ledger hace que reanudar sea reejecutar; conviene además aislar cada subfuente en su try/catch para que una caída no aborte la vuelta |
+| Que el modo individual se use en producción | Es lo que pide el owner: se conserva **solo para pruebas**, y el camino por defecto es el módulo fundido |
+| Perder el veredicto por fuente | `pnpm verify <subfuente>` debe seguir dando PASS/FAIL por separado |
+
+### 6.4 Cómo queda el lanzamiento
+
+```
+8 procesos en paralelo, uno por carril:
+
+  1. gobpe-unificado   ← las 13 subfuentes, un throttle, un Chrome
+  2. tc
+  3. elperuano
+  4. spij
+  5. pj
+  6. sunat
+  7. adlp + spley      ← comparten congreso.gob.pe: van en el mismo carril
+  8. doctrina
+```
+
+Ocho procesos, ~6,4 GB de Chrome, sin colisión de host y sin coordinación
+distribuida. **Es el objetivo que buscaba el owner, y sale sin token bucket.**
+
+### 6.5 Dónde está el muro de verdad
+
+Con la fusión hecha, el límite deja de ser el scraping. Los dos techos que
+quedan, medidos en el registro hermano del assistant (§11):
+
+1. **Qdrant**: 1,15 M documentos ≈ 20,7 M puntos ≈ **85-127 GB de RAM** con la
+   configuración actual (sin cuantizar, vectores en RAM). **En 16 GB se agota
+   entre los 145 000 y los 230 000 documentos.** Necesita cuantización int8 y/o
+   vectores `on_disk` — y con `on_disk`, **NVMe obligatorio**.
+2. **Cuota de Vertex**: sigue sin conocerse (403 al consultarla).
+
+PostgreSQL (~10 sentencias/s, 1,7 GB) y S3 (~690 GB, ~$16/mes) **no son el
+problema**. Lo que sí pesa en S3 es el tráfico: ~1,4 TB de tránsito en la VPS del
+assistant si el PDF sigue pasando por él.
+
+---
+
 ## Registro de cambios
 
 | Fecha | Commit verificado | Qué cambió |
 | --- | --- | --- |
 | 2026-08-07 | `b2c69b2` (este repo) · `2d540b0` (assistant) | Nace el registro. Mapa de hosts extraído del código: 14 de 22 módulos comparten `www.gob.pe` y el throttle es por proceso, así que el paralelismo ingenuo multiplica por 14 el ritmo contra un solo portal. Plan por fases con olas por carril y la regla de «fuente caída, se anota y se sigue». |
+| 2026-08-07 | ídem | Nace §6 con la propuesta del owner de **fundir los 13 módulos de gob.pe en uno**: se recomienda, porque el throttle en memoria pasa a ser el contador compartido sin Redis, y **libera ~9,6 GB de RAM** (los 13 lanzan Chrome y usan OCR). Aparece un matiz al medir: el buscador (`www.gob.pe/busquedas.json`) y los PDF (`cdn.www.gob.pe`) son **hosts distintos**, así que lo que hay que racionar son las búsquedas, no las descargas. Se fija el lanzamiento en 8 carriles y se apunta al muro real: Qdrant. |
