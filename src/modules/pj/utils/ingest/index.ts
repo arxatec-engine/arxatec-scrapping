@@ -1,3 +1,4 @@
+import { ingestMode } from "../../../../services/ingest-local/config";
 import { ingestRequest } from "../../../../services/assistant";
 import { sanitize } from "../../../../utils/text";
 import { nowTs } from "../../../../utils/time";
@@ -24,7 +25,8 @@ export function isDone(record: StoredRecord): boolean {
 
 export function prepare(ctx: Ctx): void {
   const { cfg, log } = ctx;
-  if (!cfg.ingestBaseUrl) {
+  // En modo local no hay servidor al que apuntar: la ingesta ocurre aquí.
+  if (ingestMode() !== "local" && !cfg.ingestBaseUrl) {
     throw new Error(
       "Falta INGEST_BASE_URL: define la URL del servidor de ingesta " +
         "(p.ej. export INGEST_BASE_URL=https://api.tu-servidor.com).",

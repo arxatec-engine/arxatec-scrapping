@@ -44,7 +44,8 @@ export function prepare(ctx: Ctx): void {
     return;
   }
 
-  if (!cfg.ingestBaseUrl) {
+  // En modo local no hay servidor al que apuntar: la ingesta ocurre aquí.
+  if (ingestMode() !== "local" && !cfg.ingestBaseUrl) {
     throw new Error(
       "Falta INGEST_BASE_URL: define la URL del servidor de ingesta " +
         "(p.ej. export INGEST_BASE_URL=https://api.tu-servidor.com)."
