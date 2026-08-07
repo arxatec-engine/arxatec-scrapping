@@ -76,7 +76,9 @@ export async function analizarNorma(
   if (!key || !texto) {
     return EMPTY;
   }
-  const model = process.env.LLM_MODEL || "llama-3.1-8b-instant";
+  // Default estable: llama-3.1-8b-instant se apaga el 2026-08-16, y los modelos
+  // de razonamiento (gpt-oss) fallan a menudo con response_format json_object.
+  const model = process.env.LLM_MODEL || "llama-3.3-70b-versatile";
   const prompt =
     "Eres un analista de normas legales peruanas. A partir del TEXTO de la " +
     "norma haz tres cosas:\n" +
@@ -112,7 +114,19 @@ export async function analizarNorma(
     const data: any = r.data;
     const content = String(data.choices[0].message.content ?? "");
     return parseAnalisis(content);
-  } catch {
+  } catch (e: any) {
+    // Este catch estaba vacío, y eso escondía un fallo caro: el 2026-08-07 se
+    // descubrió que Groq devolvía 400 "Failed to generate JSON" en ráfaga con
+    // un modelo de razonamiento, así que TODOS los documentos se ingerían con
+    // el área legal por defecto. En el ledger solo se veía "la IA no clasificó
+    // la subárea", que suena a duda del modelo y no a una API rechazando.
+    const status = e?.response?.status;
+    const detalle = String(
+      e?.response?.data?.error?.message ?? e?.message ?? e
+    ).slice(0, 160);
+    console.warn(
+      `[llm] clasificación fallida (${status ?? "sin status"}): ${detalle}`
+    );
     return EMPTY;
   }
 }
