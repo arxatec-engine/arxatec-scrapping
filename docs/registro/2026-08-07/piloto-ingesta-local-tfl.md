@@ -120,6 +120,13 @@ repetirse en los otros 7 módulos si no se sabe:
 
 ## 4. Deuda abierta del piloto
 
+> ⚠️ **Deuda superada.** Las tablas de deuda de este documento se
+> consolidaron el 2026-08-07 en
+> [`ejecucion-fases-modulos-completos.md` §5](./ejecucion-fases-modulos-completos.md#5-deuda-registro-único),
+> que es el registro único. Lo de aquí se conserva como testigo de lo que
+> se sabía ese momento, no como lista viva.
+
+
 | Id | Punto | Estado |
 | --- | --- | --- |
 | P-1 | **Troceado por artículo** para `document_type='codigo'` (254 líneas en Python) sin portar. `tfl` no lo necesita; `spij` y `elperuano` sí | 🔴 |

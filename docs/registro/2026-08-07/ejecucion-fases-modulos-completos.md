@@ -147,16 +147,46 @@ en silencio.
 
 ---
 
-## 5. Deuda abierta
+## 5. Deuda: registro ÚNICO
 
-| Id | Punto | Estado |
+> Al cerrar el día, la deuda estaba repartida en cuatro documentos con IDs que
+> se pisaban (la cuota de Vertex figuraba como `P-6`, `M-2` y `D-1` a la vez) y
+> con entradas ya caducas. **Esta tabla es la única que vale**; las de
+> `piloto-ingesta-local-tfl.md` §4, `plan-lanzamiento-paralelo.md` §4-5 y
+> `fases-7-modulos.md` §8-9 quedan superadas.
+
+### 5.1 Abierto y bloqueante
+
+| Id | Punto | Por qué importa |
 | --- | --- | --- |
-| D-1 | **Cuota de Vertex**: con los 8 carriles a la vez el techo efectivo es 8 × `EMBEDDING_MAX_CONCURRENCY`. Sigue sin conocerse (403 con la cuenta de servicio) | 🔴 |
-| D-2 | **Presupuesto real de `www.gob.pe`**: cuántas peticiones tolera antes de 429/403. Condiciona cuánta concurrencia admite el carril de 13 | 🔴 |
-| D-3 | **Reingesta del corpus ya cargado** con la clasificación arreglada. En local se rehizo; en producción hay que decidirlo | 🔴 decisión del owner |
-| D-4 | Fusión de los 13 en un proceso | ✅ hecha: `pnpm carril-gobpe` |
-| D-6 | **Corrida completa del carril de punta a punta**: se detuvo a mitad al descubrir el bug del `--limit`. Falta repetirla entera con el arreglo | 🟡 |
-| D-5 | `INGEST_SKIP_UNCHANGED=false` en el `.env` local para las pruebas. **En campaña conviene ponerlo a `true`** o se re-paga cada reingesta | 🟡 recordatorio |
+| **T-1** | **Cuota de Vertex** del proyecto en `us-central1`. La cuenta de servicio da **403** al consultarla; hace falta consola | Con los 8 carriles a la vez el techo efectivo es 8 × `EMBEDDING_MAX_CONCURRENCY`. Es lo único que puede tumbar la campaña entera |
+| **T-2** | **Presupuesto real de `www.gob.pe`**: cuántas peticiones tolera antes de 429/403 | Marca cuánta concurrencia admite el carril de 13, que es el camino crítico |
+
+### 5.2 Abierto, decisión del owner
+
+| Id | Punto |
+| --- | --- |
+| **T-3** | ¿Se **reingesta el corpus ya cargado** en producción con la clasificación arreglada? En local se rehizo; los documentos anteriores al arreglo tienen el área legal mal |
+| **T-4** | Orden del carril `gob.pe`: hoy va por criterio mixto. ¿Por valor legal o por volumen de documentos? |
+
+### 5.3 Abierto, mejoras medibles (no bloquean)
+
+| Id | Punto | Ganancia |
+| --- | --- | --- |
+| **T-5** | **OCR en el sitio**: hoy se hereda el rodeo «falla → OCR → re-render a PDF → reingesta» | Se ahorra un render y una segunda pasada completa. Afecta sobre todo a `adlp`, `tfiscal`, `oefa` y `sunat` |
+| **T-6** | **Corrida completa del carril** de punta a punta: se cortó a mitad al descubrir el bug del `--limit` | Confirmaría el ahorro de RAM del navegador único con datos |
+| **T-7** | `INGEST_SKIP_UNCHANGED=false` está así **para las pruebas** | En campaña conviene `true` o se re-paga cada reingesta |
+
+### 5.4 Cerrado por comprobación (no hacer nada)
+
+| Id | Por qué se cierra |
+| --- | --- |
+| Troceado por artículo (`codigo`) | **No aplica**: se verificó que los módulos solo emiten `normative`, `jurisprudence` y `doctrine`. Ninguno produce `codigo` |
+| Extracción docx/xlsx/pptx | **No aplica**: los 25 módulos construyen siempre `filename` con `.pdf` |
+| `document_relations` | **No aplica**: ningún módulo envía relaciones |
+| Saltar lo ya ingerido | ✅ **implementado** (2,55 s → 170 ms en reingesta) |
+| Fusión de los 13 en un proceso | ✅ **implementada**: `pnpm carril-gobpe` |
+| Dimensionado de la VPS | ✔ **decidido** por el owner: 16 GB ampliables, 1 TB NVMe, prioridad a los hilos |
 
 ---
 
