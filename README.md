@@ -130,7 +130,7 @@ importan:
 | `INGEST_MODE` | `local` (campaña) o `remote` (POST al assistant) |
 | `QDRANT_URL` / `DATABASE_URL` | destino de la ingesta local |
 | `GOOGLE_CLOUD_PROJECT` / `GOOGLE_APPLICATION_CREDENTIALS` | Vertex AI, para los embeddings (`gemini-embedding-001`, 1024 dims). **La ruta debe existir**: un typo no da un error claro, falla documento a documento |
-| `EMBEDDING_MAX_CONCURRENCY` | techo de embeddings en vuelo **por proceso**. Con 8 carriles, el techo efectivo contra Vertex es 8 × este valor |
+| `EMBEDDING_MAX_CONCURRENCY` | techo de embeddings en vuelo **por proceso**. Con 8 carriles el techo efectivo es 8 × este valor. **Déjalo en 2**: la cuota de Vertex es 1 M de tokens/min y con 8 carriles el valor 8 llegaba al 342 % |
 | `INGEST_SKIP_UNCHANGED` | `true` en campaña (no re-paga embeddings de lo que no cambió); `false` para comprobar que sí embebe |
 | `AWS_BUCKET_NAME` / `AWS_KEY_ACCESS` / `AWS_KEY_ACCESS_SECRET` | S3. **Ojo**: los nombres no son los estándar del SDK de AWS |
 | `INGEST_BASE_URL` / `INGEST_TOKEN` | solo para `INGEST_MODE=remote` |

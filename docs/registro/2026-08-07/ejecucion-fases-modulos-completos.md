@@ -159,7 +159,7 @@ en silencio.
 
 | Id | Punto | Por qué importa |
 | --- | --- | --- |
-| **T-1** | **Cuota de Vertex** del proyecto en `us-central1`. La cuenta de servicio da **403** al consultarla; hace falta consola | Con los 8 carriles a la vez el techo efectivo es 8 × `EMBEDDING_MAX_CONCURRENCY`. Es lo único que puede tumbar la campaña entera |
+| ~~T-1~~ | ✅ **cerrada** (§10): la cuota es 1.000.000 tokens/min y 100.000 requests/min. `EMBEDDING_MAX_CONCURRENCY` baja de 8 a **2** |
 | **T-2** | **Presupuesto real de `www.gob.pe`**: cuántas peticiones tolera antes de 429/403 | Marca cuánta concurrencia admite el carril de 13, que es el camino crítico |
 
 ### 5.2 Abierto, decisión del owner
@@ -175,8 +175,8 @@ en silencio.
 | --- | --- | --- |
 | ~~T-5~~ | ✅ **hecho** (§8): OCR dentro de la ingesta, conservando los números de página que el rodeo perdía |
 | ~~T-6~~ | ✅ **hecha** (§9): 12/13 en un proceso, con **0,82 GB de pico**. `gobpe` cayó con `fetch failed` → queda como T-9 |
-| **T-9** | `gobpe` falló con `fetch failed` en la corrida completa del carril. Es la subfuente más pesada (el portal entero) y va la última; el carril siguió y terminó bien | Reintentar suelta y ver si es intermitencia del portal |
-| **T-8** | `adlp` dio **timeout** en la prueba del carril del congreso (su HTTPS es intermitente, no está caído). La tanda siguió, como manda la regla | Reintentar; si se repite, subir el timeout o espaciar más los reintentos |
+| ~~T-8~~ | ✅ **reintentado**: `pnpm verify adlp 8` → PASS 8/8. Los timeouts siguen apareciendo pero los absorbe el reintento del módulo (1/6). Intermitencia conocida, no defecto |
+| ~~T-9~~ | ✅ **reintentado**: `pnpm verify gobpe 8` → PASS 9/9. El `fetch failed` es un `ConnectTimeoutError` del CDN que absorbe el reintento (1/3) |
 | **T-7** | `INGEST_SKIP_UNCHANGED=false` está así **para las pruebas** | En campaña conviene `true` o se re-paga cada reingesta |
 
 ### 5.4 Cerrado por comprobación (no hacer nada)
@@ -281,10 +281,48 @@ Dos cosas que confirma la corrida:
 
 ---
 
+## 10. T-1 cerrada: la cuota de Vertex, con números
+
+El owner la localizó en consola. **Dónde estaba el problema para encontrarla**:
+filtrando por «Vertex AI API» no sale nada — Google las agrupa bajo **Agent
+Platform API**. El filtro que funciona es `us-central1` + `embedding`.
+
+Cuota real (2026-08-07, proyecto `arxatec`, `base_model: gemini-embedding`):
+
+| Límite | Valor |
+| --- | --- |
+| **Tokens de entrada por minuto** | **1 000 000** |
+| Requests por minuto | 100 000 |
+
+**Manda la de tokens, no la de requests.** Con 1.926 caracteres de media por
+chunk (medidos sobre 300 chunks reales) son **~500 tokens por chunk**, y un
+carril a concurrencia 8 hace 14,2 chunks/s:
+
+| Configuración | tokens/min | % de la cuota |
+| --- | ---: | ---: |
+| 1 carril × 8 | 427 000 | 43 % |
+| **8 carriles × 8** | **3 415 000** | **342 %** ← lo que había |
+| 8 carriles × 3 | 1 281 000 | 128 % |
+| **8 carriles × 2** | **854 000** | **85 %** ← el valor fijado |
+| 8 carriles × 1 | 427 000 | 43 % |
+
+`EMBEDDING_MAX_CONCURRENCY` pasa de **8 a 2**. Con los ocho carriles a la vez, el
+valor anterior habría ido al **342 % de la cuota**.
+
+De paso, una confirmación empírica: en las corridas de un solo carril a
+concurrencia 8 (427 000 tokens/min) **no apareció ni un 429**. Eso descarta que
+nuestro modelo cuente contra la cuota de `gemini-embedding-2`, que es diez veces
+menor (100 000 tokens/min) y habría reventado de inmediato.
+
+Los requests, en cambio, ni se rozan: 854/min contra 100 000 es **0,9 %**.
+
+---
+
 ## Registro de cambios
 
 | Fecha | Commit verificado | Qué cambió |
 | --- | --- | --- |
+| 2026-08-08 | `e859a10` (rama `feat/modulos-completos`) | **T-1 cerrada** (§10) con la cuota que trajo el owner: manda la de tokens (1 M/min), y `EMBEDDING_MAX_CONCURRENCY` baja de 8 a 2 — con los ocho carriles, el 8 iba al 342 % de la cuota. T-8 y T-9 reintentados: los dos en PASS, eran intermitencia de sus portales. |
 | 2026-08-07 | `dad3d1c` (rama `feat/modulos-completos`) | T-6 hecho (§9): carril completo, 12/13 y **0,82 GB de pico** contra los ~10,4 GB de trece navegadores. Nace T-9 (`gobpe` con `fetch failed`). |
 | 2026-08-07 | `87f8cb8` (rama `feat/modulos-completos`) | T-5 hecho (§8): el OCR entra en la ingesta y conserva las páginas. Se pone al día el README —seguía diciendo que había dos módulos— y se corrige la frase «un módulo por fuente» de `CLAUDE.md`, que causó una confusión real: son 33 fuentes en 21 módulos, porque `doctrina` sola cosecha 7 repositorios y el carril de gob.pe agrupa 13. |
 | 2026-08-07 | `56760ec` (rama `feat/modulos-completos`) | Se consolida la deuda en §5 (estaba repartida en cuatro documentos con IDs que se pisaban). El owner cierra T-3 (se empieza de cero) y decide T-4: orden por volumen. Nacen §6 con los volúmenes medidos y §7 con los 8 carriles, más `pnpm carril-congreso`. |
