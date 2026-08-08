@@ -110,6 +110,48 @@ El vistazo de 10 segundos: registrados / ok / pendientes / permanentes /
 warnings por fuente. **No toca la red**, se puede correr en cualquier momento,
 incluso con una corrida en curso.
 
+## 4b. Los 8 carriles en paralelo (la forma de correr la campaña)
+
+Ocho procesos a la vez, uno por **carril de host**. La regla es simple: **dos
+procesos nunca deben pegar al mismo sitio**, porque el límite lo pone la fuente
+y no nosotros — diez conexiones no van diez veces más rápido, hacen que nos
+bloqueen diez veces antes.
+
+| Consola | Comando | Qué cubre |
+| --- | --- | --- |
+| 1 | `pnpm carril-gobpe` | **13 subfuentes** de `www.gob.pe` en un solo proceso, ordenadas por volumen |
+| 2 | `pnpm carril-congreso` | `adlp` + `spley`, uno tras otro |
+| 3 | `pnpm tc` | Tribunal Constitucional |
+| 4 | `pnpm sunat` | SUNAT |
+| 5 | `pnpm elperuano` | Diario El Peruano |
+| 6 | `pnpm doctrina` | 8 repositorios universitarios |
+| 7 | `pnpm spij` | SPIJ (API con cuenta pública) |
+| 8 | `pnpm pj` | Poder Judicial — **solo desde IP residencial** |
+
+Cada comando acepta `--limit <n>` para acotar (pruebas).
+
+**Lo que NO hay que hacer**: lanzar sueltas las subfuentes del carril de gob.pe
+en paralelo. Los comandos individuales (`pnpm tfl`, `pnpm indecopi`, …) siguen
+existiendo **solo para probar** una fuente concreta. En campaña van por el
+carril, que es lo que garantiza un único ritmo contra el portal — el throttle
+vive en memoria y trece procesos son trece ritmos independientes.
+
+**Antes de abrir las ocho**:
+
+```bash
+pnpm entidades          # el emisor debe existir o el vínculo queda vacío
+pnpm typecheck && pnpm test
+```
+
+Y en `.env`, para campaña: `INGEST_SKIP_UNCHANGED=true` (si está en `false` se
+vuelven a pagar los embeddings de lo que no cambió).
+
+**Si una fuente falla** —sitio caído o antibot— el carril **no se detiene**: lo
+anota y sigue con la siguiente. Reintentar es reejecutar el mismo comando: el
+ledger reanuda donde quedó.
+
+---
+
 ## 5. Si algo falla
 
 | Síntoma | Qué significa | Qué hacer |
