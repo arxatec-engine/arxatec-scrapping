@@ -173,7 +173,7 @@ en silencio.
 
 | Id | Punto | Ganancia |
 | --- | --- | --- |
-| **T-5** | **OCR en el sitio**: hoy se hereda el rodeo «falla → OCR → re-render a PDF → reingesta» | Se ahorra un render y una segunda pasada completa. Afecta sobre todo a `adlp`, `tfiscal`, `oefa` y `sunat` |
+| ~~T-5~~ | ✅ **hecho** (§8): OCR dentro de la ingesta, conservando los números de página que el rodeo perdía |
 | **T-6** | **Corrida completa del carril** de punta a punta: se cortó a mitad al descubrir el bug del `--limit` | Confirmaría el ahorro de RAM del navegador único con datos |
 | **T-8** | `adlp` dio **timeout** en la prueba del carril del congreso (su HTTPS es intermitente, no está caído). La tanda siguió, como manda la regla | Reintentar; si se repite, subir el timeout o espaciar más los reintentos |
 | **T-7** | `INGEST_SKIP_UNCHANGED=false` está así **para las pruebas** | En campaña conviene `true` o se re-paga cada reingesta |
@@ -231,9 +231,33 @@ pruebas**: en campaña van por el carril, que es lo único que garantiza un ritm
 
 ---
 
+## 8. T-5 hecho: el OCR deja de dar el rodeo
+
+**Antes**: un PDF escaneado devolvía «sin texto extraíble» → el módulo hacía OCR
+→ **renderizaba un PDF nuevo** con ese texto → y lo reingería entero. Dos
+pasadas completas y un render por documento.
+
+**Ahora**: la ingesta local hace el OCR ella misma cuando no hay texto.
+
+Y lo que más importa no es el ahorro, sino un defecto que el rodeo tenía y no se
+había visto: **perdía los números de página**. El PDF renderizado no conservaba
+la paginación original, así que **todos los chunks de un escaneado acababan
+marcados como `[PAGE 1]`**. Para eso nace `ocrPdfPages`, que devuelve un texto
+por página; `ocrPdf` pasa a ser un envoltorio suyo, de modo que el fallback
+histórico de los módulos y el modo remoto siguen exactamente igual.
+
+El warning auditable del ledger se conserva: la ingesta devuelve `ocr_used` y los
+15 módulos con OCR lo recogen.
+
+Verificado con `adlp`, la fuente con más escaneados: 4/4 por la ruta nueva, con
+«texto por OCR local» en el ledger y páginas reales (`paginas=2`, no `1`).
+
+---
+
 ## Registro de cambios
 
 | Fecha | Commit verificado | Qué cambió |
 | --- | --- | --- |
+| 2026-08-07 | `87f8cb8` (rama `feat/modulos-completos`) | T-5 hecho (§8): el OCR entra en la ingesta y conserva las páginas. Se pone al día el README —seguía diciendo que había dos módulos— y se corrige la frase «un módulo por fuente» de `CLAUDE.md`, que causó una confusión real: son 33 fuentes en 21 módulos, porque `doctrina` sola cosecha 7 repositorios y el carril de gob.pe agrupa 13. |
 | 2026-08-07 | `56760ec` (rama `feat/modulos-completos`) | Se consolida la deuda en §5 (estaba repartida en cuatro documentos con IDs que se pisaban). El owner cierra T-3 (se empieza de cero) y decide T-4: orden por volumen. Nacen §6 con los volúmenes medidos y §7 con los 8 carriles, más `pnpm carril-congreso`. |
 | 2026-08-07 | `abcc2fb` (rama `feat/modulos-completos`) · `2d540b0` (assistant) | Nace el registro con la ejecución de las fases. Lo importante no fue el cableado —que salió más barato de lo previsto al centralizarlo en dos clientes— sino descubrir que el clasificador de área legal fallaba en silencio y todo el corpus caía al área por defecto. |
