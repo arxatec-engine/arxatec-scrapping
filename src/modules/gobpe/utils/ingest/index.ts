@@ -128,6 +128,11 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
     meta = buildMetadata(doc, clasif, area, cfg, analisis.concepts, analisis.references);
     result = await ingestRequest(ctx, pdfBytes, filename, meta);
 
+    // Con INGEST_MODE=local el OCR ya lo hizo la ingesta (conservando páginas),
+    // así que el rodeo de abajo no llega a dispararse. Se recoge su marca para
+    // no perder el warning auditable del ledger.
+    if (result.data.ocr_used) ocrUsado = true;
+
     // Fallback OCR compartido: escaneados → PDF de texto reingresado.
     if (
       !result.ok &&

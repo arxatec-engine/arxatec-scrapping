@@ -9,6 +9,7 @@ import {
   upsertChunks,
 } from "./qdrant";
 import { buildKey, uploadOriginal } from "./s3";
+import { ocrPdfPages } from "../ocr";
 import { extractPages } from "./text";
 import type { LocalIngestClient, ResolvedMetadata } from "./types";
 import { canonicalSource, isKnownSource } from "../sources";
@@ -99,11 +100,30 @@ export async function ingestLocal(
 
     const documentId = buildDocumentId(country, metadata.source_url);
 
-    const pages = await extractPages(pdfBytes);
+    let pages = await extractPages(pdfBytes);
+    let ocrUsado = false;
+
+    if (pages.length === 0) {
+      // MEJORA sobre la ruta del assistant: en vez de devolver el error y
+      // obligar al módulo al rodeo «OCR → renderizar un PDF nuevo → reingerir»,
+      // se hace el OCR aquí mismo. Se ahorra un render y una segunda pasada
+      // completa, y —lo que más importa— se conservan los números de página
+      // reales, que el rodeo perdía (todo acababa como `[PAGE 1]`).
+      cfg.log.info("Sin texto extraíble: intento OCR local…");
+      const ocr = await ocrPdfPages(pdfBytes, cfg.log);
+
+      if (ocr) {
+        pages = ocr
+          .map((text, i) => ({ page: i + 1, text: text.trim() }))
+          .filter((p) => p.text.length > 0);
+        ocrUsado = pages.length > 0;
+      }
+    }
 
     if (pages.length === 0) {
       // Mismo mensaje que el controller del assistant: los módulos lo detectan
-      // por regex para lanzar el OCR local. Cambiarlo rompe ese fallback.
+      // por regex para lanzar SU fallback de OCR. Cambiarlo lo rompe, y en modo
+      // remoto sigue siendo la única vía.
       return fail("No extractable text in document", true);
     }
 
@@ -203,6 +223,8 @@ export async function ingestLocal(
         pages_with_text: pages.length,
         linked_entities: saved.linkedEntities,
         linked_relations: saved.linkedRelations,
+        // El módulo lo usa para dejar el warning auditable en el ledger.
+        ocr_used: ocrUsado,
       },
     };
   } catch (error) {
