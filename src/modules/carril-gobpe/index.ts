@@ -67,20 +67,33 @@ function sub<C extends { minDelay: number }>(
   };
 }
 
+/**
+ * Orden: **por volumen, de mayor a menor** (decisión del owner del 2026-08-07).
+ *
+ * Las cifras son el `total_count` que devolvió el buscador de gob.pe ese día,
+ * una consulta por institución. No son estimaciones.
+ *
+ * ⚠️ Consecuencia a tener presente: el carril es SECUENCIAL, así que sin
+ * `--limit` la primera subfuente monopoliza el carril mucho tiempo (`servir`
+ * son 168 546 documentos). Para que el resto avance, la campaña debe correr con
+ * un tope por subfuente y apoyarse en el ledger, que reanuda donde quedó.
+ *
+ * `gobpe` (normas por entidad) va al final por decisión previa del owner.
+ */
 const SUBFUENTES: Subfuente[] = [
-  sub("tfl", "TFL_LIMIT", tflConfig, tflRun),
-  sub("tfiscal", "TF_LIMIT", tfiscalConfig, tfiscalRun),
-  sub("tce", "TCE_LIMIT", tceConfig, tceRun),
-  sub("indecopi", "IND_LIMIT", indecopiConfig, indecopiRun),
-  sub("sunarp", "SUNARP_LIMIT", sunarpConfig, sunarpRun),
-  sub("servir", "SERVIR_LIMIT", servirConfig, servirRun),
-  sub("essalud", "ESSALUD_LIMIT", essaludConfig, essaludRun),
-  sub("oefa", "OEFA_LIMIT", oefaConfig, oefaRun),
-  sub("osinergmin", "OSINERGMIN_LIMIT", osinergminConfig, osinergminRun),
-  sub("osiptel", "OSIPTEL_LIMIT", osiptelConfig, osiptelRun),
-  sub("sunass", "SUNASS_LIMIT", sunassConfig, sunassRun),
-  sub("ositran", "OSITRAN_LIMIT", ositranConfig, ositranRun),
-  sub("gobpe", "GOBPE_LIMIT", gobpeConfig, gobpeRun),
+  sub("servir", "SERVIR_LIMIT", servirConfig, servirRun), // 168 546
+  sub("tce", "TCE_LIMIT", tceConfig, tceRun), // 86 049
+  sub("sunarp", "SUNARP_LIMIT", sunarpConfig, sunarpRun), // 70 578
+  sub("osinergmin", "OSINERGMIN_LIMIT", osinergminConfig, osinergminRun), // 28 864
+  sub("tfiscal", "TF_LIMIT", tfiscalConfig, tfiscalRun), // 28 792
+  sub("ositran", "OSITRAN_LIMIT", ositranConfig, ositranRun), // 10 267
+  sub("oefa", "OEFA_LIMIT", oefaConfig, oefaRun), // 9 841
+  sub("osiptel", "OSIPTEL_LIMIT", osiptelConfig, osiptelRun), // 8 014
+  sub("tfl", "TFL_LIMIT", tflConfig, tflRun), // 5 507
+  sub("sunass", "SUNASS_LIMIT", sunassConfig, sunassRun), // 4 527
+  sub("indecopi", "IND_LIMIT", indecopiConfig, indecopiRun), // 3 393
+  sub("essalud", "ESSALUD_LIMIT", essaludConfig, essaludRun), // 1 251
+  sub("gobpe", "GOBPE_LIMIT", gobpeConfig, gobpeRun), // el resto de gob.pe
 ];
 
 export const NOMBRES = SUBFUENTES.map((s) => s.nombre);

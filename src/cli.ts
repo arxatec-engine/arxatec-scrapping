@@ -36,6 +36,10 @@ import {
   LIMIT_ENVS as CARRIL_GOBPE_LIMITS,
   run as carrilGobpeRun,
 } from "./modules/carril-gobpe";
+import {
+  LIMIT_ENVS as CARRIL_CONGRESO_LIMITS,
+  run as carrilCongresoRun,
+} from "./modules/carril-congreso";
 import { config as ositranConfig } from "./modules/ositran/config";
 import { run as ositranRun } from "./modules/ositran/run";
 import { config as gobpeConfig } from "./modules/gobpe/config";
@@ -186,6 +190,17 @@ async function runCarrilGobpe(opts: {
   const log = setupLogging(tflConfig().logFile.replace("tfl_ingest/scraper.log", "carril_gobpe.log"));
   const solo = opts.solo?.split(",").map((s) => s.trim()).filter(Boolean);
   const resultados = await carrilGobpeRun(log, solo);
+  if (resultados.some((r) => !r.ok)) process.exitCode = 1;
+}
+
+async function runCarrilCongreso(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) {
+    for (const clave of CARRIL_CONGRESO_LIMITS) process.env[clave] = opts.limit;
+  }
+  const log = setupLogging(
+    tflConfig().logFile.replace("tfl_ingest/scraper.log", "carril_congreso.log")
+  );
+  const resultados = await carrilCongresoRun(log);
   if (resultados.some((r) => !r.ok)) process.exitCode = 1;
 }
 
@@ -860,6 +875,15 @@ program
   .option("--limit <n>", "tope de documentos nuevos por subfuente (pruebas)")
   .option("--solo <lista>", "subfuentes separadas por coma (pruebas)")
   .action(runCarrilGobpe);
+
+program
+  .command("carril-congreso")
+  .description(
+    "adlp y spley, uno tras otro: comparten congreso.gob.pe y su " +
+      "infraestructura es intermitente, así que no deben correr a la vez."
+  )
+  .option("--limit <n>", "tope de documentos nuevos por subfuente (pruebas)")
+  .action(runCarrilCongreso);
 
 program
   .command("essalud")

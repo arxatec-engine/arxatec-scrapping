@@ -37,7 +37,9 @@
     "entidades": "tsx src/cli.ts entidades",
     "all": "tsx src/cli.ts all",
     "status": "tsx src/cli.ts status",
-    "verify": "tsx scripts/verify.ts"
+    "verify": "tsx scripts/verify.ts",
+    "carril-gobpe": "tsx src/cli.ts carril-gobpe",
+    "carril-congreso": "tsx src/cli.ts carril-congreso"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1105.0",
