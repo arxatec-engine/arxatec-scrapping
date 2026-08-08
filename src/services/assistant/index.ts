@@ -9,6 +9,8 @@ import type {
   Metadata,
   Throttle,
 } from "../../types";
+import { ingestLocal } from "../ingest-local";
+import { ingestMode, localIngestConfig } from "../ingest-local/config";
 import { canonicalSource, isKnownSource } from "../sources";
 
 // 400/404/409/422 = error permanente de validación: no reintentar.
@@ -66,6 +68,15 @@ export async function ingestRequest(
   metadata: Metadata,
 ): Promise<IngestResult> {
   const { log } = client;
+
+  // Bifurcación única para TODOS los módulos: con INGEST_MODE=local la ingesta
+  // ocurre en este proceso (Vertex + Qdrant + PostgreSQL + S3) en vez de por
+  // HTTP contra el assistant. Va en el cliente COMPARTIDO y no en la fachada de
+  // cada módulo: así los 21 lo heredan sin tener que acordarse, y el
+  // `IngestResult` es el mismo por las dos ramas.
+  if (ingestMode() === "local") {
+    return ingestLocal(localIngestConfig(log), pdfBytes, filename, metadata);
+  }
   // Regla de fuentes canónicas: jamás persistir una sigla ("TC", "SPIJ"...)
   // aunque venga por env/config. Un valor fuera del catálogo pasa tal cual
   // pero se advierte (no se inventan expansiones).

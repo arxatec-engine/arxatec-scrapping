@@ -8,6 +8,8 @@ import type {
   Metadata,
   Throttle,
 } from "../../types";
+import { ingestLocal } from "../ingest-local";
+import { ingestMode, localIngestConfig } from "../ingest-local/config";
 import { canonicalSource, isKnownSource } from "../sources";
 
 const PERMANENT_STATUSES = new Set([400, 404, 409, 422]);
@@ -62,6 +64,11 @@ export async function ingestRequest(
   filename: string,
   metadata: Metadata
 ): Promise<IngestResult> {
+  // Misma bifurcación que en services/assistant: ver el comentario de allí.
+  if (ingestMode() === "local") {
+    return ingestLocal(localIngestConfig(log), pdfBytes, filename, metadata);
+  }
+
   const url = ingestUrl(cfg);
   // Misma regla de fuentes canónicas que src/services/assistant.
   const source = canonicalSource(metadata.source);

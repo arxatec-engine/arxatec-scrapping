@@ -1,3 +1,4 @@
+import { ingestMode } from "../../../../services/ingest-local/config";
 import { analizarNorma } from "../../../../services/llm";
 import { ocrPdf } from "../../../../services/ocr";
 import {
@@ -27,7 +28,8 @@ import type {
 
 export function prepare(ctx: Ctx): void {
   const { cfg, log } = ctx;
-  if (!cfg.ingestBaseUrl) {
+  // En modo local no hay servidor al que apuntar: la ingesta ocurre aquí.
+  if (ingestMode() !== "local" && !cfg.ingestBaseUrl) {
     throw new Error(
       "Falta INGEST_BASE_URL: define la URL del servidor de ingesta " +
         "(p.ej. export INGEST_BASE_URL=https://api.tu-servidor.com)."
@@ -78,6 +80,11 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
 
     meta = buildMetadata(doc, ctx.issuer, area, cfg, analisis.concepts, analisis.references);
     result = await ingestRequest(ctx, pdfBytes, filename, meta);
+
+    // Con INGEST_MODE=local el OCR ya lo hizo la ingesta (conservando páginas),
+    // así que el rodeo de abajo no llega a dispararse. Se recoge su marca para
+    // no perder el warning auditable del ledger.
+    if (result.data.ocr_used) ocrUsado = true;
 
     // Fallback OCR (riesgo P3 previsto): las RTF viejas son escaneadas y el
     // backend las rechaza con 400 "No extractable text". Se extrae el texto

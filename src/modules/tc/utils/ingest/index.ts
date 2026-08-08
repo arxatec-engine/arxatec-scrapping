@@ -1,3 +1,4 @@
+import { ingestMode } from "../../../../services/ingest-local/config";
 import * as config from "../../config";
 import * as tcApi from "../../services/tc";
 import { ingestRequest } from "../../services/assistant";
@@ -37,7 +38,8 @@ export async function classifyLegalArea(doc: Doc): Promise<DocClasificado> {
 
 export function prepare(ctx: Ctx): void {
   const { cfg, log } = ctx;
-  if (!cfg.ingestBaseUrl) {
+  // En modo local no hay servidor al que apuntar: la ingesta ocurre aquí.
+  if (ingestMode() !== "local" && !cfg.ingestBaseUrl) {
     throw new Error(
       "Falta INGEST_BASE_URL: define la URL del servidor de ingesta " +
         "(p.ej. export INGEST_BASE_URL=https://api.tu-servidor.com)."

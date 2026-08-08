@@ -51,7 +51,18 @@ export async function closeOcr(): Promise<void> {
  * Texto plano de un PDF escaneado, o null si el OCR no produce nada creíble
  * (menos de 200 caracteres). Nunca lanza: el caller decide qué hacer con null.
  */
-export async function ocrPdf(pdfBytes: Uint8Array, log: Logger): Promise<string | null> {
+/**
+ * OCR de un PDF escaneado, **conservando la separación por páginas**.
+ *
+ * Devuelve un texto por página, o `null` si no hay nada aprovechable. Existe
+ * porque la ingesta local trocea por página y necesita los números reales: el
+ * rodeo anterior (OCR → re-render a PDF → reingesta) los perdía, y todos los
+ * chunks de un escaneado acababan marcados como `[PAGE 1]`.
+ */
+export async function ocrPdfPages(
+  pdfBytes: Uint8Array,
+  log: Logger
+): Promise<string[] | null> {
   const dir = mkdtempSync(join(tmpdir(), "arxatec-ocr-"));
   try {
     const pdfPath = join(dir, "doc.pdf");
@@ -66,17 +77,33 @@ export async function ocrPdf(pdfBytes: Uint8Array, log: Logger): Promise<string 
     if (pages.length === 0) return null;
 
     const worker = await getWorker();
-    let out = "";
+    const salida: string[] = [];
     for (const page of pages) {
       const { data } = await worker.recognize(join(dir, page));
-      out += data.text + "\n\n";
+      salida.push(
+        data.text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()
+      );
     }
-    const text = out.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-    return text.length >= 200 ? text : null;
+
+    // El umbral se aplica al documento entero, no por página: un escaneado
+    // legítimo puede tener una portada casi vacía.
+    const total = salida.join("").length;
+    return total >= 200 ? salida : null;
   } catch (e) {
     log.warn("OCR local falló: %s", e instanceof Error ? e.message : e);
     return null;
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+}
+
+/**
+ * OCR de un PDF escaneado, todo el texto junto.
+ *
+ * La usan los módulos para su fallback histórico (OCR → render de un PDF nuevo
+ * → reingesta). La ingesta local usa `ocrPdfPages`, que conserva las páginas.
+ */
+export async function ocrPdf(pdfBytes: Uint8Array, log: Logger): Promise<string | null> {
+  const pages = await ocrPdfPages(pdfBytes, log);
+  return pages === null ? null : pages.join("\n\n");
 }

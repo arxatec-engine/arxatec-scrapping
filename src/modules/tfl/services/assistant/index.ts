@@ -1,19 +1,13 @@
 import * as shared from "../../../../services/assistant";
-import { ingestLocal } from "../../../../services/ingest-local";
-import { ingestMode, localIngestConfig } from "../../../../services/ingest-local/config";
 import { ingestUrl } from "../../config";
 import type { Ctx, IngestResult, Metadata } from "../../types";
 
 /**
- * Fachada de ingesta del módulo. Decide por dónde va el documento:
+ * Fachada del cliente de ingesta compartido: adapta el `Ctx` de TFL al
+ * `IngestClient` genérico, igual que el resto de módulos.
  *
- * - `INGEST_MODE=local`  → el propio scraper escribe en Vertex, Qdrant, PG y S3.
- * - por defecto (remote) → POST multipart al assistant, como siempre.
- *
- * Las dos ramas devuelven el MISMO `IngestResult`, así que el resto del módulo
- * —ledger, fallback de OCR, warnings, `pnpm verify`— funciona igual sin saber
- * cuál se usó. Esa es la propiedad que permite comparar ambas rutas sobre el
- * mismo documento.
+ * La elección entre ingesta local y POST al assistant **no se decide aquí**:
+ * vive en el cliente compartido, para que ningún módulo tenga que replicarla.
  */
 export function ingestRequest(
   ctx: Ctx,
@@ -21,10 +15,6 @@ export function ingestRequest(
   filename: string,
   metadata: Metadata
 ): Promise<IngestResult> {
-  if (ingestMode() === "local") {
-    return ingestLocal(localIngestConfig(ctx.log), pdfBytes, filename, metadata);
-  }
-
   return shared.ingestRequest(
     {
       url: ingestUrl(ctx.cfg),

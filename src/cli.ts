@@ -32,6 +32,14 @@ import { config as osiptelConfig } from "./modules/osiptel/config";
 import { run as osiptelRun } from "./modules/osiptel/run";
 import { config as sunassConfig } from "./modules/sunass/config";
 import { run as sunassRun } from "./modules/sunass/run";
+import {
+  LIMIT_ENVS as CARRIL_GOBPE_LIMITS,
+  run as carrilGobpeRun,
+} from "./modules/carril-gobpe";
+import {
+  LIMIT_ENVS as CARRIL_CONGRESO_LIMITS,
+  run as carrilCongresoRun,
+} from "./modules/carril-congreso";
 import { config as ositranConfig } from "./modules/ositran/config";
 import { run as ositranRun } from "./modules/ositran/run";
 import { config as gobpeConfig } from "./modules/gobpe/config";
@@ -167,6 +175,33 @@ async function runTfl(opts: { limit?: string }): Promise<void> {
     log.error("%s", e instanceof Error ? e.stack ?? e.message : String(e));
     process.exitCode = 1;
   }
+}
+
+async function runCarrilGobpe(opts: {
+  limit?: string;
+  solo?: string;
+}): Promise<void> {
+  // El --limit se propaga a TODAS las subfuentes: cada una lee su propia
+  // variable de entorno, así que se fijan todas de golpe.
+  if (opts.limit) {
+    for (const clave of CARRIL_GOBPE_LIMITS) process.env[clave] = opts.limit;
+  }
+  // El carril escribe su propio log; cada subfuente sigue escribiendo el suyo.
+  const log = setupLogging(tflConfig().logFile.replace("tfl_ingest/scraper.log", "carril_gobpe.log"));
+  const solo = opts.solo?.split(",").map((s) => s.trim()).filter(Boolean);
+  const resultados = await carrilGobpeRun(log, solo);
+  if (resultados.some((r) => !r.ok)) process.exitCode = 1;
+}
+
+async function runCarrilCongreso(opts: { limit?: string }): Promise<void> {
+  if (opts.limit) {
+    for (const clave of CARRIL_CONGRESO_LIMITS) process.env[clave] = opts.limit;
+  }
+  const log = setupLogging(
+    tflConfig().logFile.replace("tfl_ingest/scraper.log", "carril_congreso.log")
+  );
+  const resultados = await carrilCongresoRun(log);
+  if (resultados.some((r) => !r.ok)) process.exitCode = 1;
 }
 
 async function runEssalud(opts: { limit?: string }): Promise<void> {
@@ -829,6 +864,26 @@ program
   )
   .option("--limit <n>", "tope de documentos nuevos (pruebas)")
   .action(runTfl);
+
+program
+  .command("carril-gobpe")
+  .description(
+    "Las 13 subfuentes de gob.pe en UN proceso: un navegador y un ritmo " +
+      "compartidos. Es la forma correcta de correrlas; los comandos sueltos " +
+      "quedan para pruebas."
+  )
+  .option("--limit <n>", "tope de documentos nuevos por subfuente (pruebas)")
+  .option("--solo <lista>", "subfuentes separadas por coma (pruebas)")
+  .action(runCarrilGobpe);
+
+program
+  .command("carril-congreso")
+  .description(
+    "adlp y spley, uno tras otro: comparten congreso.gob.pe y su " +
+      "infraestructura es intermitente, así que no deben correr a la vez."
+  )
+  .option("--limit <n>", "tope de documentos nuevos por subfuente (pruebas)")
+  .action(runCarrilCongreso);
 
 program
   .command("essalud")

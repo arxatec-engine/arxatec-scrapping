@@ -9,6 +9,7 @@ import {
   upsertChunks,
 } from "./qdrant";
 import { buildKey, uploadOriginal } from "./s3";
+import { ocrPdfPages } from "../ocr";
 import { extractPages } from "./text";
 import type { LocalIngestClient, ResolvedMetadata } from "./types";
 import { canonicalSource, isKnownSource } from "../sources";
@@ -99,11 +100,30 @@ export async function ingestLocal(
 
     const documentId = buildDocumentId(country, metadata.source_url);
 
-    const pages = await extractPages(pdfBytes);
+    let pages = await extractPages(pdfBytes);
+    let ocrUsado = false;
+
+    if (pages.length === 0) {
+      // MEJORA sobre la ruta del assistant: en vez de devolver el error y
+      // obligar al módulo al rodeo «OCR → renderizar un PDF nuevo → reingerir»,
+      // se hace el OCR aquí mismo. Se ahorra un render y una segunda pasada
+      // completa, y —lo que más importa— se conservan los números de página
+      // reales, que el rodeo perdía (todo acababa como `[PAGE 1]`).
+      cfg.log.info("Sin texto extraíble: intento OCR local…");
+      const ocr = await ocrPdfPages(pdfBytes, cfg.log);
+
+      if (ocr) {
+        pages = ocr
+          .map((text, i) => ({ page: i + 1, text: text.trim() }))
+          .filter((p) => p.text.length > 0);
+        ocrUsado = pages.length > 0;
+      }
+    }
 
     if (pages.length === 0) {
       // Mismo mensaje que el controller del assistant: los módulos lo detectan
-      // por regex para lanzar el OCR local. Cambiarlo rompe ese fallback.
+      // por regex para lanzar SU fallback de OCR. Cambiarlo lo rompe, y en modo
+      // remoto sigue siendo la única vía.
       return fail("No extractable text in document", true);
     }
 
@@ -155,8 +175,15 @@ export async function ingestLocal(
     // se factura: si el contenido no cambió, no hay nada que volver a pagar.
     // Solo se salta si coinciden el NÚMERO de chunks y TODAS las huellas: una
     // corrida anterior interrumpida a medias no debe darse por buena.
-    const indexed = await existingContentHashes(cfg, country, documentId);
+    //
+    // Se puede desactivar con INGEST_SKIP_UNCHANGED=false: mientras se prueba
+    // que la ingesta embebe de verdad, saltarse el trabajo estorba más de lo
+    // que ahorra. En campaña conviene dejarlo activo.
+    const indexed = cfg.skipUnchanged
+      ? await existingContentHashes(cfg, country, documentId)
+      : new Map<number, string>();
     const unchanged =
+      cfg.skipUnchanged &&
       indexed.size === chunks.length &&
       chunks.every(
         (chunk, index) => indexed.get(index) === chunk.metadata.content_hash
@@ -196,6 +223,8 @@ export async function ingestLocal(
         pages_with_text: pages.length,
         linked_entities: saved.linkedEntities,
         linked_relations: saved.linkedRelations,
+        // El módulo lo usa para dejar el warning auditable en el ledger.
+        ocr_used: ocrUsado,
       },
     };
   } catch (error) {

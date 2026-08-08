@@ -65,6 +65,8 @@ export function localIngestConfig(log: Logger): LocalIngestClient {
         .get(ENV.EMBEDDING_MAX_RETRIES)
         .default("4")
         .asIntPositive(),
+      skipUnchanged:
+        env.get(ENV.INGEST_SKIP_UNCHANGED).default("true").asString() !== "false",
       awsBucket: env.get(ENV.AWS_BUCKET_NAME).default("").asString() || null,
       awsRegion: env.get(ENV.AWS_BUCKET_REGION).default("").asString() || null,
       awsKeyId: env.get(ENV.AWS_KEY_ACCESS).default("").asString() || null,

@@ -1,8 +1,11 @@
 # CLAUDE.md — arxatec-scrapping
 
-Scraper de fuentes legales públicas del Perú. **Un módulo por fuente** en
-`src/modules/` → todos arman el mismo contrato → `POST /legal-documents/ingest`
-del backend `arxatec-lawyer-assistant`. Aquí se **construyen y validan** módulos
+Scraper de fuentes legales públicas del Perú. **33 fuentes cubiertas por 21
+módulos** en `src/modules/` — no es 1:1: `doctrina` sola cosecha 7 repositorios
+universitarios, y el carril de `gob.pe` agrupa 13 subfuentes. Todos arman el
+mismo contrato y, según `INGEST_MODE`, **ingieren ellos mismos** (Vertex +
+Qdrant + PostgreSQL + S3) o hacen `POST /legal-documents/ingest` al backend
+`arxatec-lawyer-assistant`. Aquí se **construyen y validan** módulos
 (smokes de 10–20 docs); las corridas de volumen van en la VM aparte
 ([`docs/campania-vm.md`](docs/campania-vm.md)).
 

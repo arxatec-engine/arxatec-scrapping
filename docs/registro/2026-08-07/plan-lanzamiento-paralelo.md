@@ -150,6 +150,13 @@ Fase B en la mano.
 
 ## 4. Lo que hay que medir (y quién puede)
 
+> ⚠️ **Deuda superada.** Las tablas de deuda de este documento se
+> consolidaron el 2026-08-07 en
+> [`ejecucion-fases-modulos-completos.md` §5](./ejecucion-fases-modulos-completos.md#5-deuda-registro-único),
+> que es el registro único. Lo de aquí se conserva como testigo de lo que
+> se sabía ese momento, no como lista viva.
+
+
 | Id | Dato | Estado |
 | --- | --- | --- |
 | M-1 | Presupuesto de peticiones que tolera `www.gob.pe` | 🔴 nadie lo ha medido (Fase B) |

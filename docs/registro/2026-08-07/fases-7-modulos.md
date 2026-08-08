@@ -211,6 +211,13 @@ reparte entre las 13. **Hoy nadie lo tiene.**
 
 ## 9. Deuda abierta (se rellena al ejecutar)
 
+> ⚠️ **Deuda superada.** Las tablas de deuda de este documento se
+> consolidaron el 2026-08-07 en
+> [`ejecucion-fases-modulos-completos.md` §5](./ejecucion-fases-modulos-completos.md#5-deuda-registro-único),
+> que es el registro único. Lo de aquí se conserva como testigo de lo que
+> se sabía ese momento, no como lista viva.
+
+
 Aquí van las fuentes que queden fuera por caída o antibot, con fecha, para
 reintentarlas al cerrar la ronda.
 
