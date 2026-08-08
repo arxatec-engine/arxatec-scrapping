@@ -166,8 +166,8 @@ en silencio.
 
 | Id | Punto |
 | --- | --- |
-| **T-3** | ¿Se **reingesta el corpus ya cargado** en producción con la clasificación arreglada? En local se rehizo; los documentos anteriores al arreglo tienen el área legal mal |
-| **T-4** | Orden del carril `gob.pe`: hoy va por criterio mixto. ¿Por valor legal o por volumen de documentos? |
+| ~~T-3~~ | ✔ **cerrado por el owner**: se empieza de cero, así que lo que se ingiera desde ahora ya nace bien |
+| ~~T-4~~ | ✔ **decidido y hecho**: por volumen, de mayor a menor. Cifras medidas contra el buscador de gob.pe (§6) |
 
 ### 5.3 Abierto, mejoras medibles (no bloquean)
 
@@ -175,6 +175,7 @@ en silencio.
 | --- | --- | --- |
 | **T-5** | **OCR en el sitio**: hoy se hereda el rodeo «falla → OCR → re-render a PDF → reingesta» | Se ahorra un render y una segunda pasada completa. Afecta sobre todo a `adlp`, `tfiscal`, `oefa` y `sunat` |
 | **T-6** | **Corrida completa del carril** de punta a punta: se cortó a mitad al descubrir el bug del `--limit` | Confirmaría el ahorro de RAM del navegador único con datos |
+| **T-8** | `adlp` dio **timeout** en la prueba del carril del congreso (su HTTPS es intermitente, no está caído). La tanda siguió, como manda la regla | Reintentar; si se repite, subir el timeout o espaciar más los reintentos |
 | **T-7** | `INGEST_SKIP_UNCHANGED=false` está así **para las pruebas** | En campaña conviene `true` o se re-paga cada reingesta |
 
 ### 5.4 Cerrado por comprobación (no hacer nada)
@@ -190,8 +191,49 @@ en silencio.
 
 ---
 
+## 6. Volumen real de las subfuentes de gob.pe
+
+Medido el 2026-08-07 preguntando al propio buscador (`total_count`, una consulta
+por institución). **No son estimaciones**, y son la base del orden del carril:
+
+| Subfuente | Documentos | | Subfuente | Documentos |
+| --- | ---: | --- | --- | ---: |
+| `servir` | 168 546 | | `oefa` | 9 841 |
+| `tce` | 86 049 | | `osiptel` | 8 014 |
+| `sunarp` | 70 578 | | `tfl` | 5 507 |
+| `osinergmin` | 28 864 | | `sunass` | 4 527 |
+| `tfiscal` | 28 792 | | `indecopi` | 3 393 |
+| `ositran` | 10 267 | | `essalud` | 1 251 |
+
+Total del carril: **~426 000 documentos**, sin contar `gobpe` (el resto del
+portal), que va al final por decisión previa del owner.
+
+**Efecto secundario a no olvidar**: el carril es secuencial, así que sin
+`--limit` la primera subfuente (`servir`) lo monopoliza mucho tiempo. La campaña
+debe correr con tope por subfuente y apoyarse en el ledger para reanudar.
+
+---
+
+## 7. Los 8 carriles
+
+El objetivo acordado: **8 consolas, 8 procesos, ningún par pegando al mismo
+host**. Detalle operativo en `docs/runbook-arranque.md` §4b.
+
+| # | Comando | Cubre |
+| --- | --- | --- |
+| 1 | `pnpm carril-gobpe` | 13 subfuentes de `www.gob.pe` |
+| 2 | `pnpm carril-congreso` | `adlp` + `spley` |
+| 3-8 | `pnpm tc` · `sunat` · `elperuano` · `doctrina` · `spij` · `pj` | un host propio cada uno |
+
+Los comandos sueltos de las subfuentes de gob.pe **siguen existiendo solo para
+pruebas**: en campaña van por el carril, que es lo único que garantiza un ritmo
+único contra el portal.
+
+---
+
 ## Registro de cambios
 
 | Fecha | Commit verificado | Qué cambió |
 | --- | --- | --- |
+| 2026-08-07 | `56760ec` (rama `feat/modulos-completos`) | Se consolida la deuda en §5 (estaba repartida en cuatro documentos con IDs que se pisaban). El owner cierra T-3 (se empieza de cero) y decide T-4: orden por volumen. Nacen §6 con los volúmenes medidos y §7 con los 8 carriles, más `pnpm carril-congreso`. |
 | 2026-08-07 | `abcc2fb` (rama `feat/modulos-completos`) · `2d540b0` (assistant) | Nace el registro con la ejecución de las fases. Lo importante no fue el cableado —que salió más barato de lo previsto al centralizarlo en dos clientes— sino descubrir que el clasificador de área legal fallaba en silencio y todo el corpus caía al área por defecto. |
