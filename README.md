@@ -1,24 +1,59 @@
 # arxatec-scrapping
 
-Scrapers de **fuentes legales públicas del Perú** para poblar la base documental
-de Arxatec (objetivo: de ~10k a **+1M de documentos**). Arquitectura: **un módulo
-por fuente** en `src/modules/`, con un subcomando CLI por módulo; todos arman el
-**mismo JSON de contrato** y hacen POST al mismo endpoint de ingesta del backend
-`arxatec-lawyer-assistant` (`POST /legal-documents/ingest`).
+Scrapers de **fuentes legales públicas del Perú** para poblar el corpus de
+Arxatec (objetivo: **+1M de documentos**). **33 fuentes** cubiertas por **21
+módulos de scraping** — un módulo puede cubrir varias fuentes: `doctrina` sola
+cosecha 7 repositorios universitarios.
 
-Módulos: **`spij`** (SPIJ/MINJUS, normativa) y **`pj`** (Poder Judicial,
-jurisprudencia sistematizada). Siguiente fuente prevista: Tribunal Constitucional.
+## Cómo ingiere (dos modos)
 
-> 📚 **Contexto completo en [`docs/README.md`](./docs/README.md)**: estrategia de
-> fuentes, plan del módulo PJ y deuda técnica. Si llegas de cero, empieza ahí.
+Cada módulo scrapea y luego entrega el documento. A dónde lo entrega lo decide
+`INGEST_MODE`:
+
+| Modo | Qué hace | Cuándo |
+| --- | --- | --- |
+| **`local`** | El propio módulo escribe en **Vertex (embeddings) + Qdrant + PostgreSQL + S3** | El modo de la campaña |
+| `remote` | `POST /legal-documents/ingest` al backend `arxatec-lawyer-assistant` | Modo histórico; sigue funcionando |
+
+La decisión vive en **un solo sitio** (los clientes compartidos de
+`src/services/`), no en cada módulo. Los dos modos devuelven el mismo
+`IngestResult`, así que el ledger, el fallback de OCR, los warnings y
+`pnpm verify` funcionan igual por las dos vías.
+
+## Los 8 carriles (así se corre la campaña)
+
+Ocho procesos en paralelo, **uno por host**. La regla: dos procesos nunca deben
+pegar al mismo sitio — el límite lo pone la fuente, no nosotros.
+
+| Consola | Comando | Cubre |
+| --- | --- | --- |
+| 1 | `pnpm carril-gobpe` | **13 subfuentes** de `www.gob.pe`, en un proceso y ordenadas por volumen |
+| 2 | `pnpm carril-congreso` | `adlp` + `spley` (comparten `congreso.gob.pe`) |
+| 3 | `pnpm tc` | Tribunal Constitucional |
+| 4 | `pnpm sunat` | SUNAT |
+| 5 | `pnpm elperuano` | Diario El Peruano |
+| 6 | `pnpm doctrina` | 7 repositorios universitarios |
+| 7 | `pnpm spij` | SPIJ (API, cuenta pública) |
+| 8 | `pnpm pj` | Poder Judicial — **solo desde IP residencial** |
+
+Los comandos sueltos de las subfuentes de gob.pe (`pnpm tfl`, `pnpm indecopi`, …)
+existen **solo para probar** una fuente concreta. En campaña van por el carril,
+que es lo único que garantiza un ritmo único contra el portal.
+
+Detalle operativo en [`docs/runbook-arranque.md`](./docs/runbook-arranque.md) §4b.
+
+> 📚 **Contexto completo en [`docs/README.md`](./docs/README.md)** y el estado
+> real de las fuentes en [`docs/registro-scraping.md`](./docs/registro-scraping.md).
+> La memoria de decisiones está en [`docs/registro/`](./docs/registro/README.md).
 
 ## Instalar y correr
 
 ```bash
-pnpm install                     # deps (Puppeteer baja Chromium la 1ª vez)
-pnpm run ingest                  # corre el módulo SPIJ (= tsx src/cli.ts spij)
-SPIJ_LIMIT=20 pnpm run ingest    # prueba con solo 20 documentos (SPIJ)
-pnpm run cli -- pj --limit 10    # Poder Judicial: jurisprudencia (prueba con 10)
+pnpm install                      # deps (Puppeteer baja Chromium la 1ª vez)
+pnpm entidades                    # SIEMPRE antes de ingerir: siembra el catálogo
+pnpm verify tc 5                  # smoke de una fuente, con veredicto PASS/FAIL
+pnpm carril-gobpe --limit 25      # las 13 subfuentes de gob.pe, con tope
+pnpm status                       # avance por fuente (no toca la red)
 ```
 
 > El package manager del repo es **pnpm** (`pnpm-lock.yaml`). Los scripts `npm run`
@@ -78,24 +113,29 @@ PJ los deriva del árbol (emisor constante, materia del breadcrumb).
 
 | script | qué hace |
 | --- | --- |
-| `npm run ingest` | corre el módulo `spij` |
-| `npm run cli -- <módulo> [flags]` | CLI genérico (hoy solo `spij`) |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run build` | `tsc` |
+| `pnpm <fuente> [--limit n]` | corre un módulo suelto (pruebas) |
+| `pnpm carril-gobpe` / `pnpm carril-congreso` | los dos carriles con varias subfuentes |
+| `pnpm verify <fuente> [n]` | **la señal mecánica**: smoke + veredicto PASS/FAIL |
+| `pnpm entidades [--sync]` | refresca el catálogo de entidades emisoras |
+| `pnpm status` | avance por fuente desde los ledgers |
+| `pnpm typecheck` / `pnpm test` | obligatorios antes de cada commit |
 
 ## Variables de entorno
 
+Plantilla completa y comentada en [`.env.example`](./.env.example). Las que
+importan:
+
 | | |
 | --- | --- |
-| `INGEST_BASE_URL` / `INGEST_PATH` / `INGEST_TOKEN` | endpoint de ingesta del assistant |
-| `INGEST_COUNTRY` / `INGEST_SOURCE` / `INGEST_STATUS` | metadata fija del módulo (defaults SPIJ: `PE` / `SPIJ` / `Vigente`) |
-| `INGEST_TIMEOUT` / `INGEST_MAX_RETRIES` | red de la ingesta |
-| `GROQ_API_KEY` / `LLM_MODEL` | clasificación de `legal_area` con IA |
-| `SPIJ_LIMIT` / `PJ_LIMIT` | tope de documentos por módulo (pruebas; sin él corre todo) |
-| `SPIJ_TIPO` | `NR` (normativa, default) o `JR` |
-| `SPIJ_INGEST_CONCURRENCY` / `SPIJ_INGEST_DELAY` / `SPIJ_PAGE_SIZE` | ritmo SPIJ |
-| `PJ_CONCURRENCY` / `PJ_DELAY` / `PJ_UA` | ritmo y User-Agent del módulo PJ |
-| `SPIJ_USER` / `SPIJ_CLAVE` / `SPIJ_TIPO_ACCESO` / `SPIJ_HISTORICO` / `SPIJ_DISP` / `SPIJ_FECHA_INI` / `SPIJ_FECHA_FIN` / `SPIJ_UA` | acceso y filtros SPIJ |
+| `INGEST_MODE` | `local` (campaña) o `remote` (POST al assistant) |
+| `QDRANT_URL` / `DATABASE_URL` | destino de la ingesta local |
+| `GOOGLE_CLOUD_PROJECT` / `GOOGLE_APPLICATION_CREDENTIALS` | Vertex AI, para los embeddings (`gemini-embedding-001`, 1024 dims). **La ruta debe existir**: un typo no da un error claro, falla documento a documento |
+| `EMBEDDING_MAX_CONCURRENCY` | techo de embeddings en vuelo **por proceso**. Con 8 carriles, el techo efectivo contra Vertex es 8 × este valor |
+| `INGEST_SKIP_UNCHANGED` | `true` en campaña (no re-paga embeddings de lo que no cambió); `false` para comprobar que sí embebe |
+| `AWS_BUCKET_NAME` / `AWS_KEY_ACCESS` / `AWS_KEY_ACCESS_SECRET` | S3. **Ojo**: los nombres no son los estándar del SDK de AWS |
+| `INGEST_BASE_URL` / `INGEST_TOKEN` | solo para `INGEST_MODE=remote` |
+| `GROQ_API_KEY` / `LLM_MODEL` | clasificación del área legal |
+| `<FUENTE>_LIMIT` | tope de documentos por módulo (pruebas). Dos no siguen el patrón: `indecopi` usa `IND_LIMIT` y `tfiscal`, `TF_LIMIT` |
 
 ## Estado / reanudación
 
