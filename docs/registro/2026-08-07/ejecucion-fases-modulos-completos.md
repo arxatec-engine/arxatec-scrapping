@@ -174,7 +174,8 @@ en silencio.
 | Id | Punto | Ganancia |
 | --- | --- | --- |
 | ~~T-5~~ | ✅ **hecho** (§8): OCR dentro de la ingesta, conservando los números de página que el rodeo perdía |
-| **T-6** | **Corrida completa del carril** de punta a punta: se cortó a mitad al descubrir el bug del `--limit` | Confirmaría el ahorro de RAM del navegador único con datos |
+| ~~T-6~~ | ✅ **hecha** (§9): 12/13 en un proceso, con **0,82 GB de pico**. `gobpe` cayó con `fetch failed` → queda como T-9 |
+| **T-9** | `gobpe` falló con `fetch failed` en la corrida completa del carril. Es la subfuente más pesada (el portal entero) y va la última; el carril siguió y terminó bien | Reintentar suelta y ver si es intermitencia del portal |
 | **T-8** | `adlp` dio **timeout** en la prueba del carril del congreso (su HTTPS es intermitente, no está caído). La tanda siguió, como manda la regla | Reintentar; si se repite, subir el timeout o espaciar más los reintentos |
 | **T-7** | `INGEST_SKIP_UNCHANGED=false` está así **para las pruebas** | En campaña conviene `true` o se re-paga cada reingesta |
 
@@ -254,10 +255,37 @@ Verificado con `adlp`, la fuente con más escaneados: 4/4 por la ruta nueva, con
 
 ---
 
+## 9. T-6 hecho: el carril completo, de punta a punta
+
+`pnpm carril-gobpe --limit 25`, las 13 subfuentes en un proceso:
+
+```
+RESUMEN DEL CARRIL gob.pe: 12/13 subfuentes OK
+  ✓ servir 72s · tce 162s · sunarp 61s · osinergmin 47s · tfiscal 579s
+  ✓ ositran 40s · oefa 1460s · osiptel 74s · tfl 28s · sunass 50s
+  ✓ indecopi 126s · essalud 43s
+  ✗ gobpe 153s — fetch failed
+```
+
+**El dato que se buscaba: RAM máxima 0,82 GB** (Chrome + Node del proceso),
+frente a los ~10,4 GB que serían trece navegadores. La fusión se paga sola.
+
+Dos cosas que confirma la corrida:
+
+- **La regla de fallo funciona en producción**: `gobpe` cayó y el carril **no se
+  detuvo** — terminó las doce anteriores y reportó la fallida (T-9).
+- **`oefa` tardó 1 460 s** (24 min) frente a los 211 s de la primera pasada. No
+  es una regresión: con el ledger ya lleno hay que paginar más hondo para
+  encontrar documentos nuevos. Es el coste normal de una fuente que se va
+  agotando, y conviene tenerlo presente al planificar la campaña.
+
+---
+
 ## Registro de cambios
 
 | Fecha | Commit verificado | Qué cambió |
 | --- | --- | --- |
+| 2026-08-07 | `dad3d1c` (rama `feat/modulos-completos`) | T-6 hecho (§9): carril completo, 12/13 y **0,82 GB de pico** contra los ~10,4 GB de trece navegadores. Nace T-9 (`gobpe` con `fetch failed`). |
 | 2026-08-07 | `87f8cb8` (rama `feat/modulos-completos`) | T-5 hecho (§8): el OCR entra en la ingesta y conserva las páginas. Se pone al día el README —seguía diciendo que había dos módulos— y se corrige la frase «un módulo por fuente» de `CLAUDE.md`, que causó una confusión real: son 33 fuentes en 21 módulos, porque `doctrina` sola cosecha 7 repositorios y el carril de gob.pe agrupa 13. |
 | 2026-08-07 | `56760ec` (rama `feat/modulos-completos`) | Se consolida la deuda en §5 (estaba repartida en cuatro documentos con IDs que se pisaban). El owner cierra T-3 (se empieza de cero) y decide T-4: orden por volumen. Nacen §6 con los volúmenes medidos y §7 con los 8 carriles, más `pnpm carril-congreso`. |
 | 2026-08-07 | `abcc2fb` (rama `feat/modulos-completos`) · `2d540b0` (assistant) | Nace el registro con la ejecución de las fases. Lo importante no fue el cableado —que salió más barato de lo previsto al centralizarlo en dos clientes— sino descubrir que el clasificador de área legal fallaba en silencio y todo el corpus caía al área por defecto. |
