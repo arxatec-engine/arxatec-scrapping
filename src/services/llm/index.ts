@@ -76,9 +76,11 @@ export async function analizarNorma(
   if (!key || !texto) {
     return EMPTY;
   }
-  // Default estable: llama-3.1-8b-instant se apaga el 2026-08-16, y los modelos
-  // de razonamiento (gpt-oss) fallan a menudo con response_format json_object.
-  const model = process.env.LLM_MODEL || "llama-3.3-70b-versatile";
+  // `reasoning_effort: "low"` no es opcional aquí: sin él, el razonamiento se
+  // come el presupuesto de `max_tokens` y Groq responde 400 "Failed to validate
+  // JSON" (medido el 2026-08-13: 3/3 con 500 tokens y sin effort, 6/6 correctas
+  // con low). Ver docs/registro/2026-08-13/cambio-modelos-groq.md.
+  const model = process.env.LLM_MODEL || "openai/gpt-oss-20b";
   const prompt =
     "Eres un analista de normas legales peruanas. A partir del TEXTO de la " +
     "norma haz tres cosas:\n" +
@@ -97,7 +99,8 @@ export async function analizarNorma(
     model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0,
-    max_tokens: 500,
+    max_tokens: 1200,
+    reasoning_effort: "low",
     response_format: { type: "json_object" },
   };
 
