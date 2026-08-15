@@ -76,7 +76,7 @@ export async function analizarNorma(
   if (!key || !texto) {
     return EMPTY;
   }
-  const model = process.env.LLM_MODEL || "llama-3.1-8b-instant";
+  const model = process.env.LLM_MODEL || "openai/gpt-oss-20b";
   const prompt =
     "Eres un analista de normas legales peruanas. A partir del TEXTO de la " +
     "norma haz tres cosas:\n" +
@@ -95,7 +95,8 @@ export async function analizarNorma(
     model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0,
-    max_tokens: 500,
+    max_tokens: 1200,
+    reasoning_effort: "low",
     response_format: { type: "json_object" },
   };
 
@@ -134,7 +135,7 @@ export async function elegirEntidad(
   if (!key || !sector.trim() || candidatos.length === 0) {
     return null;
   }
-  const model = process.env.LLM_MODEL || "llama-3.1-8b-instant";
+  const model = process.env.LLM_MODEL || "openai/gpt-oss-20b";
   const lista = candidatos.map((c) => `${c.id}\t${c.name}`).join("\n");
   const prompt =
     "El SECTOR es el texto libre con que el SPIJ identifica al emisor de una " +
@@ -149,7 +150,8 @@ export async function elegirEntidad(
     model,
     messages: [{ role: "user", content: prompt }],
     temperature: 0,
-    max_tokens: 100,
+    max_tokens: 600,
+    reasoning_effort: "low",
     response_format: { type: "json_object" },
   };
 
