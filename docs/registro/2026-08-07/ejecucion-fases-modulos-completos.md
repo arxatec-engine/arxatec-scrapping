@@ -38,12 +38,12 @@ administrativo». Los 25. Y los del Tribunal Constitucional, también.
    `response_format: json_object`, Groq devuelve **HTTP 400 «Failed to generate
    JSON»** en ráfaga. Comprobado: 8 llamadas seguidas, 8 fallos.
 
-   > **Corregido el 2026-08-13**: el 400 es real y se reprodujo (3 de 3), pero la
+   > **Corregido el 2026-08-15**: el 400 es real y se reprodujo (3 de 3), pero la
    > causa **no es el modelo**. Los tokens de razonamiento salen del mismo
    > `max_tokens` que la respuesta; con 500 y sin `reasoning_effort`, la
    > generación restringida a JSON no llega a cerrar el objeto. Con
    > `reasoning_effort: "low"` el mismo modelo acierta 6 de 6. Ver
-   > [`../2026-08-13/cambio-modelos-groq.md`](../2026-08-13/cambio-modelos-groq.md).
+   > [`../2026-08-15/cambio-modelos-groq.md`](../2026-08-15/cambio-modelos-groq.md).
 3. `analizarNorma` tenía un **`catch` vacío**: el 400 se convertía en análisis
    vacío.
 4. Sin subárea, el módulo cae al área por defecto y escribe en el ledger «la IA
@@ -65,7 +65,7 @@ Venía de antes y afectaba también a la ruta del assistant.
 - Modelo por defecto a `llama-3.3-70b-versatile` (el default anterior del
   código, `llama-3.1-8b-instant`, se apaga el **2026-08-16**).
 
-  > **Revertido el 2026-08-13**: `llama-3.3-70b-versatile` se apaga **el mismo
+  > **Revertido el 2026-08-15**: `llama-3.3-70b-versatile` se apaga **el mismo
   > día** que el anterior, así que este arreglo caducaba en nueve días. El
   > default vuelve a `openai/gpt-oss-20b`, ahora con `reasoning_effort: "low"`,
   > que es lo que faltaba.
@@ -334,7 +334,7 @@ Los requests, en cambio, ni se rozan: 854/min contra 100 000 es **0,9 %**.
 
 | Fecha | Commit verificado | Qué cambió |
 | --- | --- | --- |
-| 2026-08-13 | `ddf1d5d` (rama `fix/modelos-groq-apagado`) | **Corregida la causa del 400 de §2.1 y revertido el default de §2.3.** El 400 se reprodujo (3/3), pero no lo causa el modelo de razonamiento sino el `max_tokens` que comparte con la respuesta: con `reasoning_effort: "low"`, 6/6 correctas. `llama-3.3-70b-versatile` se apagaba el mismo día que el modelo al que sustituyó. Detalle en [`../2026-08-13/cambio-modelos-groq.md`](../2026-08-13/cambio-modelos-groq.md). |
+| 2026-08-15 | `ddf1d5d` (rama `fix/modelos-groq-apagado`) | **Corregida la causa del 400 de §2.1 y revertido el default de §2.3.** El 400 se reprodujo (3/3), pero no lo causa el modelo de razonamiento sino el `max_tokens` que comparte con la respuesta: con `reasoning_effort: "low"`, 6/6 correctas. `llama-3.3-70b-versatile` se apagaba el mismo día que el modelo al que sustituyó. Detalle en [`../2026-08-15/cambio-modelos-groq.md`](../2026-08-15/cambio-modelos-groq.md). |
 | 2026-08-08 | `e859a10` (rama `feat/modulos-completos`) | **T-1 cerrada** (§10) con la cuota que trajo el owner: manda la de tokens (1 M/min), y `EMBEDDING_MAX_CONCURRENCY` baja de 8 a 2 — con los ocho carriles, el 8 iba al 342 % de la cuota. T-8 y T-9 reintentados: los dos en PASS, eran intermitencia de sus portales. |
 | 2026-08-07 | `dad3d1c` (rama `feat/modulos-completos`) | T-6 hecho (§9): carril completo, 12/13 y **0,82 GB de pico** contra los ~10,4 GB de trece navegadores. Nace T-9 (`gobpe` con `fetch failed`). |
 | 2026-08-07 | `87f8cb8` (rama `feat/modulos-completos`) | T-5 hecho (§8): el OCR entra en la ingesta y conserva las páginas. Se pone al día el README —seguía diciendo que había dos módulos— y se corrige la frase «un módulo por fuente» de `CLAUDE.md`, que causó una confusión real: son 33 fuentes en 21 módulos, porque `doctrina` sola cosecha 7 repositorios y el carril de gob.pe agrupa 13. |

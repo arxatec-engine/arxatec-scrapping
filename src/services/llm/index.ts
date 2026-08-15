@@ -78,8 +78,8 @@ export async function analizarNorma(
   }
   // `reasoning_effort: "low"` no es opcional aquí: sin él, el razonamiento se
   // come el presupuesto de `max_tokens` y Groq responde 400 "Failed to validate
-  // JSON" (medido el 2026-08-13: 3/3 con 500 tokens y sin effort, 6/6 correctas
-  // con low). Ver docs/registro/2026-08-13/cambio-modelos-groq.md.
+  // JSON" (medido el 2026-08-15: 3/3 con 500 tokens y sin effort, 6/6 correctas
+  // con low). Ver docs/registro/2026-08-15/cambio-modelos-groq.md.
   const model = process.env.LLM_MODEL || "openai/gpt-oss-20b";
   const prompt =
     "Eres un analista de normas legales peruanas. A partir del TEXTO de la " +

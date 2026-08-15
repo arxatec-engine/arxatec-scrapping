@@ -1,6 +1,6 @@
 # El apagado de Groq del 16/08, y por qué el 400 del clasificador no era del modelo
 
-> Escrito 2026-08-13 · verificado contra `ddf1d5d` (rama `fix/modelos-groq-apagado`).
+> Escrito 2026-08-15 · verificado contra `ddf1d5d` (rama `fix/modelos-groq-apagado`).
 > Método: **12 llamadas reales a la API de Groq** replicando el payload exacto de
 > `analizarNorma` (mismo prompt, mismo `max_tokens`, mismo `response_format`),
 > más el rastreo de los tres defaults de modelo del repo.
@@ -38,7 +38,7 @@ La conclusión que quedó escrita en el código fue *«los modelos de razonamien
 era cierta; la causa, no.** Y llevaba a pinchar como «estable» un modelo que se
 apaga nueve días después.
 
-### Lo que dicen las 12 llamadas (2026-08-13)
+### Lo que dicen las 12 llamadas (2026-08-15)
 
 Mismo prompt de `analizarNorma`, mismo catálogo de 60 subáreas, misma norma:
 
@@ -101,4 +101,4 @@ Regla práctica para este repo: **todo `response_format: json_object` contra un
 
 | Fecha | Cambio |
 | --- | --- |
-| 2026-08-13 | Nace. M-3 aplicado: los tres defaults pasan a `gpt-oss-20b` con `reasoning_effort: low`. Corrige la causa que el registro del 2026-08-07 dejó escrita: el 400 no era del modelo, era el presupuesto compartido con el razonamiento (medido, 3/3 fallos sin effort y 6/6 correctas con él). |
+| 2026-08-15 | Nace. M-3 aplicado: los tres defaults pasan a `gpt-oss-20b` con `reasoning_effort: low`. Corrige la causa que el registro del 2026-08-07 dejó escrita: el 400 no era del modelo, era el presupuesto compartido con el razonamiento (medido, 3/3 fallos sin effort y 6/6 correctas con él). |
