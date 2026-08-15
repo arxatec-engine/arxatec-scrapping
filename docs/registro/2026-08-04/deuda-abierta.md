@@ -18,13 +18,13 @@ desde julio.
 
 | # | Deuda | Estado | Dónde |
 | --- | --- | --- | --- |
-| **D-1** | El default de LLM se apaga | 🔴 **2026-08-16** | `src/services/llm/index.ts:79` y `src/modules/spij/services/llm/index.ts:79,137` |
+| **D-1** | El default de LLM se apaga | ✅ **resuelto 2026-08-15** | `src/services/llm/index.ts:79` y `src/modules/spij/services/llm/index.ts:79,137` |
 | **D-2** | 11 de 44 fuentes sin módulo | 🟡 abierto | `docs/registro-scraping.md` (tablero) |
 | **D-3** | `INGEST_SOURCE`/`INGEST_STATUS` con default de SPIJ | ⏸ diferido | `src/modules/spij/config/index.ts:71-72` |
 
 ---
 
-## D-1 🔴 · El modelo por defecto se apaga el 2026-08-16
+## D-1 ✅ · El modelo por defecto se apagaba el 2026-08-16
 
 Tres sitios, el mismo patrón:
 
@@ -55,6 +55,19 @@ El análisis completo del catálogo está en
 `arxatec-lawyer-service/docs/registro/2026-08-04/MODELOS_GROQ.md` (medida
 **M-3**), que propone `openai/gpt-oss-20b` como reemplazo.
 **Aquí no se ha cambiado nada: es decisión del owner.**
+
+### Resuelto el 2026-08-15
+
+Los tres defaults pasan a `openai/gpt-oss-20b` con `reasoning_effort: "low"`, un
+día antes del apagado. El detalle —y el hallazgo que lo acompaña: el 400 «Failed
+to generate JSON» que este repo achacaba a los `gpt-oss` no lo causaba el modelo,
+sino que su razonamiento sale del mismo `max_tokens` que la respuesta— está en
+[`../2026-08-15/cambio-modelos-groq.md`](../2026-08-15/cambio-modelos-groq.md).
+
+Ese matiz importa para este apartado: el arreglo del 2026-08-07 había fijado
+`llama-3.3-70b-versatile` como default «estable», y ese modelo se apagaba **el
+mismo día** que el que sustituía. Es decir, D-1 estaba peor de lo que este
+documento decía: no era un default roto, eran dos.
 
 ## D-2 🟡 · Las fuentes que faltan
 
@@ -97,4 +110,5 @@ plataforma.
 
 | Fecha | Cambio |
 | --- | --- |
+| 2026-08-15 | **D-1 cerrado**: los tres defaults pasan a `gpt-oss-20b` con `reasoning_effort: "low"`, un día antes del apagado. Se anota además que el arreglo del 2026-08-07 había dejado como default otro modelo que moría la misma fecha. D-2 y D-3 siguen igual. |
 | 2026-08-04 | Nace. Inventario tras `pnpm typecheck` (limpio) y `pnpm test` (22/22) sobre `e6a0eef`. D-1 es lo único con fecha (2026-08-16) y es mitigable en caliente con `LLM_MODEL`. Nada se ha arreglado en esta sesión: es un registro de medición. |
