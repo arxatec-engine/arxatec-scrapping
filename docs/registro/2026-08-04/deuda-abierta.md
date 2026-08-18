@@ -16,14 +16,14 @@ el 15/08**). La deuda de este repo no está en el código que compila, sino en t
 sitios: un modelo de Groq con fecha de apagado, unas fuentes que faltan por
 cosechar y una decisión aparcada desde julio.
 
-**Al 2026-08-15 solo quedan dos**, y ninguno tiene fecha: D-1 se cerró un día
-antes del apagado. Los tres puntos se reverificaron contra el código ese día, no
-solo el que se arregló.
+**Al 2026-08-15 solo queda D-3**, diferido a propósito: D-1 se cerró un día
+antes del apagado y D-2 resultó no ser un hueco de cobertura legal. Los tres se
+reverificaron contra el código ese día, no solo el que se arregló.
 
 | # | Deuda | Estado | Dónde |
 | --- | --- | --- | --- |
 | **D-1** | El default de LLM se apaga | ✅ **resuelto 2026-08-15** | `src/services/llm/index.ts:83` y `src/modules/spij/services/llm/index.ts:79,138` |
-| **D-2** | 11 de 44 fuentes sin módulo | 🟡 abierto — recontado el 15/08 | `docs/registro-scraping.md` (tablero) |
+| **D-2** | 11 de 44 fuentes sin módulo | 🟢 **no es un hueco de cobertura legal** — ver abajo | `docs/registro-scraping.md` (tablero) |
 | **D-3** | `INGEST_SOURCE`/`INGEST_STATUS` con default de SPIJ | ⏸ diferido | `src/modules/spij/config/index.ts:72,76` |
 
 ---
@@ -74,7 +74,7 @@ Ese matiz importa para este apartado: el arreglo del 2026-08-07 había fijado
 mismo día** que el que sustituía. Es decir, D-1 estaba peor de lo que este
 documento decía: no era un default roto, eran dos.
 
-## D-2 🟡 · Las fuentes que faltan
+## D-2 🟢 · Las fuentes que faltan (y por qué no son un hueco)
 
 El tablero (`docs/registro-scraping.md`, actualizado el 2026-08-03) cuenta
 **33 de 44 fuentes scrapeables listas**, con 1 excluida por decisión (CEJ).
@@ -89,6 +89,28 @@ actualízalo ahí.
 después, aunque `src/modules/` tenga hoy 24 carpetas: no es 1:1 —`doctrina` sola
 cosecha 7 repositorios y el carril de `gob.pe` agrupa 13 subfuentes—, así que
 contar carpetas para deducir el avance da un número equivocado.
+
+### «11 sin módulo» asusta más de lo que debe
+
+La cifra es correcta pero **engaña sobre lo que significa**, y conviene dejarlo
+escrito porque cualquiera que lea «11 de 44» va a pensar que falta un cuarto del
+corpus legal. No es así. Revisadas las once filas una por una el 2026-08-15:
+
+| Situación | Nº | Cuáles |
+| --- | --- | --- |
+| **Descartadas con veredicto escrito** | 6 | OEFA API y PRONABEC (datos tabulares, no documentos legales) · Portal de Transparencia (gestión institucional) · Andina (su sección de normas ya no existe) · Dialnet/Redalyc/REDIB (índice sin texto completo) · Datos Abiertos API (el CSV ya basta) |
+| **Ya cubierta por otra vía** | 1 | SUNAT legislación → son **las mismas normas** que ya entran por SPIJ y El Peruano |
+| **Parcialmente hecha** | 1 | Congreso/TC/AMAG → **AMAG ya cosecha** (smoke 5/5); faltan Congreso (timeout) y TC (sin OAI conocido) |
+| **Trabajo real pendiente** | 3 | ALICIA, CONCYTEC OAI y UNMSM Cybertesis — repositorios **académicos** (P5) |
+
+**Por qué hay fuentes no jurídicas en el tablero**: las pidió **Rafael**, el
+abogado con el que se trabajó el alcance. No son un descuido del inventario ni
+deuda técnica: entraron como petición suya y varias acabaron con veredicto de
+descarte precisamente al evaluarlas.
+
+Conclusión práctica: **la cobertura de fuentes del derecho está completa a
+efectos de producto**. Lo que queda son tres repositorios académicos, y su
+prioridad la decide Rafael, no este registro.
 
 ## D-3 ⏸ · Los defaults de ingesta
 
@@ -127,6 +149,7 @@ plataforma.
 
 | Fecha | Cambio |
 | --- | --- |
+| 2026-08-15 | **D-2 recontextualizado** (no reabierto): la cifra «11 de 44» es exacta pero engaña. De las once, **6 están descartadas con veredicto**, 1 ya entra por otra vía (SUNAT = SPIJ + El Peruano), 1 está a medias (AMAG ya cosecha) y **solo 3 son trabajo real**, los tres repositorios académicos. Se anota además de dónde salen las fuentes no jurídicas del tablero: las pidió **Rafael**, el abogado con el que se definió el alcance. La cobertura del derecho está completa a efectos de producto. |
 | 2026-08-15 | **Reverificado punto por punto contra `fbf4aa0`**, no solo D-1. D-2 sigue exacto (33 ✅ + 11 ⬜ + 1 ❌ en el tablero). D-3 sigue abierto, con la mejora de que el default ya sale del catálogo (`sourceByKey`) y no de un literal. Se corrigen las líneas citadas, que se habían movido al aplicar el arreglo de D-1: `services/llm/index.ts` :79→:83 y `spij/services/llm/index.ts` :137→:138; la config de SPIJ, :71-72→:72,76. Gates: `typecheck` limpio, 32/32 tests. |
 | 2026-08-15 | **D-1 cerrado**: los tres defaults pasan a `gpt-oss-20b` con `reasoning_effort: "low"`, un día antes del apagado. Se anota además que el arreglo del 2026-08-07 había dejado como default otro modelo que moría la misma fecha. D-2 y D-3 siguen igual. |
 | 2026-08-04 | Nace. Inventario tras `pnpm typecheck` (limpio) y `pnpm test` (22/22) sobre `e6a0eef`. D-1 es lo único con fecha (2026-08-16) y es mitigable en caliente con `LLM_MODEL`. Nada se ha arreglado en esta sesión: es un registro de medición. |
