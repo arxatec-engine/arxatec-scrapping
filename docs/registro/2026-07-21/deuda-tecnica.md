@@ -457,9 +457,36 @@ conservando PJ/SPIJ.
 
 ---
 
+## Reverificación del 2026-08-22
+
+> Barrido de la deuda antigua del workspace, contra el código de `main` de hoy.
+> Método: `grep` con `archivo:línea` y ejecución de `pnpm typecheck && pnpm test`.
+> Es la **primera** reverificación real desde que este documento nació: la
+> mudanza del 2026-08-04 movió la ruta, no comprobó nada.
+
+| id | Estado el 2026-07-21 | Estado verificado el 2026-08-22 |
+| --- | --- | --- |
+| A1 · el backend no detecta duplicados | ⏸ futuro, media-baja; el ledger es el mecanismo oficial | 🟠 **abierto, y ya ocurrió**. `DUPLICADO_POR_URL.md` (2026-08-20) es este punto materializado: gob.pe publicó `005-2023-SUNAFIL-TFL` bajo dos URL y entró dos veces. El ledger no lo cubre porque la identidad es `source_url`, exactamente el hueco que A1 predijo |
+| A2 · `status` con dos vocabularios | ✔ decidido: provisional todo `"Vigente"` | 🟠 abierto, pero **ya no es «todo»**: `ingestStatus` sigue con default `"Vigente"` en los diez módulos (`modules/*/config/index.ts`), y **ADLP deriva Vigente/Derogado de la propia fuente** (`modules/adlp/services/adlp/index.ts:185-186`). El provisional tiene su primera excepción real |
+| A3 / A4 · tipo y fuente sin validar, emisor no enlazado | 🟡 mitigadas | ✅ el catálogo de fuentes canónicas cerró esto: huella SHA-256 compartida con assistant y platform |
+| B1 · README raíz desactualizado | ✅ corregido | ✅ sigue corregido |
+| B2 · falta parser HTML | ✅ hecho (cheerio) | ✅ hecho · y su **cola cerrada hoy**: había dos lockfiles y `package-lock.json` (20/07) se ha borrado; manda `pnpm-lock.yaml` |
+| B3 · `INGEST_SOURCE`/`INGEST_STATUS` con default de SPIJ | ⏸ diferido al módulo PJ | ✅ **cerrado**. Cada módulo tiene su config con sus defaults, y PJ va más allá de lo previsto: no fija `"PJ"` a mano sino `sourceByKey("pj").canonicalName`, porque el filtro de la plataforma hace match exacto |
+| B4 · `any` sueltos | ✅ corregido, `grep` en cero | ⚠️ **había regresado**: seis. Dos en `services/llm/index.ts` —el mismo fichero que B4 cita— reintroducidos por `abcc2fb`, y cuatro en `modules/tc`, que nació después. **Corregidos hoy**, `grep` vuelve a cero |
+
+Lo que deja abierto este barrido:
+
+- **A1 necesita decisión**, y ya no es hipotética: hay un duplicado real en el
+  corpus. Las opciones están en `../2026-08-20/DUPLICADO_POR_URL.md`.
+- **A2 sigue siendo el «problema tocho»** del 21/07. ADLP demuestra que se puede
+  derivar de la fuente cuando la fuente lo publica; el resto no lo publica.
+- **B4 volvió a romperse en tres semanas.** Un `grep` en cero no es un gate: si
+  importa, tiene que correr en CI, no en la memoria de quien pase.
+
 ## Registro de cambios
 
 | Fecha | Cambio |
 | --- | --- |
 | 2026-07-21 | Nace: auditoría del código real de scrapping + assistant, con `archivo:línea`. Segunda y tercera pasada el mismo día (arreglos aplicados + las 4 decisiones de Harry por Slack). |
 | 2026-08-04 | Mudanza a `docs/registro/2026-07-21/` al estrenar la carpeta de registro, y rutas relativas de los documentos hermanos corregidas. Solo cambia la ruta; el contenido no se tocó ni se reverificó. Estado según `arxatec-lawyer-service/docs/registro/2026-08-04/MAPA_DEUDA.md`: A1–A4 mayormente cerradas, B3 (`INGEST_SOURCE`/`INGEST_STATUS`) sigue ⏸ diferido. |
+| 2026-08-22 | **Primera reverificación real** (ver la sección de arriba). B3 cerrado, la cola de B2 cerrada (fuera `package-lock.json`), B4 había regresado a seis `any` y se corrigió. A1 sigue abierta y ya tiene un caso real en el corpus; A2 abierta con su primera excepción (ADLP). |

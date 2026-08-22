@@ -4,6 +4,17 @@ import { toIsoDate } from "../../../../utils/time";
 import { PAGE_SIZE } from "../../constants";
 import type { Api, Config, Doc, Logger, Page, RawResult } from "../../types";
 
+type CronologicoResponse = {
+  total?: unknown;
+  total_agregados?: unknown;
+  pagination?: { num_pages?: unknown };
+  data?: RawResult[];
+};
+
+function asCronologico(raw: unknown): CronologicoResponse {
+  return raw && typeof raw === "object" ? (raw as CronologicoResponse) : {};
+}
+
 export function newApi(cfg: Config, log: Logger): Api {
   return { cfg, log, throttle: newThrottle(cfg.minDelay) };
 }
@@ -23,7 +34,7 @@ export async function buscarMes(
   page: number
 ): Promise<Page> {
   const cfg = api.cfg;
-  const data: any = await request({
+  const raw = await request({
     method: "GET",
     url: cronologicoUrl(cfg, month, page),
     throttle: api.throttle,
@@ -35,16 +46,17 @@ export async function buscarMes(
     headers: cfg.headers,
     expect: "json",
   });
-  const total = parseInt(String(data?.total ?? "0"), 10) || 0;
-  const numPages = Number(data?.pagination?.num_pages ?? 0) || 0;
-  const docs: RawResult[] = data?.data || [];
+  const data = asCronologico(raw);
+  const total = parseInt(String(data.total ?? "0"), 10) || 0;
+  const numPages = Number(data.pagination?.num_pages ?? 0) || 0;
+  const docs: RawResult[] = data.data ?? [];
   return { docs, total, numPages };
 }
 
 /** total_agregados = tamaño del corpus completo (todas las fechas). */
 export async function totalCorpus(api: Api): Promise<number> {
   const cfg = api.cfg;
-  const data: any = await request({
+  const raw = await request({
     method: "GET",
     url: cfg.urlCronologico,
     throttle: api.throttle,
@@ -56,7 +68,8 @@ export async function totalCorpus(api: Api): Promise<number> {
     headers: cfg.headers,
     expect: "json",
   });
-  return Number(data?.total_agregados ?? 0) || 0;
+
+  return Number(asCronologico(raw).total_agregados ?? 0) || 0;
 }
 
 export async function descargarPdf(api: Api, url: string): Promise<Uint8Array> {
