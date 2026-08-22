@@ -14,6 +14,10 @@ export interface NormaAnalisis {
 
 const EMPTY: NormaAnalisis = { subId: null, concepts: [], references: [] };
 
+type GroqChatResponse = {
+  choices?: { message?: { content?: unknown } }[];
+};
+
 function cleanList(value: unknown, max: number): string[] {
   if (!Array.isArray(value)) {
     return [];
@@ -114,18 +118,25 @@ export async function analizarNorma(
       },
       timeout: 30_000,
     });
-    const data: any = r.data;
-    const content = String(data.choices[0].message.content ?? "");
-    return parseAnalisis(content);
-  } catch (e: any) {
+    const data = r.data as GroqChatResponse;
+    const content = data.choices?.[0]?.message?.content;
+    if (content == null) {
+      throw new Error("respuesta sin choices[0].message.content");
+    }
+    return parseAnalisis(String(content));
+  } catch (e: unknown) {
     // Este catch estaba vacío, y eso escondía un fallo caro: el 2026-08-07 se
     // descubrió que Groq devolvía 400 "Failed to generate JSON" en ráfaga con
     // un modelo de razonamiento, así que TODOS los documentos se ingerían con
     // el área legal por defecto. En el ledger solo se veía "la IA no clasificó
     // la subárea", que suena a duda del modelo y no a una API rechazando.
-    const status = e?.response?.status;
+    const axiosError = axios.isAxiosError(e) ? e : null;
+    const status = axiosError?.response?.status;
+    const apiMessage = (
+      axiosError?.response?.data as { error?: { message?: unknown } } | undefined
+    )?.error?.message;
     const detalle = String(
-      e?.response?.data?.error?.message ?? e?.message ?? e
+      apiMessage ?? (e instanceof Error ? e.message : e)
     ).slice(0, 160);
     console.warn(
       `[llm] clasificación fallida (${status ?? "sin status"}): ${detalle}`

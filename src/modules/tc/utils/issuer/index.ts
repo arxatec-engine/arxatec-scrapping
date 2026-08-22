@@ -23,13 +23,15 @@ export function resolveIssuer(name: string): string | null {
   const raw = JSON.parse(
     readFileSync(join(DATA_DIR, "entity.json"), "utf-8")
   ) as unknown;
-  const list: any[] = Array.isArray(raw)
+  const list: unknown[] = Array.isArray(raw)
     ? raw
-    : (raw as { data?: any[] })?.data ?? [];
+    : (raw as { data?: unknown[] })?.data ?? [];
   const target = normalize(name);
-  for (const e of list) {
-    if (normalize(e?.name) === target) {
-      return e?.id != null ? String(e.id) : null;
+  for (const item of list) {
+    if (!item || typeof item !== "object") continue;
+    const entity = item as { name?: unknown; id?: unknown };
+    if (normalize(typeof entity.name === "string" ? entity.name : null) === target) {
+      return entity.id != null ? String(entity.id) : null;
     }
   }
   return null;
