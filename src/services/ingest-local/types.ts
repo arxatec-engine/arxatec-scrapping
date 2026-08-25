@@ -8,6 +8,12 @@ import type { Logger, Metadata } from "../../types";
 export interface LocalIngestClient {
   /** Qdrant */
   qdrantUrl: string;
+  /**
+   * Credencial del Qdrant. Vacía = no se manda (instancias sin auth).
+   * En producción el corpus legal SÍ la pide: sin ella, la ingesta escribe
+   * contra un servidor que la rechaza y falla entera.
+   */
+  qdrantApiKey: string;
   /** PostgreSQL (misma cadena que usa el assistant) */
   databaseUrl: string;
   /** Vertex AI */

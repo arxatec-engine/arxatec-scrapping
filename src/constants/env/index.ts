@@ -164,6 +164,7 @@ export const INGEST_STATUS = "INGEST_STATUS";
 // siendo `remote`, así que ningún módulo cambia de comportamiento sin pedirlo.
 export const INGEST_MODE = "INGEST_MODE";
 export const QDRANT_URL = "QDRANT_URL";
+export const QDRANT_API_KEY = "QDRANT_API_KEY";
 export const DATABASE_URL = "DATABASE_URL";
 export const GOOGLE_CLOUD_PROJECT = "GOOGLE_CLOUD_PROJECT";
 export const GOOGLE_CLOUD_LOCATION = "GOOGLE_CLOUD_LOCATION";

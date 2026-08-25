@@ -20,7 +20,11 @@ let client: QdrantClient | null = null;
 
 function getClient(cfg: LocalIngestClient): QdrantClient {
   if (client === null) {
-    client = new QdrantClient({ url: cfg.qdrantUrl, timeout: 120_000 });
+    client = new QdrantClient({
+      url: cfg.qdrantUrl,
+      timeout: 120_000,
+      ...(cfg.qdrantApiKey ? { apiKey: cfg.qdrantApiKey } : {}),
+    });
   }
   return client;
 }

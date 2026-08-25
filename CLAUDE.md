@@ -5,7 +5,10 @@ módulos** en `src/modules/` — no es 1:1: `doctrina` sola cosecha 7 repositori
 universitarios, y el carril de `gob.pe` agrupa 13 subfuentes. Todos arman el
 mismo contrato y, según `INGEST_MODE`, **ingieren ellos mismos** (Vertex +
 Qdrant + PostgreSQL + S3) o hacen `POST /legal-documents/ingest` al backend
-`arxatec-lawyer-assistant`. Aquí se **construyen y validan** módulos
+`arxatec-lawyer-assistant`. **Si ingiere en local contra el Qdrant de
+producción, `QDRANT_API_KEY` es obligatoria** — ese corpus está a punto de
+dejar de aceptar escrituras sin credencial; el porqué, en
+[`docs/registro/2026-08-25/INGESTA_SIN_CREDENCIAL.md`](docs/registro/2026-08-25/INGESTA_SIN_CREDENCIAL.md). Aquí se **construyen y validan** módulos
 (smokes de 10–20 docs); las corridas de volumen van en la VM aparte
 ([`docs/campania-vm.md`](docs/campania-vm.md)).
 
