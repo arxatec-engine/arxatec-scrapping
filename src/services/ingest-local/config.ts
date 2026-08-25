@@ -27,6 +27,7 @@ let cached: Omit<LocalIngestClient, "log"> | null = null;
 export function localIngestConfig(log: Logger): LocalIngestClient {
   if (cached === null) {
     const qdrantUrl = env.get(ENV.QDRANT_URL).default("").asString();
+    const qdrantApiKey = env.get(ENV.QDRANT_API_KEY).default("").asString();
     const databaseUrl = env.get(ENV.DATABASE_URL).default("").asString();
     const googleProject = env.get(ENV.GOOGLE_CLOUD_PROJECT).default("").asString();
     const googleCredentialsPath = env
@@ -50,6 +51,7 @@ export function localIngestConfig(log: Logger): LocalIngestClient {
 
     cached = {
       qdrantUrl,
+      qdrantApiKey,
       databaseUrl,
       googleProject,
       googleLocation: env
