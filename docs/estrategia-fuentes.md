@@ -5,13 +5,13 @@
 > `docs/`; aquí está destilado lo accionable), cruzado con lo que ya existe: los
 > catálogos del assistant y el pipeline de ingesta.
 > Escrito 2026-07-21. Vive en `docs/` junto a `plan-poder-judicial.md` (análisis
-> técnico del sitio del Poder Judicial) y `registro/2026-07-21/deuda-tecnica.md` (lo que hay que
+> técnico del sitio del Poder Judicial) y `git show 3792b14:docs/registro/2026-07-21/deuda-tecnica.md` (retirado; lo que hay que
 > arreglar antes de escalar el scrapping). Índice de lectura: `docs/README.md`.
 >
 > **Si eres una sesión nueva de Claude en el repo `arxatec-assistant`**: este doc
 > viene del repo `arxatec-scrapping` y resume la estrategia de adquisición de
 > documentos; el checklist de la sección 7 ya fue verificado contra el código del
-> assistant — los resultados están en `docs/registro/2026-07-21/deuda-tecnica.md`.
+> assistant — los resultados están en `git show 3792b14:docs/registro/2026-07-21/deuda-tecnica.md` (retirado); lo que sigue vivo, en `docs/known_issues/2026_W30.md`.
 
 ---
 
@@ -171,7 +171,7 @@ AWS, así se puede ver todo lo que entra):
 ## 8. Preguntas abiertas para Harry
 
 **Respondidas 2026-07-21 por Slack** (las 4 de contrato; detalle y consecuencias
-en `registro/2026-07-21/deuda-tecnica.md`, sección "Decisiones de Harry"):
+en `git show 3792b14:docs/registro/2026-07-21/deuda-tecnica.md` (retirado), sección "Decisiones de Harry"):
 
 - ~~Confirmar valores de `source` y `type` para las fuentes nuevas (§7.1)~~ →
   los valores canónicos son los del enum del backend; las props que una fuente

@@ -152,7 +152,7 @@ velocidad con 20 veces más RAM ocupada.
 > desperdicia espera de red en serie. Detalle, cadena de llamadas y qué hacer —
 > incluida la respuesta a «¿nginx delante de varias instancias?» (nginx reparte,
 > no añade capacidad; quien añade capacidad es `gunicorn -w N`) — en
-> `arxatec-lawyer-assistant/docs/registro/2026-08-06/CUELLO_DE_BOTELLA_INGESTA.md`.
+> `arxatec-lawyer-assistant`, retirado: `git show dc667ff:docs/registro/2026-08-06/CUELLO_DE_BOTELLA_INGESTA.md`.
 
 La regla práctica: **subir el paralelismo del scraper solo cuando se compruebe
 que el backend está ocioso**, no antes.

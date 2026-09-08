@@ -42,6 +42,9 @@ Cada fuente tiene tres piezas, con roles que NO se mezclan:
 
 1. Registrar `key` + `canonicalName` + `aliases` en los TRES catálogos.
 2. El módulo scraper usa `sourceByKey("<key>").canonicalName` como default.
-3. Añadir la fila a la tabla de `registro/2026-07-21/estado-integracion-legal.md`.
+3. ~~Añadir la fila a la tabla de `registro/2026-07-21/estado-integracion-legal.md`.~~
+   Ese registro se retiró el 2026-09-08 (`git show 3792b14:docs/registro/2026-07-21/estado-integracion-legal.md`)
+   y ya estaba marcado como superado en agosto: no hay tabla que actualizar. La huella
+   SHA-256 de este catálogo sigue fijada en tests de tres repos, y eso es lo que manda.
 4. Actualizar la validación/pruebas de cada repo (fijan el mapeo).
 5. Nunca añadir la sigla al filtro visual: el enum solo lleva canónicos.
