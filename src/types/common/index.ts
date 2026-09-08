@@ -73,6 +73,13 @@ export interface Metadata {
   /** Fecha de emisión/resolución (ISO). El backend la guarda en documents.issued_at. */
   issued_at?: string | null;
   /**
+   * Ventana de vigencia (ISO). Opcionales: hasta el 2026-09-01 iban `null`
+   * hardcodeado en la ingesta local y ningún módulo las producía. spij es el
+   * primero que las llena; el resto puede omitirlas sin cambiar nada.
+   */
+  effective_from?: string | null;
+  effective_to?: string | null;
+  /**
    * Cita humana preformateada — trazabilidad de fuente (F3, ver
    * arxatec-lawyer-assistant/docs/registro/2026-07-24/TRAZABILIDAD_FUENTES.md). El chat la emite
    * VERBATIM como respaldo: "Recurso 001061-2011, Sala Civil Permanente,

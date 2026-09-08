@@ -2,15 +2,16 @@ import { ingestMode } from "../../../../services/ingest-local/config";
 import * as classifier from "../classifier";
 import * as config from "../../config";
 import * as spijApi from "../../services/spij";
-import { analizarNorma, elegirEntidad } from "../../services/llm";
+import { analizarNorma, elegirEntidad, MIN_ITEMS } from "../../services/llm";
 import { ingestRequest } from "../../services/assistant";
 import * as render from "../../../../utils/render";
 import * as store from "../store";
 import { bumpConf, maybeLogProgress } from "../stats";
-import { sanitize, stripHtml, textoParaClasificar } from "../../../../utils/text";
+import { sanitize, stripHtml } from "../../../../utils/text";
 import { nowTs } from "../../../../utils/time";
 import { buildMetadata } from "../metadata";
 import { defaultResolved, optionsText, resolve } from "../legalAreas";
+import type { NormaAnalisis } from "../../services/llm";
 import type {
   Area,
   Classif,
@@ -31,22 +32,31 @@ export interface NormaClasificada {
    * para poder medir la tasa real de acierto y reclasificar después.
    */
   areaFallback: boolean;
-  concepts: string[];
-  references: string[];
+  analisis: NormaAnalisis;
 }
 
+/**
+ * Analiza la norma a partir de su CUERPO.
+ *
+ * Antes se usaba `textoParaClasificar`, que devuelve solo la sumilla cuando
+ * tiene >=40 caracteres — o sea, casi siempre. El modelo trabajaba sobre un
+ * resumen de una línea: de ahí no salen conceptos jurídicos, ni la fecha de
+ * emisión, ni la vacatio legis, ni las normas citadas. El texto completo ya se
+ * descargaba en `ingestOne` para renderizar el PDF; solo faltaba pasárselo.
+ * Medido el 2026-09-01, ver docs/registro/2026-09-01/.
+ */
 export async function classifyLegalArea(
   sumilla: string | null,
   html: string | null
 ): Promise<NormaClasificada> {
-  const texto = textoParaClasificar(sumilla, html);
+  const cuerpo = stripHtml(html || "").trim();
+  const texto = cuerpo || stripHtml(sumilla || "").trim();
   const analisis = await analizarNorma(texto, optionsText());
   const resolved = resolve(analisis.subId);
   return {
     area: resolved ?? defaultResolved(),
     areaFallback: resolved === null,
-    concepts: analisis.concepts,
-    references: analisis.references,
+    analisis,
   };
 }
 
@@ -128,9 +138,9 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
   try {
     const html = await spijApi.descargarWord(ctx.api, doc.id!);
     if (!html || !html.trim()) throw new Error("contenido vacío");
-    const analisis = await classifyLegalArea(doc.title, html);
-    area = analisis.area;
-    areaFallback = analisis.areaFallback;
+    const clasificada = await classifyLegalArea(doc.title, html);
+    area = clasificada.area;
+    areaFallback = clasificada.areaFallback;
     // Sector = sigla oficial a secas ("PRODUCE", "MINEDU"): match exacto por
     // sigla única del catálogo, antes que el título y que la IA.
     if (!clasif.entity_id && doc.sector) {
@@ -156,14 +166,7 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
       const porIA = await resolveEntityIA(ctx, doc.sector);
       if (porIA) clasif = porIA;
     }
-    meta = buildMetadata(
-      doc,
-      clasif,
-      area,
-      cfg,
-      analisis.concepts,
-      analisis.references
-    );
+    meta = buildMetadata(doc, clasif, area, cfg, clasificada.analisis);
     const full = render.buildHtml(
       doc.title,
       [doc.code, doc.dispositivoLegal, doc.sector, doc.publishedAt],
@@ -217,6 +220,23 @@ export async function ingestOne(ctx: Ctx, doc: Doc): Promise<void> {
     }
     if (areaFallback) {
       problemas.push("area por defecto: la IA no clasificó la subárea");
+    }
+    // El mínimo de 10 se MIDE, no se fuerza. En `references` forzarlo haría que
+    // el modelo invente citas a normas que no existen; en las otras dos, relleno.
+    // El warning deja el dato en el ledger para poder decidir con números.
+    if (meta) {
+      if (meta.keywords.length < MIN_ITEMS) {
+        problemas.push(`keywords por debajo del mínimo: ${meta.keywords.length}/${MIN_ITEMS}`);
+      }
+      if (meta.concepts.length < MIN_ITEMS) {
+        problemas.push(`concepts por debajo del mínimo: ${meta.concepts.length}/${MIN_ITEMS}`);
+      }
+      if (meta.references.length < MIN_ITEMS) {
+        problemas.push(`references: ${meta.references.length} (sin piso: pueden ser las que hay)`);
+      }
+      if (!meta.issued_at) {
+        problemas.push("sin issued_at: la IA no encontró fecha de emisión en el texto");
+      }
     }
     if (problemas.length > 0) {
       warning = problemas.join("; ");
