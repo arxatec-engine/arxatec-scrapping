@@ -37,6 +37,7 @@ When something gets executed, it is deleted from here and appears in
 _Undefined. Anyone adds a line at the end._
 
 - 
+- Vectorize `concepts`/`keywords` in the chunk header. Measured 2026-09-03 on 105 spij docs: 0 rank changes in 7/7 lawyer-style queries, scores +0.002 to +0.008. Too small a corpus to tell; retest at 5k+ docs before paying a full re-embed of two repos — Yerik/Claude · 2026-09-08
 
 ---
 
@@ -122,3 +123,50 @@ broken lives in [`known_issues/`](known_issues/).
   these describe Peruvian portals in the language of the portals themselves, and
   translating them in passing loses the terms the sources actually use. Do it per
   document, if at all.
+
+### From running spij end to end — 2026-09-08
+
+Origin: 105 documents ingested locally, 2026-09-01 to 2026-09-03. The five live
+problems are in [`known_issues/2026_W36.md`](known_issues/2026_W36.md); this is the
+work they ask for. The spij fields themselves (`source_url` public, `issued_at`,
+`effective_from`, 10+ keywords and concepts) landed in `e615f75`.
+
+#### Cheap — minutes or half an hour
+
+- **Map spij `dispositivoLegal` → `type`** (`CODIGO` → `codigo`, rest `normative`). A
+  few lines in `src/modules/spij/utils/metadata/index.ts`; it is what lets the
+  assistant article-chunk the códigos → [`known_issues/2026_W36.md`](known_issues/2026_W36.md).
+- **Decide the spij harvest order** by `dispositivoLegal` (leyes, DL, DS, códigos,
+  TUO first) and write it as `SPIJ_DISP` lanes in the runbook. No code →
+  [`known_issues/2026_W36.md`](known_issues/2026_W36.md).
+- **Count spij documents in production under the old `source_url`**
+  (`…/api/procesarword/…`) **before any spij run against production**. The re-ingest
+  duplicates them → [`known_issues/2026_W36.md`](known_issues/2026_W36.md).
+- **Write the `shipped/` entry for `e615f75`.** It went straight to main on 2026-09-08
+  without one; the intent (why the LLM now sees the body, why `references` has no
+  floor) is not recoverable from the diff.
+
+#### One session
+
+- **Chunk spij from the HTML, not from the PDF it renders.** A text entry point in
+  `ingest-local`; the PDF only for S3. Removes the synthetic page cuts at the root →
+  [`known_issues/2026_W36.md`](known_issues/2026_W36.md).
+- **A real golden set**: ~30 lawyer-style cases where several similar norms compete,
+  and a script that reports the rank of the expected document. The 7-case set of
+  2026-09-03 was too easy (7/7 at #1 with and without concepts) — it cannot detect
+  an improvement, so nothing below can be called an improvement without this.
+
+#### Larger, with a known trigger
+
+- **Article-aware splitting in `ingest-local`**, matching the assistant's
+  `article_chunker` (which today only fires for `codigo`). One chunk = one article.
+  **Trigger:** the HTML chunking above, since the article structure is what the PDF
+  round trip degrades → [`known_issues/2026_W36.md`](known_issues/2026_W36.md).
+- **Derogations → `document_relations`**, and from there `status` and
+  `effective_to`: when a new norm says "deróguese la Ley X", mark X. It is the only
+  way `status` stops being an assumption; SPIJ publishes neither vigencia nor estado
+  (verified 2026-09-01 on the raw search and `api/detallenorma` responses) →
+  [`known_issues/2026_W30.md`](known_issues/2026_W30.md).
+- **Migrate spij identities in production** if the count above is large: recompute
+  `document_id` from the new URL across PostgreSQL rows, entity links and Qdrant
+  payloads → [`known_issues/2026_W36.md`](known_issues/2026_W36.md).
