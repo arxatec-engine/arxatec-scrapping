@@ -44,7 +44,9 @@ Detalle operativo en [`docs/runbook-arranque.md`](./docs/runbook-arranque.md) §
 
 > 📚 **Contexto completo en [`docs/README.md`](./docs/README.md)** y el estado
 > real de las fuentes en [`docs/registro-scraping.md`](./docs/registro-scraping.md).
-> La memoria de decisiones está en [`docs/registro/`](./docs/registro/README.md).
+> The work record is in [`docs/known_issues/`](./docs/known_issues/) (live problems),
+> [`docs/BACKLOG.md`](./docs/BACKLOG.md) (what is missing), [`docs/focus/`](./docs/focus/)
+> (the week's priority) and [`docs/shipped/`](./docs/shipped/) (what was delivered).
 
 ## Instalar y correr
 
@@ -144,7 +146,7 @@ documentos ya completados (dedupe por `id` en el ledger) y reanuda desde el
 checkpoint. Estado en `state/spij_ingest/` (`ledger.jsonl`, `checkpoint.json`).
 
 ⚠️ El ledger es **la única** defensa contra duplicados: el backend no deduplica
-(ver `docs/registro/2026-07-21/deuda-tecnica.md` §A1). No borres `state/` de una corrida ya ingestada.
+(see `docs/known_issues/2026_W30.md`). Do not delete `state/` from a run that was already ingested.
 
 ## Convenciones (no romper)
 

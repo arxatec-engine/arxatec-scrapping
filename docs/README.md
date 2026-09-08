@@ -7,7 +7,14 @@ completo.
 > **Antes de fiarte de una sola línea de esta carpeta:** la documentación de este
 > repo **no** se presume actualizada. Cada afirmación se comprueba contra el
 > código, y lo desfasado se corrige en el mismo cambio que lo destapa. La regla,
-> entera, en [`registro/README.md`](./registro/README.md).
+> entera, en [`../CLAUDE.md`](../CLAUDE.md) § _Documentation: the work cycle and
+> the rule_.
+>
+> **Esta carpeta es la mitad VIVA de `docs/`**: describe el sistema y se reescribe.
+> La mitad que **registra el trabajo** se acumula por semana y vive aparte:
+> [`known_issues/`](./known_issues/) (problemas vivos), [`BACKLOG.md`](./BACKLOG.md)
+> (lo que falta), [`focus/`](./focus/) (la prioridad de la semana) y
+> [`shipped/`](./shipped/) (lo entregado). No se mezclan.
 
 ## Qué es este repo
 
@@ -28,7 +35,7 @@ semanas «hoy existe un módulo funcionando: SPIJ» cuando ya había más de tre
 | 1 | [`registro-scraping.md`](./registro-scraping.md) | **El tablero (doc VIVO).** Las 43 fuentes del Excel `Scraping_Simple.xlsx` con check de cuáles ya tienen módulo, qué comando corre cada una y el orquestador `pnpm all` (entidades siempre primero). Se actualiza al terminar cada módulo. |
 | 2 | [`estrategia-fuentes.md`](./estrategia-fuentes.md) | **El mapa.** Qué fuentes existen, priorizadas (P0…P5), la decisión de por dónde sale el millón (El Peruano) y por qué. Fuente ≠ emisor. |
 | 3 | [`plan-poder-judicial.md`](./plan-poder-judicial.md) | **El próximo módulo (P0).** Análisis técnico del portal del Poder Judicial (árbol, hojas, URLs, paginación, PDFs) + contrato de ingesta detallado (§3.1) + dónde vive el nuevo `src/modules/pj/`. |
-| 4 | [`registro/README.md`](./registro/README.md) | **La memoria de sesión y sus cuatro reglas.** Índice de lo averiguado en auditorías fechadas (`deuda-tecnica.md`, `estado-integracion-legal.md`) y —lo que más se consulta— la tabla de **qué documento NO es registro y por qué**. Empieza aquí antes de mover un `.md` de sitio. |
+| 4 | [`known_issues/`](./known_issues/) | **Los problemas vivos**, un fichero por semana de detección y una sección `##` por problema, cada uno declarando contra qué commit se verificó. Empieza aquí antes de fiarte de un número escrito en cualquier otro `.md` de esta carpeta. Sustituye a `registro/`, retirado el 2026-09-08. |
 | 6 | [`anti-bloqueo-scraping.md`](./anti-bloqueo-scraping.md) | **Cómo SPIJ evita el bloqueo y qué ayuda a PJ.** Por qué el sitio de SPIJ coopera y el del PJ no (bot manager Radware: fingerprint + throttle por IP); qué ya tiene PJ (fetch, cookie jar) y qué se añadió (headers de navegación). |
 | 7 | [`catalogo-entidades.md`](./catalogo-entidades.md) | **El catálogo de entidades** (gob.pe → `entity.json`): por qué no tiene ledger, y el orden del pipeline — entidades SIEMPRE antes que los documentos. |
 | 8 | [`fuentes-canonicas.md`](./fuentes-canonicas.md) | **Nombres canónicos de `source`** compartidos entre los 3 repos (huella SHA fijada en tests). |
