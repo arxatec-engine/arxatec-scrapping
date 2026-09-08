@@ -12,8 +12,9 @@ docs/known_issues/2026_W32.md
 The name is `YYYY_W<ISO week>.md`. The command gives you the week, not your head:
 
 ```bash
-date +%G_W%V                                  # this week
-date -j -f "%Y-%m-%d" "2026-08-10" +%G_W%V    # a specific date
+date +%G_W%V                       # this week
+date -d 2026-08-10 +%G_W%V         # a specific date (GNU/Linux)
+date -j -f "%Y-%m-%d" "2026-08-10" +%G_W%V    # the same, on macOS
 ```
 
 The file's week is the week of **detection** and never changes. Re-verifying a problem

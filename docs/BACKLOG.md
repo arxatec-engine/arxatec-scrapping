@@ -102,6 +102,16 @@ broken lives in [`known_issues/`](known_issues/).
   It cannot be changed in one repo: `status` is matched exactly by the platform →
   [`known_issues/2026_W30.md`](known_issues/2026_W30.md).
 
+#### Structural, not urgent
+
+- **There is no CI.** Verified 2026-09-08: this repo has no `.github/` directory at
+  all, so `pnpm typecheck` and `pnpm test` **only run if someone remembers to run
+  them**. They are cheap (typecheck clean, 32 tests in under a second), which makes
+  the absence of a workflow harder to justify, not easier. Of the six repos in the
+  workspace, only `arxatec-lawyer-service` has one.
+- **There is no `.nvmrc`.** The Node version is not written down. `arxatec-lawyer-service`
+  pins 24 and blows up on anything newer; nothing says whether that applies here.
+
 #### Documentation
 
 - **`docs/` is still in Spanish** (25 files: the 16 `plan-<source>.md`, the board,
