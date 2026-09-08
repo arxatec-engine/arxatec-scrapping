@@ -40,3 +40,6 @@ dist/
 .vscode/
 .idea/
 *.swp
+
+# Per-session scaffolding, removed on 2026-09-08 (see docs/known_issues/ and docs/BACKLOG.md)
+docs/registro/

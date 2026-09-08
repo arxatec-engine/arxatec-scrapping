@@ -1,154 +1,196 @@
 # CLAUDE.md — arxatec-scrapping
 
-Scraper de fuentes legales públicas del Perú. **33 fuentes cubiertas por 21
-módulos** en `src/modules/` — no es 1:1: `doctrina` sola cosecha 7 repositorios
-universitarios, y el carril de `gob.pe` agrupa 13 subfuentes. Todos arman el
-mismo contrato y, según `INGEST_MODE`, **ingieren ellos mismos** (Vertex +
-Qdrant + PostgreSQL + S3) o hacen `POST /legal-documents/ingest` al backend
-`arxatec-lawyer-assistant`. **Si ingiere en local contra el Qdrant de
-producción, `QDRANT_API_KEY` es obligatoria** — ese corpus está a punto de
-dejar de aceptar escrituras sin credencial; el porqué, en
-[`docs/registro/2026-08-25/INGESTA_SIN_CREDENCIAL.md`](docs/registro/2026-08-25/INGESTA_SIN_CREDENCIAL.md). Aquí se **construyen y validan** módulos
-(smokes de 10–20 docs); las corridas de volumen van en la VM aparte
-([`docs/campania-vm.md`](docs/campania-vm.md)).
+Scraper of Peru's public legal sources. **33 sources covered by 21 modules** in
+`src/modules/` — it is not 1:1: `doctrina` alone harvests 7 university
+repositories, and the `gob.pe` lane groups 13 sub-sources (`src/modules/` also
+holds `entidades` and the two `carril-*` orchestrators, which are not sources).
+They all build the same contract and, depending on `INGEST_MODE`, **ingest by
+themselves** (Vertex + Qdrant + PostgreSQL + S3) or `POST
+/legal-documents/ingest` to the `arxatec-lawyer-assistant` backend.
 
-## Lee esto primero (en orden)
+**If it ingests locally against production's Qdrant, `QDRANT_API_KEY` is
+mandatory** — that corpus is about to stop accepting credential-less writes, and
+the order in which to do it matters:
+[`docs/known_issues/2026_W35.md`](docs/known_issues/2026_W35.md). Modules are
+**built and validated** here (smokes of 10–20 docs); volume runs happen on the
+separate VM ([`docs/campania-vm.md`](docs/campania-vm.md)).
 
-0. [`docs/runbook-arranque.md`](docs/runbook-arranque.md) — **cómo se opera**:
-   orden de arranque, reanudación (re-ejecutar el mismo comando), verificación
-   y reset. Lo primero si vas a CORRER algo, no a programarlo.
-0b. [`docs/arquitectura-produccion.md`](docs/arquitectura-produccion.md) — dónde
-   corre en producción y por qué (PC propia > nube por la IP del PJ; secuencial >
-   20 sesiones porque el cuello es el backend). Medido: ~800 MB por sesión.
-1. [`docs/registro-scraping.md`](docs/registro-scraping.md) — **EL TABLERO VIVO.**
-   Las fuentes del Excel, qué está hecho, el contador de avance y el comando de
-   cada módulo. La verdad del estado está AQUÍ y **solo** aquí: la sección
-   "Estado actual" de `docs/README.md` se retiró el 2026-08-04 justamente por
-   duplicarla y quedarse vieja.
-2. [`docs/README.md`](docs/README.md) — índice de los docs de `docs/`: estrategia
-   de fuentes, anti-bloqueo, campaña VM y un `plan-<fuente>.md` por módulo.
-3. [`docs/registro/README.md`](docs/registro/README.md) — **la memoria de sesión**:
-   las cuatro reglas del registro y la tabla de qué documento **no** es registro y
-   por qué. Léela antes de mover un `.md` de sitio o de fiarte de uno.
-4. Antes de tocar un módulo concreto: su `docs/plan-<fuente>.md`.
+> **Language.** Repo-level files (this one, `README.md` and the work cycle) are in
+> English. The documents under `docs/` that describe the Peruvian portals are still
+> in Spanish, on purpose — see `docs/BACKLOG.md`.
 
-## Comandos
+## Read this first (in order)
 
-| Comando | Qué hace |
+0. [`docs/runbook-arranque.md`](docs/runbook-arranque.md) — **how it is operated**:
+   startup order, resuming (re-run the same command), verification and reset. First
+   thing if you are going to RUN something rather than program it.
+0b. [`docs/arquitectura-produccion.md`](docs/arquitectura-produccion.md) — where it
+   runs in production and why (own PC > cloud because of the PJ's IP handling;
+   sequential > 20 sessions because the bottleneck is the backend). Measured:
+   ~800 MB per session.
+1. [`docs/registro-scraping.md`](docs/registro-scraping.md) — **THE LIVE BOARD.**
+   The sources from the spreadsheet, what is done, the progress counter and each
+   module's command. The truth about state is HERE and **only** here: the "Estado
+   actual" section of `docs/README.md` was retired on 2026-08-04 precisely for
+   duplicating it and going stale. **Despite its name it is not a record** — it is
+   living documentation and gets rewritten.
+2. [`docs/README.md`](docs/README.md) — index of the documents in `docs/`: source
+   strategy, anti-blocking, VM campaign and one `plan-<source>.md` per module.
+3. [`docs/known_issues/`](docs/known_issues/) — **live problems**, one file per week
+   of detection. Start there before trusting a number written in any other `.md`.
+4. Before touching a specific module: its `docs/plan-<source>.md`.
+
+## Commands
+
+| Command | What it does |
 | --- | --- |
-| `pnpm <fuente> [--limit n]` | Corre un módulo (`spij`, `pj`, `tc`, `elperuano`, `tfiscal`, `indecopi`, `tce`, `sunarp`, `servir`, `oefa`, `osinergmin`, `osiptel`, `sunass`, `ositran`, `gobpe`, `sunat`, `spley`, `doctrina`). `--limit` = smoke. |
-| `pnpm verify <fuente> [n]` | **La señal mecánica**: smoke con `--limit n` (default 5) + veredicto PASS/FAIL por delta del ledger. Úsalo antes de dar un módulo por bueno. |
-| `pnpm entidades [--sync]` | Refresca el catálogo de entidades. **SIEMPRE antes** de ingestar docs (el backend solo vincula emisores ya sembrados). |
-| `pnpm all` / `pnpm status` | Orquestador (entidades primero, pequeño-primero) / avance por fuente desde los ledgers (no toca la red). |
-| `pnpm typecheck && pnpm test` | Obligatorios antes de cada commit. |
+| `pnpm <source> [--limit n]` | Runs one module (`spij`, `pj`, `tc`, `elperuano`, `tfiscal`, `indecopi`, `tce`, `sunarp`, `servir`, `oefa`, `osinergmin`, `osiptel`, `sunass`, `ositran`, `gobpe`, `sunat`, `spley`, `doctrina`…). `--limit` = smoke. |
+| `pnpm verify <source> [n]` | **The mechanical signal**: smoke with `--limit n` (default 5) plus a PASS/FAIL verdict from the ledger delta. Use it before calling a module good. |
+| `pnpm entidades [--sync]` | Refreshes the entity catalogue. **ALWAYS before** ingesting documents (the backend only links issuers that are already seeded). |
+| `pnpm all` / `pnpm status` | Orchestrator (entities first, smallest first) / progress per source from the ledgers (does not touch the network). |
+| `pnpm typecheck && pnpm test` | Mandatory before every commit. |
 
-Gestor: **pnpm, nunca npm**. Puppeteer exige Chrome
-(`npx puppeteer browsers install chrome`). OCR exige poppler (`pdftoppm`).
+Package manager: **pnpm, never npm**. Puppeteer requires Chrome
+(`npx puppeteer browsers install chrome`). OCR requires poppler (`pdftoppm`).
 
-## Convención de módulos (no romper)
+## Module convention (do not break)
 
-- `src/modules/<fuente>/` con `config/constants/services/utils/run`. Solo
-  funciones e interfaces, **sin clases**. TypeScript ESM corrido con `tsx`.
-- **Reanudable**: ledger + checkpoint en `state/<fuente>_ingest/` (`pj` usa
-  `state/pj_jurisprudencia/`). `state/` es el mecanismo oficial anti-duplicados
-  = **activo de producción**: nunca borrarlo; respaldar tras corridas grandes.
-- Checklist completo para un módulo nuevo: sección "Cómo añadir un módulo
-  nuevo" del registro (módulo → subcomando en `src/cli.ts` + `package.json` →
-  `DOC_SCRAPERS` → fuente canónica → emisor → marcar el tablero).
+- `src/modules/<source>/` with `config/constants/services/utils/run`. Functions and
+  interfaces only, **no classes**. TypeScript ESM run through `tsx`.
+- **Resumable**: ledger plus checkpoint in `state/<source>_ingest/` (`pj` uses
+  `state/pj_jurisprudencia/`). `state/` is the official anti-duplicate mechanism
+  and therefore a **production asset**: never delete it; back it up after large
+  runs. Its blind spots are recorded in
+  [`docs/known_issues/2026_W30.md`](docs/known_issues/2026_W30.md).
+- Checklist for a new module: module → subcommand in `src/cli.ts` and
+  `package.json` → `DOC_SCRAPERS` → canonical source → issuer → mark the board.
 
-## Contrato de ingesta (lo que rompe silenciosamente)
+## Ingestion contract (what breaks silently)
 
-- Tipos en `src/types/common` (`Metadata`/`IngestData`); cliente en
+- Types in `src/types/common` (`Metadata`/`IngestData`); client in
   `src/services/assistant` (`IngestClient`).
-- El backend **exige al menos una fecha** (`effective_date`/`effective_from`/
-  `published_at`/`issued_at`) y **`subarea` no vacía** (usar `"General"`).
-- `status` es **determinista por fuente, NUNCA lo decide un LLM** (spley =
-  `"En revisión"`; el resto `"Vigente"` provisional — decisión del owner). Un
-  status inventado hace el doc invisible a los filtros de la plataforma.
-- `source` = nombre canónico de `src/services/sources`. El mapa alias→canónico
-  tiene **huella SHA-256 fijada en tests de TRES repos** (aquí
-  `src/services/sources/index.test.ts`, assistant
-  `tests/test_legal_sources.py`, platform `canonical_source.test.ts`): añadir
-  una fuente = actualizar catálogo y huella **en los tres a la vez**.
-- Emisor: la entidad debe existir en `public/data/entity.json` (si no:
-  `pnpm entidades` + sembrar en el assistant). Privadas (universidades) NO
-  están en el catálogo del Estado → issuer vacío con warning es lo correcto.
-- PDF escaneado → el backend responde 400 → reingesta con el OCR compartido
-  (`src/services/ocr`), warning auditable en el ledger.
+- The backend **requires at least one date** (`effective_date`/`effective_from`/
+  `published_at`/`issued_at`) and a **non-empty `subarea`** (use `"General"`).
+- `status` is **deterministic per source, NEVER decided by an LLM** (spley =
+  `"En revisión"`; everything else provisionally `"Vigente"` — owner's decision).
+  An invented status makes the document invisible to the platform's filters. The
+  two-vocabulary mismatch behind that provisional answer is in
+  [`docs/known_issues/2026_W30.md`](docs/known_issues/2026_W30.md).
+- `source` = canonical name from `src/services/sources`. The alias→canonical map has
+  a **SHA-256 fingerprint pinned in tests of THREE repos** (here
+  `src/services/sources/index.test.ts`, assistant `tests/test_legal_sources.py`,
+  platform `canonical_source.test.ts`): adding a source = updating the catalogue and
+  the fingerprint **in all three at once**.
+- Issuer: the entity must exist in `public/data/entity.json` (if not: `pnpm
+  entidades` plus seeding in the assistant). Private ones (universities) are NOT in
+  the state catalogue → an empty issuer with a warning is the correct outcome.
+- Scanned PDF → the backend answers 400 → re-ingest with the shared OCR
+  (`src/services/ocr`), auditable warning in the ledger.
 
-## Gotchas de red (detalle en `docs/anti-bloqueo-scraping.md` y cada plan)
+## Network gotchas (detail in `docs/anti-bloqueo-scraping.md` and each plan)
 
-- **pj**: Radware bloquea axios pero deja pasar `fetch`; `PJ_DELAY` alto, IP
-  residencial, sin ráfagas (throttlea por IP a nivel conexión).
-- **elperuano**: el visor es intermitente (0.2 s o cuelga >60 s) → timeout
-  corto + reintentos; el CSV índice viene en CP850.
-- **gobpe**: la paginación topa ~400 hojas → ventanas de 1 día; NO corre en
-  `all` (decisión owner).
-- **sunat**: charset mixto UTF-8/latin-1; fecha = piso del año.
-- **doctrina**: muchos portales sirven su SPA en la ruta OAI (falso 200) —
-  confirmar `?verb=Identify` devuelve XML OAI antes de añadir a `REPOS`.
-- **spley**: API con params cifrados AES (clave en `services/spley/crypto.ts`);
-  el PDF del portal es inestable → se renderiza PDF propio.
-- **adlp**: el HTTPS de leyes.congreso.gob.pe es INTERMITENTE (cuelga o
-  responde al toque — no está "caído"); el grid del buscador trunca en
-  silencio a 20 filas → ventanas de ≤20 números.
+- **pj**: Radware blocks axios but lets `fetch` through; high `PJ_DELAY`, residential
+  IP, no bursts (it throttles per IP at connection level).
+- **elperuano**: the viewer is intermittent (0.2 s or hangs >60 s) → short timeout
+  plus retries; the index CSV arrives in CP850.
+- **gobpe**: pagination tops out around 400 pages → 1-day windows; it does NOT run
+  in `all` (owner's decision).
+- **sunat**: mixed UTF-8/latin-1 charset; date = floor of the year.
+- **doctrina**: many portals serve their SPA on the OAI route (a false 200) —
+  confirm `?verb=Identify` returns OAI XML before adding to `REPOS`.
+- **spley**: API with AES-encrypted params (key in `services/spley/crypto.ts`); the
+  portal's PDF is unstable → we render our own.
+- **adlp**: HTTPS on leyes.congreso.gob.pe is INTERMITTENT (it hangs or answers
+  instantly — it is not "down"); the search grid silently truncates to 20 rows →
+  windows of ≤20 numbers.
 
-## Entorno y verificación
+## Environment and verification
 
-- `.env` (gitignored): `INGEST_BASE_URL` (assistant local :8000) e
-  `INGEST_TOKEN` (= `ASSISTANT_SYNC_TOKEN` del assistant; en su .env va entre
-  comillas → leer con dotenv, jamás con `cut`). NO definir
-  `INGEST_SOURCE`/`INGEST_STATUS` globales (pisarían el source por módulo).
-- El smoke real necesita el assistant corriendo. GOTCHA: al matar su uvicorn,
-  los hijos retienen `:8000` — matar los PID de `ss -tlnp | grep 8000`.
+- `.env` (gitignored): `INGEST_BASE_URL` (local assistant on :8000) and
+  `INGEST_TOKEN` (= the assistant's `ASSISTANT_SYNC_TOKEN`; in its `.env` it is
+  quoted → read it with dotenv, never with `cut`). Do NOT define global
+  `INGEST_SOURCE`/`INGEST_STATUS` (they would override the per-module source) — and
+  see [`docs/known_issues/2026_W32.md`](docs/known_issues/2026_W32.md) for what the
+  default does when you leave it unset.
+- A real smoke needs the assistant running. GOTCHA: when you kill its uvicorn, the
+  children keep holding `:8000` — kill the PIDs from `ss -tlnp | grep 8000`.
 
-## Registro de sesión y la regla que lo gobierna
+## Documentation: the work cycle and the rule
 
-**Esta sección es canónica.** `docs/registro/README.md` desarrolla las reglas con
-ejemplos; no las repliques en un tercer sitio.
+**This section is canonical.** Do not replicate the list of rules anywhere else.
 
-**Nunca asumas que la documentación está actualizada — tampoco este archivo.**
-Un `.md` describe el código del día en que alguien lo escribió; el código siguió.
-Antes de apoyar una decisión en una afirmación documentada —una ruta, un
-`archivo:línea`, un número, un "ya está hecho"—, **compruébala contra el código**.
-Si falla, corregirla es parte del trabajo en curso, no un ticket para después.
+**Never assume the documentation is current — this file included.** A `.md`
+describes the code of the day someone wrote it; the code moved on. Before basing a
+decision on a documented claim —a path, a `file:line`, a number, an "it is already
+done"— **check it**. If it fails, fixing it is part of the work in hand, not a
+ticket for later.
 
-No es paranoia. El 2026-08-04, al reverificar `estado-integracion-legal.md`, sus
-dos huecos abiertos estaban cerrados —y el principal por una arquitectura
-distinta a la que el propio documento especificaba—; y `docs/README.md` seguía
-diciendo que había **un** módulo funcionando cuando el tablero contaba 33 de 44.
-Nada de eso rompía un test. **La salida de una sesión anterior es evidencia, no
-verdad.**
+It is not paranoia. On 2026-08-04, re-verifying the July record, both of its open
+gaps turned out to be closed —and the main one by an architecture different from
+the one that document specified—; and `docs/README.md` still said there was **one**
+module working when the board counted 33 of 44. None of that broke a test. **The
+output of a previous session is evidence, not truth.**
 
-Todo hallazgo, auditoría o decisión con consecuencias va a
-`docs/registro/<YYYY-MM-DD>/<tema>.md`, en `kebab-case`, con la fecha en que se
-escribe. Cuatro reglas, detalladas en
-[`docs/registro/README.md`](docs/registro/README.md):
+### Where each thing goes
 
-1. **Documento nuevo = carpeta nueva** con la fecha de creación.
-2. **Cambio sobre un registro existente = se anota en la carpeta de ese
-   registro**, con fila nueva en su *Registro de cambios*. No se abre carpeta
-   nueva para actualizar algo que ya existe.
-3. **Cabecera obligatoria** con fecha, commit verificado y método. Sin commit, un
-   registro es una opinión. Como aquí casi nada empieza y termina en este repo,
-   si el hallazgo cruza a `assistant`/`service`/`platform`, declara **el commit de
-   cada repo** que cites.
-4. **Nunca asumas que la documentación está actualizada** — la regla de arriba.
+`docs/` has two halves. One **describes the system** and is rewritten when the
+system changes: the board, the `plan-<source>.md` files, the runbook, the VM
+campaign, the production architecture, the catalogues and the strategy. The other
+**records the work** and accumulates by week. They never mix, and **the expensive
+mistake here is moving things in bulk**.
 
-Higiene: **añadir un registro incluye añadir su fila al índice** de
-`docs/registro/README.md`, en la misma sesión.
+All four record sites name their files the same way: `YYYY_Wnn.md`, with the ISO
+week from `date +%G_W%V`.
 
-Qué **no** es registro en este repo: casi todo `docs/`. `registro-scraping.md`
-es el tablero **vivo** pese al nombre; los `plan-<fuente>.md`, el runbook, la
-campaña VM, la arquitectura de producción, los catálogos y la estrategia
-describen el sistema y se **reescriben**. La tabla completa de «se queda y por
-qué» está en `docs/registro/README.md`. **El error caro aquí es mover en bloque.**
+| Where | What | Who writes it |
+| --- | --- | --- |
+| [`docs/BACKLOG.md`](docs/BACKLOG.md) | Ideas from the whole team and everything missing. One line, no formatting, no priority. | Anyone, whenever |
+| [`docs/focus/`](docs/focus/) | **One** priority per week, its actions (one per day) and the action that unblocks each dependency. | The CEO, on Monday |
+| [`docs/shipped/`](docs/shipped/) | What was delivered: intent, branch, PR, what changed, how it was verified, what is still open. | **The agent, on closing the feature, inside the same PR** |
+| [`docs/known_issues/`](docs/known_issues/) | Live bugs and traps no gate catches. One `##` section per problem. | Whoever detects it |
+
+The cycle runs one way: idea → `BACKLOG.md` → the week's priority in `focus/` →
+`shipped/` when the PR lands. Whatever breaks along the way falls into
+`known_issues/`, and goes back to `BACKLOG.md` if fixing it is work.
+
+**When you close a feature, before opening the PR**, add its entry to
+`docs/shipped/YYYY_Wnn.md`: intent, branch, what changed, how it was verified —
+here that means the gates **and** `pnpm verify <source>` with its verdict — and what
+is still open. That is not documenting the session: it is that **intent is the only
+thing that cannot be reconstructed from `git log`**.
+
+In `known_issues/`, the file's week is the week of **detection** and never changes:
+re-verifying updates the problem's header, not the file it lives in. Mandatory
+header with status, date, last verification and **commit** — without a commit a
+known issue is an opinion. Since almost nothing here starts and ends in this repo,
+if the finding crosses into `assistant`/`service`/`platform`, declare **each repo's
+commit**. When a problem is fixed **its section is deleted**; when a week runs out
+of sections, the file goes too.
+
+Do **not** create a `.md` to record a session, an investigation or a status
+snapshot.
+
+### `docs/registro/` no longer exists
+
+It was removed on 2026-09-08 and is in `.gitignore`: it was per-session,
+per-person scaffolding, not repo memory. What was still open was extracted to
+`docs/known_issues/` and `docs/BACKLOG.md` before deleting it, and re-verified
+against the code on the way out — two of its points did not survive that check and
+are deliberately absent.
+
+References left in the `.md` files are marked **(retirado)**. The content is still
+in history and is cited, never restored:
+
+```bash
+git show 3792b14:docs/registro/2026-08-25/INGESTA_SIN_CREDENCIAL.md
+git show 3792b14:docs/registro/            # lists what was there
+```
 
 ## Git
 
-- Rama por unidad de trabajo + PR; el owner mergea en GitHub. **Nunca push
-  directo a main.** `gh` no está instalado: los PR se crean con la URL
-  `github.com/arxatec-engine/arxatec-scrapping/pull/new/<rama>`.
-- Al terminar un módulo, el MISMO PR actualiza el tablero
-  (`docs/registro-scraping.md`): ✅ en su fila + contador (convención: ✅ = fuente
-  cosechando de verdad, no "cubrible").
+- Branch per unit of work + PR; the owner merges on GitHub. **Never push straight
+  to main.** `gh` is not installed: PRs are created from the URL
+  `github.com/arxatec-engine/arxatec-scrapping/pull/new/<branch>`.
+- When a module is finished, the SAME PR updates the board
+  (`docs/registro-scraping.md`): ✅ on its row plus the counter (convention: ✅ = the
+  source is really harvesting, not "coverable").
